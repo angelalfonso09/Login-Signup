@@ -4,7 +4,7 @@ import { useLocation } from "react-router-dom";
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
 import ForgotPassword from "./pages/ForgotPassword";
-import Landing from "./pages/landing";
+import Landing from "./pages/Landing";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./styles/Signup.css";
@@ -17,8 +17,7 @@ import "./components/LoginForm"
 import "./components/SignupForm"
 import "./components/SocialLogin"
 import "./components/bgCircle"
-
-
+import "./components/Navbar"
 
 const Layout = ({ children }) => {
   const location = useLocation();
