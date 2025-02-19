@@ -17,7 +17,7 @@ const SignupForm = () => {
       <Form.Group className="mb-3">
         <Form.Control type="password" placeholder="Confirm Password" className="input-field transparent-input" />
       </Form.Group>
-      <Button variant="primary" className="w-100 gradient-btn">Signup</Button>
+      <Button variant="primary" className="w-100 gradient-btn">Sign Up</Button>
     </Form>
   );
 };

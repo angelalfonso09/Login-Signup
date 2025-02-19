@@ -3,35 +3,39 @@ import { Container, Card } from "react-bootstrap";
 import LoginForm from "../components/LoginForm";
 import SocialLogin from "../components/SocialLogin";
 import "../styles/Login.css";
+import BgCirlce from "../components/bgCircle";
+
 
 const Login = () => {
   return (
-    <div className="signup-container">
-      <Container className="d-flex justify-content-center align-items-center p-5">
-          <Card.Body>
-            <h2 className="text-white text-left">Login</h2>
-            <p className="text-white text-left">Glad you're back!</p>
+    <div className="login-body">
+      <div className="login-container">
+        <Container className="login-container-inner d-flex justify-content-center align-items-center p-5">
+          <Card.Body className="login-card-body">
+            <h2 className="login-title text-white text-left">Login</h2>
+            <p className="login-subtitle text-white text-left">Glad you're back!</p>
 
             <LoginForm /> {/* Uses new component */}
             
-            <div className="d-flex align-items-center my-3">
-              <hr className="flex-grow-1 text-white" />
-              <span className="mx-2 text-white">Or</span>
-              <hr className="flex-grow-1 text-white" />
+            <div className="login-divider d-flex align-items-center my-3">
+              <hr className="login-hr flex-grow-1 text-white" />
+              <span className="login-or-text mx-2 text-white">Or</span>
+              <hr className="login-hr flex-grow-1 text-white" />
             </div>
             
             <SocialLogin /> {/* Uses new component */}
             
-            <div className="text-center mt-3">
-              <p className="text-white">
-                Don't have an account? <a href="/signup" className="text-white">Login</a>
+            <div className="login-signup-link text-center mt-3">
+              <p className="login-signup-text text-white">
+                Don't have an account? <a href="/signup" className="login-signup-link-text text-white">Signup</a>
               </p>
             </div>
-            <div className="text-center text-muted small">
-              <a href="#">Terms & Conditions</a> | <a href="#">Support</a> | <a href="#">Customer Care</a>
+            <div className="login-footer text-center text-muted small">
+              <a href="#" className="login-footer-link">Terms & Conditions</a> | <a href="#" className="login-footer-link">Support</a> | <a href="#" className="login-footer-link">Customer Care</a>
             </div>
           </Card.Body>
-      </Container>
+        </Container>
+      </div>
     </div>
   );
 };

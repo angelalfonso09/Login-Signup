@@ -1,77 +1,97 @@
-body {
+.login-body {
     background: linear-gradient(to right, #000000, #0d0d3b);
     height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    position: relative; /* Add this line */
+    position: relative;
 }
 
-body::before {
-    content: '';
-    position: absolute;
-    top: 10%;
-    left: 33%;
-    width: 300px;
-    height: 300px;
-    border-radius: 302px;
-    background: linear-gradient(180deg, #530061 0%, #0D0A30 100%);
-    z-index: 0;
-}
-
-body::after {
-    content: '';
-    position: absolute;
-    bottom: 10%;
-    right: 33%;
-    width: 200px;
-    height: 200px;
-    border-radius: 302px;
-    background: linear-gradient(180deg, #530061 0%, #0D0A30 100%);
-    z-index: 0;
-}
-
-.signup-container {
+.login-container {
     width: 100%;
-    max-width: 600px; /* Increased from 400px to 600px */
-    background: transparent; /* Changed from rgba(255, 255, 255, 0) to transparent */
+    max-width: 500px;
+    background: transparent;
     border-radius: 12px;
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2);
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
-    position: relative; /* Add this line */
-    z-index: 1; /* Add this line */
+    position: relative;
+    z-index: 1;
 }
 
-.input-field {
-    background: transparent;
-    color: rgba(255, 255, 255, 0);
-    border: 1px solid rgba(255, 255, 255, 0.5);
-}
-
-.input-field::placeholder {
-    color: rgba(255, 255, 255, 0.7);
-}
-
-.gradient-btn {
+.login-container-inner {
     display: flex;
-    width: 400px;
-    padding: 14px 10px;
     justify-content: center;
     align-items: center;
-    gap: 10px;
-    border-radius: 12px;
-background: linear-gradient(91deg, #628EFF 9.91%, #8740CD 53.29%, #580475 91.56%);
-    border: none;
-    transition: 0.3s;
+    padding: 5rem;
 }
 
-.gradient-btn:hover {
-    background: linear-gradient(45deg, #8e2de2, #4a00e0);
+.login-card-body {
+    padding: 2rem;
+}
+
+.login-title {
+    color: white;
+    text-align: left;
+}
+
+.login-subtitle {
+    color: white;
+    text-align: left;
+}
+
+.login-divider {
+    display: flex;
+    align-items: center;
+    margin: 1.5rem 0;
+}
+
+.login-hr {
+    flex-grow: 1;
+    border-color: white;
+}
+
+.login-or-text {
+    margin: 0 0.5rem;
+    color: white;
+}
+
+.login-signup-link {
+    text-align: center;
+    margin-top: 1rem;
+}
+
+.login-signup-text {
+    color: white;
+}
+
+.login-signup-link-text {
+    color: white;
+    text-decoration: none;
+}
+
+.login-signup-link-text:hover {
+    text-decoration: underline;
+}
+
+.login-footer {
+    text-align: center;
+    font-size: 0.875rem;
+    color: #ddd;
+}
+
+.login-footer-link {
+    color: #ddd;
+    text-decoration: none;
+    margin: 0 5px;
+}
+
+.login-footer-link:hover {
+    text-decoration: underline;
 }
 
 .social-icon {
-    font-size: 40px; /* Increased from 32px to 40px */
+    font-size: 40px;
     cursor: pointer;
     transition: 0.3s;
 }
