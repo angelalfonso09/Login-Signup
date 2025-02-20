@@ -3,12 +3,12 @@ import { Container, Card } from "react-bootstrap";
 import { Link } from "react-router-dom";  // Import Link from react-router-dom
 import SignupForm from "../components/SignupForm";
 import SocialLogin from "../components/SocialLogin";
-import "../styles/Signup.css";
-
+import "../styles/Signup/Signup.css";
+import BackgroundLayout from '../components/BackgroundLayout';
 
 const Signup = () => {
   return (
-    <div className="signup-body">
+    <BackgroundLayout variant="blue">
     <div className="signup-container">
       <Container className="d-flex justify-content-center align-items-center p-5">
         <Card.Body>
@@ -37,7 +37,7 @@ const Signup = () => {
         </Card.Body>
       </Container>
     </div>
-    </div>
+    </BackgroundLayout>
   );
 };
 
