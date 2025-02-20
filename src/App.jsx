@@ -8,31 +8,13 @@ import Landing from "./pages/Landing";
 import Dashboard from "./pages/Dashboard";
 import AccountManagement from "./pages/AccountManagement";
 
-import "bootstrap/dist/css/bootstrap.min.css";
-import "./styles/Signup.css";
-import "./styles/Login.css";
-import "./styles/ForgotPassword.css";
-
-
 import "./components/ForgotPasswordForm"
 import "./components/LoginForm"
 import "./components/SignupForm"
 import "./components/SocialLogin"
-import "./components/bgCircle"
 import "./components/Navbar"
 import "./components/AdminAccountForm"
 
-const Layout = ({ children }) => {
-  const location = useLocation();
-  const showCircles = location.pathname === "/login" || location.pathname === "/signup";
-
-  return (
-    <>
-      {showCircles && <BgCircle />}
-      {children}
-    </>
-  );
-};
 
 function App() {
   return (

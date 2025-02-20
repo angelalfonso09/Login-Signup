@@ -1,13 +1,13 @@
 import React from "react";
 import { Container, Card } from "react-bootstrap";
 import ForgotPasswordForm from "../components/ForgotPasswordForm";
-import SocialLogin from "../components/SocialLogin";
-import "../styles/ForgotPassword.css";
+import "../styles/ForgotPassword/ForgotPassword.css";
+import BackgroundLayout from '../components/BackgroundLayout';
 
 
 const ForgotPassword = () => {
   return (
-    <div className="fp-body">
+    <BackgroundLayout variant="pink">
     <div className="forgot-password-container">
       <Container className="forgot-password-wrapper d-flex justify-content-center align-items-center p-5">
         <Card.Body>
@@ -29,7 +29,7 @@ const ForgotPassword = () => {
         </Card.Body>
       </Container>
     </div>
-    </div>
+    </BackgroundLayout>
   );
 };
 
