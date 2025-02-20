@@ -5,6 +5,8 @@ import Signup from "./pages/Signup";
 import Login from "./pages/Login";
 import ForgotPassword from "./pages/ForgotPassword";
 import Landing from "./pages/Landing";
+import Dashboard from "./pages/Dashboard";
+import AccountManagement from "./pages/AccountManagement";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./styles/Signup.css";
@@ -18,6 +20,7 @@ import "./components/SignupForm"
 import "./components/SocialLogin"
 import "./components/bgCircle"
 import "./components/Navbar"
+import "./components/AdminAccountForm"
 
 const Layout = ({ children }) => {
   const location = useLocation();
@@ -37,8 +40,11 @@ function App() {
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/accountmanagement" element={<AccountManagement />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/forgotpassword" element={<ForgotPassword />} />
+       
       </Routes>
     </Router>
   );
