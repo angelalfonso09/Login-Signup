@@ -1,6 +1,6 @@
 import React from "react";
 import { Form, Button } from "react-bootstrap";
-import '../styles/ForgotPasswordForm.css'; // Correct the CSS file path
+import '../styles/Login/LoginForm.css'; // Correct the CSS file path
 
 const LoginForm = () => {
   return (

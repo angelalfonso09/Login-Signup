@@ -1,7 +1,7 @@
 import React from "react";
 import { FaSearch, FaBell } from "react-icons/fa";
 import { IoMdArrowDropdown } from "react-icons/io";
-import "../styles/navbar.css";
+import "../styles/Navbar.css";
 
 const Navbar = () => {
   return (

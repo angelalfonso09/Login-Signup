@@ -2,13 +2,12 @@ import React from "react";
 import { Container, Card } from "react-bootstrap";
 import LoginForm from "../components/LoginForm";
 import SocialLogin from "../components/SocialLogin";
-import "../styles/Login.css";
-import BgCirlce from "../components/bgCircle";
-
+import "../styles/Login/Login.css";
+import BackgroundLayout from '../components/BackgroundLayout';
 
 const Login = () => {
   return (
-    <div className="login-body">
+    <BackgroundLayout variant="purple">
       <div className="login-container">
         <Container className="login-container-inner d-flex justify-content-center align-items-center p-5">
           <Card.Body className="login-card-body">
@@ -36,7 +35,7 @@ const Login = () => {
           </Card.Body>
         </Container>
       </div>
-    </div>
+      </BackgroundLayout>
   );
 };
 

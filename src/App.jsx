@@ -6,30 +6,12 @@ import Login from "./pages/Login";
 import ForgotPassword from "./pages/ForgotPassword";
 import Landing from "./pages/Landing";
 
-import "bootstrap/dist/css/bootstrap.min.css";
-import "./styles/Signup.css";
-import "./styles/Login.css";
-import "./styles/ForgotPassword.css";
-
-
 import "./components/ForgotPasswordForm"
 import "./components/LoginForm"
 import "./components/SignupForm"
 import "./components/SocialLogin"
-import "./components/bgCircle"
 import "./components/Navbar"
-
-const Layout = ({ children }) => {
-  const location = useLocation();
-  const showCircles = location.pathname === "/login" || location.pathname === "/signup";
-
-  return (
-    <>
-      {showCircles && <BgCircle />}
-      {children}
-    </>
-  );
-};
+import "./components/Sidebar"
 
 function App() {
   return (
@@ -39,6 +21,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/forgotpassword" element={<ForgotPassword />} />
+        
       </Routes>
     </Router>
   );

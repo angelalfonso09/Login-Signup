@@ -1,0 +1,24 @@
+.form-control.transparent-input {
+  background-color: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  color: #fff;
+  border-radius: 8px;
+  padding: 10px 15px;
+}
+
+.form-control.transparent-input:focus {
+  background-color: transparent;
+  border-color: #fff;
+  color: #fff;
+  box-shadow: 0 0 0 0.25rem rgba(255, 255, 255, 0.25);
+}
+
+.form-control.transparent-input::placeholder {
+  color: rgb(255, 255, 255);
+}
+
+.form-control.transparent-input:disabled,
+.form-control.transparent-input[readonly] {
+  background-color: transparent;
+}
+

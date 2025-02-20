@@ -1,6 +1,6 @@
 import React from "react";
 import { FaHome, FaTint, FaCogs, FaHistory, FaPowerOff, FaPlus } from "react-icons/fa";
-import "../components/sidebar.css";
+import "../styles/Sidebar.css";
 
 const Sidebar = () => {
   return (
