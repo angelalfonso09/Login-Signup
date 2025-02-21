@@ -1,29 +1,81 @@
-import React from "react";
+import React, { useState } from "react";
 import { Form, Button } from "react-bootstrap";
-import { useNavigate } from "react-router-dom"; // Import useNavigate for navigation
-import '../styles/Login/LoginForm.css'; // Correct the CSS file path
+import { useNavigate } from "react-router-dom"; 
+import axios from "axios";  // Import Axios
+import '../styles/Login/LoginForm.css';
 
 const LoginForm = () => {
-  const navigate = useNavigate(); // Initialize navigation function
+  const navigate = useNavigate(); // Initialize navigation
+  const [formData, setFormData] = useState({ username: "", password: "" });
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const handleLogin = (e) => {
-    e.preventDefault();
-    // Add authentication logic here if needed
-    navigate("/dashboard"); // Redirect to Dashboard after clicking login
+  // Handle input changes
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // Handle form submission
+  const handleLogin = async (e) => {
+    e.preventDefault();
+  
+    console.log("Form Data Before Sending:", formData); // Debugging
+  
+    if (!formData.username || !formData.password) {
+      setErrorMessage("All fields are required");
+      return;
+    }
+  
+    try {
+      const response = await axios.post("http://localhost:5000/login",formData, {
+        headers: { "Content-Type": "application/json" } // Ensure correct headers
+      });
+  
+      alert("✅ Login successful! Redirecting...");
+      navigate("/dashboard");
+  
+    } catch (error) {
+      console.error("Login error:", error.response?.data || error);
+      setErrorMessage(error.response?.data?.error || "Login failed. Try again.");
+    }
+  };
+  
+
   return (
-    <Form onSubmit={handleLogin}> {/* Attach onSubmit event */}
+    <Form onSubmit={handleLogin}>
       <Form.Group className="mb-3">
-        <Form.Control type="text" placeholder="Username" className="input-field transparent-input" required />
+        <Form.Control 
+          type="text" 
+          name="username"
+          placeholder="Username" 
+          className="input-field transparent-input" 
+          value={formData.username} 
+          onChange={handleChange} 
+          required 
+        />
       </Form.Group>
+
       <Form.Group className="mb-3">
-        <Form.Control type="password" placeholder="Password" className="input-field transparent-input" required />
+        <Form.Control 
+          type="password" 
+          name="password"
+          placeholder="Password" 
+          className="input-field transparent-input" 
+          value={formData.password} 
+          onChange={handleChange} 
+          required 
+        />
       </Form.Group>
+
       <Form.Group className="mb-3">
         <Form.Check type="checkbox" label="Remember me" className="text-white" />
       </Form.Group>
-      <Button type="submit" variant="primary" className="w-100 gradient-btn">Login</Button> {/* Submit button */}
+
+      <Button type="submit" variant="primary" className="w-100 gradient-btn">
+        Login
+      </Button>
+
+      {errorMessage && <p className="mt-3 text-center text-danger">{errorMessage}</p>}
+
       <div className="text-center mt-3">
         <a href="/forgotpassword" className="text-white">Forgot Password?</a>
       </div>

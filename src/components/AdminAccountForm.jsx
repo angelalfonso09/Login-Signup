@@ -1,23 +1,55 @@
 import React, { useState } from "react";
 import { Form, Button, Container, Card } from "react-bootstrap";
-import "../styles/AdminAccountForm.css"; // Ensure this file is created
+import axios from "axios";
+import "../styles/AdminAccountForm.css"; 
 
 const AdminCreationForm = () => {
   const [adminData, setAdminData] = useState({
-    name: "",
+    username: "", // Fixed from "admin" to "username"
     email: "",
     password: "",
-    role: "Admin",
+    confirmPassword: "",
   });
+
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   const handleChange = (e) => {
     setAdminData({ ...adminData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Admin Created:", adminData);
-    // Add API call or further logic here
+    setErrorMessage("");
+    setSuccessMessage("");
+
+    // Validate fields
+    if (!adminData.username || !adminData.email || !adminData.password || !adminData.confirmPassword) {
+      setErrorMessage("All fields are required.");
+      return;
+    }
+
+    if (adminData.password !== adminData.confirmPassword) {
+      setErrorMessage("Passwords do not match.");
+      return;
+    }
+
+    try {
+      const response = await axios.post("http://localhost:5000/admin", {
+        username: adminData.username,  // Fixed key from "admin" to "username"
+        email: adminData.email,
+        password: adminData.password,
+      }, {
+        headers: { "Content-Type": "application/json" }
+      });
+
+      setSuccessMessage("✅ Admin created successfully!");
+      setAdminData({ username: "", email: "", password: "", confirmPassword: "" });
+
+    } catch (error) {
+      console.error("Admin creation error:", error.response?.data || error);
+      setErrorMessage(error.response?.data?.error || "Failed to create admin.");
+    }
   };
 
   return (
@@ -26,15 +58,15 @@ const AdminCreationForm = () => {
         <Card.Body>
           <h2 className="admin-form-title">Create Admin</h2>
           <Form onSubmit={handleSubmit}>
-            {/* Name Field */}
+            {/* Username Field */}
             <Form.Group className="admin-form-group">
-              <Form.Label className="admin-form-label">Admin Name</Form.Label>
+              <Form.Label className="admin-form-label">Admin Username</Form.Label>
               <Form.Control
                 type="text"
-                name="name"
-                value={adminData.name}
+                name="username"
+                value={adminData.username}
                 onChange={handleChange}
-                placeholder="Enter full name"
+                placeholder="Enter admin username"
                 className="admin-form-input"
                 required
               />
@@ -68,27 +100,30 @@ const AdminCreationForm = () => {
               />
             </Form.Group>
 
-            {/* Role Dropdown */}
+            {/* Confirm Password Field */}
             <Form.Group className="admin-form-group">
-              <Form.Label className="admin-form-label">Role</Form.Label>
+              <Form.Label className="admin-form-label">Confirm Password</Form.Label>
               <Form.Control
-                as="select"
-                name="role"
-                value={adminData.role}
+                type="password"
+                name="confirmPassword"
+                value={adminData.confirmPassword}
                 onChange={handleChange}
+                placeholder="Confirm password"
                 className="admin-form-input"
-              >
-                <option value="Admin">Admin</option>
-                <option value="Super Admin">Super Admin</option>
-              </Form.Control>
+                required
+              />
             </Form.Group>
+
+            {/* Error and Success Messages */}
+            {errorMessage && <p className="text-danger mt-3">{errorMessage}</p>}
+            {successMessage && <p className="text-success mt-3">{successMessage}</p>}
 
             {/* Buttons */}
             <div className="admin-form-buttons">
               <Button variant="primary" type="submit" className="admin-form-submit">
                 Create Admin
               </Button>
-              <Button variant="secondary" type="reset" className="admin-form-reset" onClick={() => setAdminData({ name: "", email: "", password: "", role: "Admin" })}>
+              <Button variant="secondary" type="reset" className="admin-form-reset" onClick={() => setAdminData({ username: "", email: "", password: "", confirmPassword: "" })}>
                 Reset
               </Button>
             </div>

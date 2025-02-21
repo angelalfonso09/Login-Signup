@@ -6,7 +6,6 @@ import "../styles/Login/Login.css";
 import BackgroundLayout from '../components/BackgroundLayout';
 
 
-
 const Login = () => {
   return (
     <BackgroundLayout variant="purple">
