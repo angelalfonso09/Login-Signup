@@ -1,13 +1,50 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/landing.css";
 
 const AquaSense = () => {
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
+  const [activeSection, setActiveSection] = useState("home");
 
   const handleLoginClick = () => {
-    navigate("/login");  
+    navigate("/login");
   };
+
+  const handleNavLinkClick = (e, sectionId) => {
+    e.preventDefault();
+    const section = document.getElementById(sectionId);
+    if (section) {
+      section.scrollIntoView({ behavior: "smooth" });
+      setActiveSection(sectionId);
+    }
+  };
+
+  useEffect(() => {
+    const sections = document.querySelectorAll("section");
+    const navLinks = document.querySelectorAll(".aquasense-navigation a");
+
+    const handleScroll = () => {
+      let current = "";
+      sections.forEach((section) => {
+        const sectionTop = section.offsetTop - 80; // Adjust offset for fixed navbar
+        if (window.scrollY >= sectionTop) {
+          current = section.getAttribute("id");
+        }
+      });
+
+      navLinks.forEach((link) => {
+        link.classList.remove("active");
+        if (link.getAttribute("href").includes(current)) {
+          link.classList.add("active");
+        }
+      });
+
+      setActiveSection(current);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
     <div className="aquasense-main-container">
@@ -15,27 +52,56 @@ const AquaSense = () => {
       <nav className="aquasense-navbar">
         <h1 className="aquasense-brand">AQUASENSE</h1>
         <ul className="aquasense-navigation">
-          <li><a href="#" className="nav-link-home">Home</a></li>
-          <li><a href="#" className="nav-link-about">About</a></li>
-          <li><a href="#" className="nav-link-services">Services</a></li>
-          <li><a href="#" className="nav-link-contact">Contact</a></li>
+          <li>
+            <a
+              href="#home"
+              className={`nav-link-home ${activeSection === "home" ? "active" : ""}`}
+              onClick={(e) => handleNavLinkClick(e, "home")}
+            >
+              Home
+            </a>
+          </li>
+          <li>
+            <a
+              href="#about"
+              className={`nav-link-about ${activeSection === "about" ? "active" : ""}`}
+              onClick={(e) => handleNavLinkClick(e, "about")}
+            >
+              About
+            </a>
+          </li>
+          <li>
+            <a
+              href="#services"
+              className={`nav-link-services ${activeSection === "services" ? "active" : ""}`}
+              onClick={(e) => handleNavLinkClick(e, "services")}
+            >
+              Services
+            </a>
+          </li>
+          <li>
+            <a
+              href="#contact"
+              className={`nav-link-contact ${activeSection === "contact" ? "active" : ""}`}
+              onClick={(e) => handleNavLinkClick(e, "contact")}
+            >
+              Contact
+            </a>
+          </li>
         </ul>
       </nav>
 
       {/* Hero Section */}
-      <header className="aquasense-hero-section">
+      <header id="home" className="aquasense-hero-section">
         <h2 className="hero-welcome-text">Welcome to Aquasense</h2>
         <h1 className="hero-main-title">Water Quality Monitoring System</h1>
         <p className="hero-description">Lorem ipsum dolor sit amet consectetur adipiscing elit...</p>
-        <button 
-          className="hero-btn-contact" 
-          onClick={handleLoginClick}  // Trigger navigate on click
-        >
+        <button className="hero-btn-contact" onClick={handleLoginClick}>
           Get in Touch
         </button>
       </header>
 
-      <section className="aquasense-about-section">
+      <section id="about" className="aquasense-about-section">
         <div className="about-container">
           {/* Left Side - Image */}
           <div className="about-image">
@@ -55,7 +121,7 @@ const AquaSense = () => {
       </section>
 
       {/* Services */}
-      <section className="aquasense-services-section">
+      <section id="services" className="aquasense-services-section">
         <div className="services-info">
           <h3 className="services-header">Our Services</h3>
           <h2 className="services-main-title">
@@ -66,7 +132,7 @@ const AquaSense = () => {
           </p>
           <button className="services-btn-view-all">View All</button>
         </div>
-        
+
         <div className="services-list">
           <div className="service-card sanitation">
             <h4 className="service-title">Water Sanitation</h4>
@@ -79,7 +145,7 @@ const AquaSense = () => {
         </div>
       </section>
 
-      <section className="aquasense-contact-section">
+      <section id="contact" className="aquasense-contact-section">
         <div className="contact-container">
           <div className="contact-info">
             <h2 className="contact-title">
@@ -87,7 +153,7 @@ const AquaSense = () => {
             </h2>
             <hr className="contact-divider" />
             <p className="contact-description">
-              Lorem ipsum Neque porro quisquam est qui do lorem ipsum quia dolor sit amet, 
+              Lorem ipsum Neque porro quisquam est qui do lorem ipsum quia dolor sit amet,
               Neque porro elit NeDaque porro.
             </p>
 
@@ -147,7 +213,7 @@ const AquaSense = () => {
           <a href="#">Support</a>
         </nav>
         <p className="footer-text">
-          Lorem ipsum Neque porro quisquam est qui do lorem ipsum quia dolor sit amet, 
+          Lorem ipsum Neque porro quisquam est qui do lorem ipsum quia dolor sit amet,
           Neque porro elit NeDaque porro.
         </p>
         <div className="footer-socials">

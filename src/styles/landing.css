@@ -13,6 +13,7 @@ body::-webkit-scrollbar {
     flex: 1;
     transition: all 0.3s ease-in-out;
     animation: fadeIn 0.5s ease-in-out;
+    padding-top: 50px;
 }
 
 /* Navbar */
@@ -25,6 +26,11 @@ body::-webkit-scrollbar {
     border-bottom: 2px solid #004aad;
     transition: background 0.3s ease-in-out, border-bottom 0.3s ease-in-out;
     animation: slideInLeft 0.5s ease-in-out;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
 }
 
 .aquasense-brand {
@@ -552,5 +558,10 @@ body::-webkit-scrollbar {
     100% {
         transform: translateX(0);
     }
+}
+
+.aquasense-navigation a.active {
+    color: #4a8af4; /* Change to your preferred highlight color */
+    font-weight: bold;
 }
 
