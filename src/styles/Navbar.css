@@ -1,88 +1,135 @@
 .navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 20px;
-    background: linear-gradient(to right, #000000, #02030f, #0d1326);
-  }
-  
-  .left-section {
-    display: flex;
-    align-items: center;
-  }
-  
-  .account-info {
-    display: flex;
-    align-items: center;
-  }
-  
-  .account-icon img {
-    border-radius: 50%;
-  }
-  
-  .account-details {
-    margin-left: 10px;
-  }
-  
-  .account-name {
-    font-weight: bold;
-    margin: 0;
-  }
-  
-  .account-email {
-    color: #666;
-    margin: 0;
-  }
-  
-  .dropdown-icon {
-    margin-left: 10px;
-    cursor: pointer;
-  }
-  
-  .search-bar {
-    display: flex;
-    align-items: center;
-    background: rgba(255, 255, 255, 0.1);
-    padding: 5px 10px;
-    border-radius: 5px;
-    color: white;
-  }
-  
-  .search-icon {
-    color: #666;
-  }
-  
-  .search-input {
-    border: none;
-    background-color: transparent;
-    margin-left: 10px;
-    outline: none;
-  }
-  
-  .right-section {
-    display: flex;
-    align-items: center;
-  }
-  
-  .notification-icon {
-    margin-right: 20px;
-    cursor: pointer;
-  }
-  
-  .admin-button {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 5px 10px;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-right: 20px;
-  }
-  
-  .profile-pic img {
-    border-radius: 50%;
-    width: 30px;
-    height: 30px;
-  }
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background: linear-gradient(to right, #000000, #02030f, #0d1326);
+  transition: background 0.3s ease, color 0.3s ease;
+}
 
-  
+/* Light Mode Navbar */
+.app-container.light .navbar {
+  background: linear-gradient(to right, #ffffff, #f8f9fa, #e9ecef);
+}
+
+/* Left Section */
+.left-section {
+  display: flex;
+  align-items: center;
+}
+
+/* Account Info */
+.account-info {
+  display: flex;
+  align-items: center;
+}
+
+.account-icon img {
+  border-radius: 50%;
+}
+
+.account-details {
+  margin-left: 10px;
+}
+
+.account-name {
+  font-weight: bold;
+  margin: 0;
+}
+
+.account-email {
+  color: #666;
+  margin: 0;
+}
+
+/* Light Mode Adjustments for Account Email */
+.app-container.light .account-email {
+  color: #444;
+}
+
+/* Dropdown Icon */
+.dropdown-icon {
+  margin-left: 10px;
+  cursor: pointer;
+}
+
+/* Search Bar */
+.search-bar {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 5px 10px;
+  border-radius: 5px;
+  color: white;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* Light Mode Search Bar */
+.app-container.light .search-bar {
+  background: rgba(0, 0, 0, 0.1);
+  color: black;
+}
+
+/* Search Icon */
+.search-icon {
+  color: #666;
+}
+
+/* Light Mode Search Icon */
+.app-container.light .search-icon {
+  color: #333;
+}
+
+/* Search Input */
+.search-input {
+  border: none;
+  background-color: transparent;
+  margin-left: 10px;
+  outline: none;
+  color: white;
+}
+
+/* Light Mode Search Input */
+.app-container.light .search-input {
+  color: black;
+}
+
+/* Right Section */
+.right-section {
+  display: flex;
+  align-items: center;
+}
+
+/* Notification Icon */
+.notification-icon {
+  margin-right: 20px;
+  cursor: pointer;
+}
+
+/* Light Mode Notification Icon */
+.app-container.light .notification-icon {
+  color: black;
+}
+
+/* Admin Button */
+.admin-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-right: 20px;
+}
+
+/* Profile Picture */
+.profile-pic img {
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+}
+
+/* Light Mode Profile Picture Border */
+.app-container.light .profile-pic img {
+  border: 2px solid #ddd;
+}

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from "recharts";
+import "./sensorsCSS/phlevel.css"; 
 
-const PHLevelMonitor = () => {
+const PHLevelMonitor = ({ theme }) => {
   const [phData, setPhData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -29,7 +30,7 @@ const PHLevelMonitor = () => {
   if (error) return <div>Error: {error}</div>;
 
   return (
-    <div className="ph-level-container">
+    <div className={`ph-level-container ${theme}`}>
       <h2>Water pH Level</h2>
       <ResponsiveContainer width="100%" height={300}>
         <LineChart data={phData}>
@@ -37,7 +38,7 @@ const PHLevelMonitor = () => {
           <YAxis domain={[0, 14]} />
           <Tooltip />
           <CartesianGrid strokeDasharray="3 3" />
-          <Line type="monotone" dataKey="ph" stroke="#82ca9d" strokeWidth={2} />
+          <Line type="monotone" dataKey="ph" stroke={theme === "dark" ? "#8884d8" : "#ff7300"} strokeWidth={2} />
         </LineChart>
       </ResponsiveContainer>
     </div>

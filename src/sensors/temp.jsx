@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from "recharts";
+import "./sensorsCSS/temp.css"; 
 
-
-const WaterTemperature = () => {
+const WaterTemperature = ({ theme }) => {
   const [temperatureData, setTemperatureData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -30,7 +30,7 @@ const WaterTemperature = () => {
   if (error) return <div>Error: {error}</div>;
 
   return (
-    <div className="water-temperature-container">
+    <div className={`water-temperature-container ${theme}`}>
       <h2>Water Temperature</h2>
       <ResponsiveContainer width="100%" height={300}>
         <LineChart data={temperatureData}>
@@ -38,7 +38,7 @@ const WaterTemperature = () => {
           <YAxis domain={[0, 100]} />
           <Tooltip />
           <CartesianGrid strokeDasharray="3 3" />
-          <Line type="monotone" dataKey="temperature" stroke="#8884d8" strokeWidth={2} />
+          <Line type="monotone" dataKey="temperature" stroke={theme === "dark" ? "#8884d8" : "#ff7300"} strokeWidth={2} />
         </LineChart>
       </ResponsiveContainer>
     </div>

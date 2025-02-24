@@ -1,0 +1,51 @@
+/* Light & Dark Mode Styles */
+.app-container {
+    min-height: 100vh;
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* Dark Mode */
+.app-container.dark {
+    background: #020202;
+    color: white;
+}
+
+/* Light Mode */
+.app-container.light {
+    background: #f9f9f9;
+    color: black;
+}
+
+/* Light Mode - Ensure Consistent UI Elements */
+.app-container.light a {
+    color: #007bff;
+}
+
+.app-container.dark a {
+    color: #4da8da;
+}
+
+/* Light Mode - Button Styling */
+.app-container.light button {
+    background: #007bff;
+    color: white;
+    border: none;
+}
+
+.app-container.dark button {
+    background: #444;
+    color: white;
+}
+
+/* Light Mode - Input Fields */
+.app-container.light input {
+    background: white;
+    color: black;
+    border: 1px solid #ccc;
+}
+
+.app-container.dark input {
+    background: #222;
+    color: white;
+    border: 1px solid #555;
+}

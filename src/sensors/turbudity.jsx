@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from "recharts";
+import "./sensorsCSS/turb.css"
 
-const TurbidityMonitor = () => {
+const TurbidityMonitor = ({ theme }) => {
   const [turbidityData, setTurbidityData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -29,7 +30,7 @@ const TurbidityMonitor = () => {
   if (error) return <div>Error: {error}</div>;
 
   return (
-    <div className="turbidity-monitor-container">
+    <div className={`turbidity-monitor-container ${theme}`}>
       <h2>Water Turbidity Level</h2>
       <ResponsiveContainer width="100%" height={300}>
         <LineChart data={turbidityData}>
@@ -37,7 +38,7 @@ const TurbidityMonitor = () => {
           <YAxis domain={[0, 10]} label={{ value: "NTU", angle: -90, position: "insideLeft" }} />
           <Tooltip />
           <CartesianGrid strokeDasharray="3 3" />
-          <Line type="monotone" dataKey="turbidity" stroke="#8884d8" strokeWidth={2} />
+          <Line type="monotone" dataKey="turbidity" stroke={theme === "dark" ? "#8884d8" : "#ff7300"} strokeWidth={2} />
         </LineChart>
       </ResponsiveContainer>
     </div>

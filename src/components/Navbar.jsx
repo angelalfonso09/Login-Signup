@@ -3,10 +3,9 @@ import { FaSearch, FaBell } from "react-icons/fa";
 import { IoMdArrowDropdown } from "react-icons/io";
 import "../styles/navbar.css";
 
-const Navbar = () => {
+const Navbar = ({ theme, toggleTheme }) => {
   return (
-    <div className="navbar">
-      {/* Left Section - Account Info and Search Bar */}
+    <div className={`navbar ${theme}`}>
       <div className="left-section">
         <div className="account-info">
           <div className="account-icon">
@@ -19,7 +18,6 @@ const Navbar = () => {
           <IoMdArrowDropdown className="dropdown-icon" />
         </div>
 
-        {/* Search Bar */}
         <div className="search-bar">
           <FaSearch className="search-icon" />
           <input
@@ -30,12 +28,11 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Right Section - Notifications and Profile */}
       <div className="right-section">
         <FaBell className="notification-icon" />
         <button className="admin-button">Admin</button>
         <div className="profile-pic">
-          <img src="/aquasense/src/assets/drei.jpg"  className="w-full h-full object-cover" />
+          <img src="/aquasense/src/assets/drei.jpg" className="w-full h-full object-cover" />
         </div>
         <IoMdArrowDropdown className="dropdown-icon" />
       </div>

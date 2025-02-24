@@ -1,26 +1,24 @@
+/* Default Dark Mode */
 .water-temperature-container {
-    text-align: center;
-    padding: 20px;
-    background-color: #f0f8ff;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    max-width: 300px;
-    margin: 0 auto;
-  }
-  
-  .temperature-display {
-    font-size: 2.5rem;
-    font-weight: bold;
-    color: #007bff;
-  }
-  
-  .temperature-unit {
-    font-size: 1.5rem;
-    color: #666;
-  }
-  
-  .temperature-status {
-    font-size: 1.2rem;
-    color: #333;
-    margin-top: 10px;
-  }
+  background-color: #1e1e2f;  /* Dark background */
+  color: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease-in-out;
+}
+
+.water-temperature-container h2 {
+  color: white;
+}
+
+/* Light Mode */
+.water-temperature-container.light {
+  background-color: #f9f9f9;  /* Light background */
+  color: black;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.water-temperature-container.light h2 {
+  color: black;
+}

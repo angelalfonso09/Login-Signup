@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from "recharts";
+import "./sensorsCSS/do.css"
 
-const DOMonitor = () => {
+const DOMonitor = ({ theme }) => {
   const [doData, setDoData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -29,7 +30,7 @@ const DOMonitor = () => {
   if (error) return <div>Error: {error}</div>;
 
   return (
-    <div className="do-monitor-container">
+    <div className={`do-monitor-container ${theme}`}>
       <h2>Dissolved Oxygen (DO) Level</h2>
       <ResponsiveContainer width="100%" height={300}>
         <LineChart data={doData}>
@@ -37,7 +38,7 @@ const DOMonitor = () => {
           <YAxis domain={[0, 14]} label={{ value: "mg/L", angle: -90, position: "insideLeft" }} />
           <Tooltip />
           <CartesianGrid strokeDasharray="3 3" />
-          <Line type="monotone" dataKey="do" stroke="#3498db" strokeWidth={2} />
+          <Line type="monotone" dataKey="do" stroke={theme === "dark" ? "#3498db" : "#FF5733"} strokeWidth={2} />
         </LineChart>
       </ResponsiveContainer>
     </div>

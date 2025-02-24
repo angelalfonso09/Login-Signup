@@ -1,64 +1,105 @@
 /* Sidebar Styles */
 .sidebar {
-    width: 220px;
-    height: 90vh;
-    background: #000;
-    color: white;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    padding: 20px;
-  }
-  
-  .menu-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 0;
-    cursor: pointer;
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 14px;
-    position: relative;
-  }
-  
-  .menu-item.active {
-    color: #007bff;
-    font-weight: bold;
-  }
-  
-  .menu-item.active .active-indicator {
-    position: absolute;
-    right: 0;
-    height: 100%;
-    width: 3px;
-    background: #007bff;
-  }
-  
-  .icon {
-    font-size: 16px;
-    color: rgba(255, 255, 255, 0.7);
-  }
-  
-  .section-title {
-    font-size: 12px;
-    color: rgba(255, 255, 255, 0.5);
-    margin-top: 20px;
-    margin-bottom: 5px;
-    text-transform: uppercase;
-  }
-  
-  .logout {
-    margin-top: auto;
-  }
-  
-  .logout .menu-item {
-    color: rgba(255, 255, 255, 0.7);
-  }
-  
-  .active-indicator {
-    width: 5px;
-    height: 100%;
-    background-color: #ffcc00;
-    position: absolute;
-    left: 1;
-  }
+  width: 220px;
+  height: 90vh;
+  background: #000;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 20px;
+}
+
+/* Light Mode */
+.sidebar.light {
+  background: #f9f9f9;
+  color: black;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  position: relative;
+}
+
+/* Light Mode - Menu Item */
+.sidebar.light .menu-item {
+  color: rgba(0, 0, 0, 0.7);
+}
+
+.menu-item.active {
+  color: #007bff;
+  font-weight: bold;
+}
+
+/* Light Mode - Active Item */
+.sidebar.light .menu-item.active {
+  color: #0056b3;
+}
+
+.menu-item.active .active-indicator {
+  position: absolute;
+  right: 0;
+  height: 100%;
+  width: 3px;
+  background: #007bff;
+}
+
+/* Light Mode - Active Indicator */
+.sidebar.light .menu-item.active .active-indicator {
+  background: #0056b3;
+}
+
+.icon {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Light Mode - Icons */
+.sidebar.light .icon {
+  color: rgba(0, 0, 0, 0.7);
+}
+
+.section-title {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 20px;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+}
+
+/* Light Mode - Section Title */
+.sidebar.light .section-title {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.logout {
+  margin-top: auto;
+}
+
+.logout .menu-item {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Light Mode - Logout */
+.sidebar.light .logout .menu-item {
+  color: rgba(0, 0, 0, 0.7);
+}
+
+.active-indicator {
+  width: 5px;
+  height: 100%;
+  background-color: #ffcc00;
+  position: absolute;
+  left: 1;
+}
+
+/* Light Mode - Active Indicator */
+.sidebar.light .active-indicator {
+  background-color: #ffa500;
+}

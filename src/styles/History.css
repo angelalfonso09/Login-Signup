@@ -1,27 +1,62 @@
-.history {
-    background: linear-gradient(to right, #020202, #0a0a1a);
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden; 
-}
 
+.history {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+  
 .history-container {
-    display: flex;
-    flex: 1; 
-    overflow: hidden;
+  display: flex;
+  flex: 1;
+  overflow: hidden; 
 }
 
 .history-contents {
-    flex: 1;
-    padding: 5%;
-    height: 100vh; 
-    overflow-y: auto; 
-    
-    scrollbar-width: none; 
-    -ms-overflow-style: none;  
+  flex: 1;
+  height: 100vh;
+  overflow-y: auto; 
+  padding: 10%;
 }
 
-.history-contents::-webkit-scrollbar {
-    display: none; 
-}
+  /* Light Mode */
+  .history.light {
+    background-color: #f5f5f5; /* Light background */
+    color: black;
+  }
+  
+  /* Content Styling */
+  .history-contents {
+    flex: 1;
+    padding: 20px;
+  }
+  
+  /* Sensor Chart Containers */
+  .history-contents .water-temperature-container,
+  .history-contents .ph-level-container,
+  .history-contents .turbudity-container,
+  .history-contents .tds-container,
+  .history-contents .do-container,
+  .history-contents .conductivity-container {
+    background-color: #1e1e2f; /* Dark mode background */
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease-in-out;
+  }
+  
+  /* Light Mode for Sensor Charts */
+  .history.light .history-contents .water-temperature-container,
+  .history.light .history-contents .ph-level-container,
+  .history.light .history-contents .turbudity-container,
+  .history.light .history-contents .tds-container,
+  .history.light .history-contents .do-container,
+  .history.light .history-contents .conductivity-container {
+    background-color: white;
+    color: black;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  }
+  
