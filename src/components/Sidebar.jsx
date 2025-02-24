@@ -12,7 +12,7 @@ const Sidebar = ({ toggleTheme, theme }) => {
       <div className="menu">
         <div className={`menu-item ${location.pathname === "/dashboard" ? "active" : ""}`} onClick={() => navigate("/dashboard")}>
           <FaHome className="icon" />
-          <span>Homescreen</span>
+          <span>Dashboard</span>
         </div>
 
         <div className={`menu-item ${location.pathname === "/water" ? "active" : ""}`} onClick={() => navigate("/water")}>

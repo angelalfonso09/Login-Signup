@@ -1,49 +1,112 @@
-/* Unique classes prefixed with admin-form- */
+/* Base styles */
 .admin-form-container {
-    max-width: 500px;
-    margin: auto;
-    padding: 20px;
-  }
-  
-  .admin-form-card {
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-  }
-  
-  .admin-form-title {
-    text-align: center;
-    margin-bottom: 20px;
-    font-weight: bold;
-  }
-  
-  .admin-form-group {
-    margin-bottom: 15px;
-  }
-  
-  .admin-form-label {
-    font-weight: 600;
-  }
-  
-  .admin-form-input {
-    border-radius: 5px;
-    padding: 10px;
-    width: 100%;
-  }
-  
-  .admin-form-buttons {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 20px;
-  }
-  
-  .admin-form-submit {
-    background-color: #007bff;
-    border: none;
-  }
-  
-  .admin-form-reset {
-    background-color: #6c757d;
-    border: none;
-  }
-  
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+/* Light Mode */
+.admin-form-container.light {
+  --bg-color: #f5f5f5;
+  --card-bg: #fff;
+  --text-color: #000;
+  --input-bg: #fff;
+  --input-border: #ccc;
+  --button-bg: #007bff;
+  --button-hover: #0056b3;
+}
+
+/* Dark Mode */
+.admin-form-container.dark {
+  --bg-color: #121212;
+  --card-bg: #1e1e1e;
+  --text-color: #fff;
+  --input-bg: #333;
+  --input-border: rgba(255, 255, 255, 0.2);
+  --button-bg: #444;
+  --button-hover: #666;
+}
+
+.admin-form-container {
+  background-color: var(--bg-color);
+  width: 100%;
+  transition: background 0.3s ease;
+}
+
+/* Card */
+.admin-form-card {
+  background: var(--card-bg);
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  color: var(--text-color);
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* Form Title */
+.admin-form-title {
+  text-align: center;
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+/* Labels */
+.admin-form-label {
+  font-weight: bold;
+}
+
+/* Input Fields */
+.admin-form-input {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 5px;
+  color: var(--text-color);
+}
+
+.admin-form-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Buttons */
+.admin-form-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.admin-form-submit {
+  width: 48%;
+  padding: 10px;
+  background: var(--button-bg);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.admin-form-submit:hover {
+  background: var(--button-hover);
+}
+
+.admin-form-reset {
+  width: 48%;
+  padding: 10px;
+  background: gray;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.admin-form-reset:hover {
+  background: darkgray;
+}

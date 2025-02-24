@@ -53,44 +53,24 @@
   cursor: pointer;
 }
 
-/* Search Bar */
-.search-bar {
-  display: flex;
-  align-items: center;
-  background: rgba(255, 255, 255, 0.1);
-  padding: 5px 10px;
-  border-radius: 5px;
-  color: white;
-  transition: background 0.3s ease, color 0.3s ease;
-}
+
 
 /* Light Mode Search Bar */
-.app-container.light .search-bar {
+.app-container.light  {
   background: rgba(0, 0, 0, 0.1);
   color: black;
 }
 
-/* Search Icon */
-.search-icon {
-  color: #666;
-}
 
 /* Light Mode Search Icon */
-.app-container.light .search-icon {
+.app-container.light  {
   color: #333;
 }
 
-/* Search Input */
-.search-input {
-  border: none;
-  background-color: transparent;
-  margin-left: 10px;
-  outline: none;
-  color: white;
-}
+
 
 /* Light Mode Search Input */
-.app-container.light .search-input {
+.app-container.light  {
   color: black;
 }
 

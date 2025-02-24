@@ -19,6 +19,8 @@
     overflow-y: auto;
     padding: 20px;
   }
+
+  
   
   /* Light Mode */
   .account.light {
@@ -37,3 +39,4 @@
 .account-contents::-webkit-scrollbar {
     display: none; 
 }
+

@@ -1,0 +1,82 @@
+/* Minimal Container */
+.table-container {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+/* Title */
+.table-title {
+    text-align: center;
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 15px;
+}
+
+/* Search & Filter Controls */
+.table-controls {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.table-search,
+.table-filter {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+/* Table Styling */
+.account-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.account-table th,
+.account-table td {
+    padding: 10px;
+    text-align: center;
+    border: 1px solid #ddd;
+}
+
+/* No Results Message */
+.no-results {
+    text-align: center;
+    font-weight: 500;
+    color: #777;
+}
+
+/* Action Buttons */
+.action-btn {
+    background: none;
+    border: none;
+    padding: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.action-btn:hover {
+    opacity: 0.7;
+}
+
+/* Create Admin Button - Positioned at Bottom */
+.create-admin-btn-container {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.create-admin-btn {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.create-admin-btn:hover {
+    background: #0056b3;
+}

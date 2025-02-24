@@ -5,7 +5,6 @@ const mysql = require("mysql2");
 const bcrypt = require("bcrypt");
 const http = require("http");
 const { Server } = require("socket.io");
-const mysql = require("mysql");
 
 const app = express();
 const port = 5000;

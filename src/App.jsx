@@ -17,9 +17,9 @@ import "./components/LoginForm";
 import "./components/SignupForm";
 import "./components/SocialLogin";
 import "./components/Navbar";
-import Sidebar from "./components/Sidebar";
 import "./components/AdminAccountForm";
 import "./components/Meter";
+import "./components/AccountTable";
 
 function App() {
   // Theme state

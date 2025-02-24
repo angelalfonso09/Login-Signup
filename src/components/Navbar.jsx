@@ -1,5 +1,5 @@
 import React from "react";
-import { FaSearch, FaBell } from "react-icons/fa";
+import { FaBell } from "react-icons/fa";
 import { IoMdArrowDropdown } from "react-icons/io";
 import "../styles/navbar.css";
 
@@ -18,14 +18,6 @@ const Navbar = ({ theme, toggleTheme }) => {
           <IoMdArrowDropdown className="dropdown-icon" />
         </div>
 
-        <div className="search-bar">
-          <FaSearch className="search-icon" />
-          <input
-            type="text"
-            placeholder="Search quantity control, regulators..."
-            className="search-input"
-          />
-        </div>
       </div>
 
       <div className="right-section">
