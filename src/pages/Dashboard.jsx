@@ -5,10 +5,10 @@ import "../styles/Dashboard.css"
 
 const Dashboard = () => {
   return (
-    <div className="db-container">
+    <div className="db">
         <Navbar />
-      <div className="main-container">
-        <div className="contents">
+      <div className="db-container">
+        <div className="db-contents">
       <Sidebar />
       </div>
       </div>

@@ -1,11 +1,27 @@
-.db-container{
+.account{
     background: linear-gradient(to right, #020202, #0a0a1a);
-}
-
-.main-container{
+    height: 100vh;
     display: flex;
+    flex-direction: column;
+    overflow: hidden; 
 }
 
-.contents{
-    width:100%;
+.account-container{
+    display: flex;
+    flex: 1; 
+    overflow: hidden;
+}
+
+.account-contents{
+    flex: 1;
+    padding: 5%;
+    height: 100vh; 
+    overflow-y: auto; 
+    
+    scrollbar-width: none; 
+    -ms-overflow-style: none; 
+}
+
+.account-contents::-webkit-scrollbar {
+    display: none; 
 }

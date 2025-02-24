@@ -7,6 +7,8 @@ import ForgotPassword from "./pages/ForgotPassword";
 import Landing from "./pages/Landing";
 import Dashboard from "./pages/Dashboard";
 import AccountManagement from "./pages/AccountManagement";
+import Water from "./pages/Water";
+import History from "./pages/History";
 
 import "./components/ForgotPasswordForm"
 import "./components/LoginForm"
@@ -14,6 +16,7 @@ import "./components/SignupForm"
 import "./components/SocialLogin"
 import "./components/Navbar"
 import "./components/AdminAccountForm"
+import "./components/Meter"
 
 
 function App() {
@@ -26,7 +29,8 @@ function App() {
         <Route path="/accountmanagement" element={<AccountManagement />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/forgotpassword" element={<ForgotPassword />} />
-       
+        <Route path="/water" element={<Water />} />
+        <Route path="/history" element={<History />} />
       </Routes>
     </Router>
   );

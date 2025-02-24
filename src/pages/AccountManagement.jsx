@@ -6,11 +6,11 @@ import AdminAccountForm from "../components/AdminAccountForm";
 
 const AccountManagement = () => {
   return (
-    <div className="db-container">
+    <div className="account">
         <Navbar />
-    <div className="main-container">
+    <div className="account-container">
         <Sidebar />
-      <div className="contents">
+      <div className="account-contents">
         <AdminAccountForm/>
       </div>
     </div>

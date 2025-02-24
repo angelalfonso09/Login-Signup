@@ -3,6 +3,9 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const mysql = require("mysql2");
 const bcrypt = require("bcrypt");
+const http = require("http");
+const { Server } = require("socket.io");
+const mysql = require("mysql");
 
 const app = express();
 const port = 5000;
@@ -123,3 +126,68 @@ app.post("/admin", async (req, res) => {
       res.status(500).json({ error: "Server error" });
     }
 });
+
+// Meter function 
+
+//adjust mo nalang yung ibang const nalagay ko na sa taas
+ 
+// const server = http.createServer(app);
+// const io = new Server(server, {
+//   cors: {
+//     origin: "http://localhost:5173", // Adjust this to match your React app URL
+//     methods: ["GET", "POST"],
+//   },
+// });
+ 
+// app.use(cors());
+// app.use(express.json());
+ 
+// // MySQL Database Connection
+// const db = mysql.createConnection({
+//   host: "localhost",
+//   user: "root", // Change if your MySQL has a different username
+//   password: "", // Change if your MySQL has a password
+//   database: "your_database_name",
+// });
+ 
+// // Fetch Data & Emit to Clients
+// const fetchAndEmitData = () => {
+//   db.query("SELECT * FROM gauge_data ORDER BY id DESC LIMIT 1", (err, result) => {
+//     if (err) {
+//       console.error("Error fetching data:", err);
+//       return;
+//     }
+//     io.emit("updateData", result[0]); // Send latest data to all clients
+//   });
+// };
+ 
+// // Socket.io Connection
+// io.on("connection", (socket) => {
+//   console.log("A client connected:", socket.id);
+ 
+//   // Send initial data when client connects
+//   fetchAndEmitData();
+ 
+//   socket.on("disconnect", () => {
+//     console.log("Client disconnected:", socket.id);
+//   });
+// });
+ 
+// // Insert New Data & Emit Update
+// app.post("/insert", (req, res) => {
+//   const { value } = req.body;
+//   db.query("INSERT INTO gauge_data (value) VALUES (?)", [value], (err, result) => {
+//     if (err) {
+//       console.error("Error inserting data:", err);
+//       res.status(500).json({ error: "Database error" });
+//     } else {
+//       console.log("New Data Inserted:", value);
+//       fetchAndEmitData(); // Emit new data to clients
+//       res.status(201).json({ message: "Data inserted successfully" });
+//     }
+//   });
+// });
+ 
+// server.listen(5000, () => {
+//   console.log("Server running on port 5000");
+// });

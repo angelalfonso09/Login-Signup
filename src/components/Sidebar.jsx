@@ -21,12 +21,12 @@ const Sidebar = () => {
         </div>
 
         <div
-          className={`menu-item ${location.pathname === "/waterset" ? "active" : ""}`}
-          onClick={() => navigate("/waterset")}
+          className={`menu-item ${location.pathname === "/water" ? "active" : ""}`}
+          onClick={() => navigate("/water")}
         >
           <FaTint className="icon" />
           <span>Water set</span>
-          {location.pathname === "/waterset" && <div className="active-indicator"></div>}
+          {location.pathname === "/water" && <div className="active-indicator"></div>}
         </div>
 
         <div
