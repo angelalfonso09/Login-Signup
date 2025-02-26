@@ -2,6 +2,7 @@ import React from "react";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import "../styles/Water.css";
+import Meter from "../components/Meter";
 
 
 const Water = ({ theme, toggleTheme }) => {
@@ -11,7 +12,7 @@ const Water = ({ theme, toggleTheme }) => {
       <div className="water-container">
         <Sidebar theme={theme} toggleTheme={toggleTheme} />
         <div className="water-contents">
-          {/* <Meter/> */}
+          <Meter/>
 
 
           

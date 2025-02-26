@@ -1,20 +1,45 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Table, Container, Form, Button, Modal } from "react-bootstrap";
-import { Pencil, Trash2 } from "lucide-react"; // Import icons
-import AdminCreationForm from "./AdminAccountForm"; // Import your admin form component
+import { Pencil, Trash2 } from "lucide-react"; 
+import AdminCreationForm from "./AdminAccountForm"; 
+import axios from "axios"; 
 import "../styles/AC.css";
 
 const UserAdminTable = ({ theme }) => {
-  const [accounts, setAccounts] = useState([
-    { id: 1, username: "john_doe", email: "john@example.com", role: "User" },
-    { id: 2, username: "admin_1", email: "admin@example.com", role: "Admin" },
-    { id: 3, username: "jane_smith", email: "jane@example.com", role: "User" },
-    { id: 4, username: "superadmin", email: "superadmin@example.com", role: "Admin" },
-  ]);
-
   const [searchTerm, setSearchTerm] = useState("");
   const [filterRole, setFilterRole] = useState("All");
   const [showAdminModal, setShowAdminModal] = useState(false);
+  const [accounts, setAccounts] = useState([]); 
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Fetch users from the database
+  const fetchUsersAndAdmins = async () => {
+    try {
+      // Fetch users
+      const usersResponse = await fetch("http://localhost:5000/api/users");
+      if (!usersResponse.ok) throw new Error(`Users API error: ${usersResponse.status}`);
+      const users = await usersResponse.json();
+  
+      // Fetch admins
+      const adminsResponse = await fetch("http://localhost:5000/api/admin");
+      if (!adminsResponse.ok) throw new Error(`Admins API error: ${adminsResponse.status}`);
+      const admins = await adminsResponse.json();
+  
+      return { users, admins };
+    } catch (error) {
+      console.error("Error fetching users and admins:", error);
+      return { users: [], admins: [] };
+    }
+  };
+  
+  // Example usage
+  fetchUsersAndAdmins().then((data) => {
+    console.log("Users:", data.users);
+    console.log("Admins:", data.admins);
+  });
+  
+  
 
   const handleAddAdmin = (newAdmin) => {
     setAccounts([...accounts, { id: accounts.length + 1, ...newAdmin }]);
@@ -27,13 +52,13 @@ const UserAdminTable = ({ theme }) => {
 
   const handleEdit = (id) => {
     console.log(`Edit clicked for user ID: ${id}`);
-    // Here, you can open an edit modal or navigate to an edit page
   };
 
-  const filteredAccounts = accounts.filter((account) =>
-    (filterRole === "All" || account.role === filterRole) &&
-    (account.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      account.email.toLowerCase().includes(searchTerm.toLowerCase()))
+  const filteredAccounts = accounts.filter(
+    (account) =>
+      (filterRole === "All" || account.role === filterRole) &&
+      (account.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        account.email.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   return (
@@ -63,46 +88,52 @@ const UserAdminTable = ({ theme }) => {
         </Button>
       </div>
 
-      {/* Table */}
-{/* Table */}
-<Table striped bordered hover className={`account-table ${theme}`}>
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Username</th>
-            <th>Email</th>
-            <th>Role</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {filteredAccounts.length > 0 ? (
-            filteredAccounts.map((account) => (
-                <tr key={account.id}>
-                    <td>{account.id}</td>
-                    <td>{account.username}</td>
-                    <td>{account.email}</td>
-                    <td>{account.role}</td>
-                    <td>
-                        <button className="action-btn">
-                            <Pencil size={16} />
-                        </button>
-                        <button className="action-btn" onClick={() => handleDelete(account.id)}>
-                            <Trash2 size={16} />
-                        </button>
-                    </td>
-                </tr>
-            ))
-        ) : (
-            <tr>
-                <td colSpan="5" className="no-results">
-                    No accounts found
-                </td>
-            </tr>
-        )}
-    </tbody>
-</Table>
+      {/* Loading State */}
+      {loading && <p>Loading users...</p>}
 
+      {/* Error State */}
+      {error && <p className="error-message">{error}</p>}
+
+      {/* Table */}
+      {!loading && !error && (
+        <Table striped bordered hover className={`account-table ${theme}`}>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Username</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredAccounts.length > 0 ? (
+              filteredAccounts.map((account) => (
+                <tr key={account.id}>
+                  <td>{account.id}</td>
+                  <td>{account.username}</td>
+                  <td>{account.email}</td>
+                  <td>{account.role}</td>
+                  <td>
+                    <button className="action-btn" onClick={() => handleEdit(account.id)}>
+                      <Pencil size={16} />
+                    </button>
+                    <button className="action-btn" onClick={() => handleDelete(account.id)}>
+                      <Trash2 size={16} />
+                    </button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="5" className="no-results">
+                  No accounts found
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </Table>
+      )}
 
       {/* Create Admin Modal */}
       <Modal show={showAdminModal} onHide={() => setShowAdminModal(false)} centered>

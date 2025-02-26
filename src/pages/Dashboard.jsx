@@ -5,7 +5,7 @@ import "../styles/Dashboard.css";
 
 const Dashboard = ({ theme, toggleTheme }) => {
   return (
-    <div className={`db ${theme}`}> {/* Apply dynamic theme class */}
+    <div className={`db ${theme}`}>
       <Navbar theme={theme} toggleTheme={toggleTheme} />
       <div className="db-container">
         <Sidebar theme={theme} toggleTheme={toggleTheme} />

@@ -1,0 +1,40 @@
+/* Define light mode variables */
+:root {
+  --bg-color: #f8f9fa;
+  --text-color: #131b42;
+  --card-bg: #ffffff;
+  --chart-fill: #6FCF97;
+}
+
+[data-theme="light"] {
+  --bg-color: #f8f9fa;
+  --text-color: #131b42;
+  --card-bg: #ffffff;
+  --chart-fill: #6FCF97;
+}
+
+/* Apply the theme to the body */
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Style the GaugeMeter component */
+.gauge-meter-container {
+  background-color: var(--card-bg);
+  padding: 1.5rem;
+  border-radius: 1rem;
+  width: 16rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: background-color 0.3s ease;
+}
+
+.gauge-meter-value {
+  color: var(--text-color);
+  font-size: 1.875rem; /* text-3xl */
+  font-weight: bold;
+  margin-top: -20px;
+}
