@@ -101,7 +101,7 @@ const SignupForm = () => {
 
       <Form.Group className="mb-3">
         <Form.Control 
-          type="text" 
+          type="hidden" 
           name="role" 
           value={formData.role} 
           className="input-field transparent-input" 

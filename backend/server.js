@@ -5,6 +5,8 @@ const mysql = require("mysql2");
 const bcrypt = require("bcrypt");
 const http = require("http");
 const { Server } = require("socket.io"); 
+const jwt = require("jsonwebtoken");
+const router = express.Router();
 
 const app = express();
 const port = 5000;
@@ -142,18 +144,15 @@ app.post("/admin", async (req, res) => {
 
   const { username, email, password, confirmPassword, role } = req.body;
 
-  // Validate required fields
   if (!username || !email || !password || !confirmPassword || !role) {
     console.log("❌ Missing fields:", { username, email, password, confirmPassword, role });
     return res.status(400).json({ error: "All fields are required" });
   }
 
-  // Ensure passwords match
   if (password !== confirmPassword) {
     return res.status(400).json({ error: "Passwords do not match" });
   }
 
-  // Validate role selection
   const allowedRoles = ["Admin", "Super Admin"];
   if (!allowedRoles.includes(role)) {
     return res.status(400).json({ error: "Invalid role. Allowed roles: Admin, Super Admin" });
@@ -164,7 +163,6 @@ app.post("/admin", async (req, res) => {
 
     console.log("📝 Inserting into DB:", { username, email, role });
 
-    // Store the role as selected by the user
     const sql = "INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)";
     db.query(sql, [username, email, hashedPassword, role], (err, result) => {
       if (err) {
@@ -202,7 +200,6 @@ app.delete('/api/users/:id', async (req, res) => {
       return res.status(400).json({ error: 'Invalid user ID' });
     }
 
-    // Fetch the user's role before deleting
     const [user] = await db.promise().query('SELECT role FROM users WHERE id = ?', [userId]);
 
     if (user.length === 0) {
@@ -211,7 +208,6 @@ app.delete('/api/users/:id', async (req, res) => {
 
     const userRole = user[0].role;
 
-    // Check if the user is a Super Admin
     if (userRole === "Super Admin") {
       const [superAdmins] = await db.promise().query('SELECT COUNT(*) AS count FROM users WHERE role = "Super Admin"');
 
@@ -220,7 +216,6 @@ app.delete('/api/users/:id', async (req, res) => {
       }
     }
 
-    // Proceed with deletion
     const [result] = await db.promise().query('DELETE FROM users WHERE id = ?', [userId]);
 
     if (result.affectedRows === 0) {
@@ -234,7 +229,6 @@ app.delete('/api/users/:id', async (req, res) => {
   }
 });
 
-
 // edit account
 app.put('/api/users/:id', async (req, res) => {
   const { id } = req.params;
@@ -246,7 +240,6 @@ app.put('/api/users/:id', async (req, res) => {
       return res.status(400).json({ error: 'Invalid user ID' });
     }
 
-    // Update query
     const [result] = await db
       .promise()
       .query(
@@ -266,29 +259,6 @@ app.put('/api/users/:id', async (req, res) => {
 });
 
 // fecth data to display in navbar
-app.get("/api/users/:id", async (req, res) => {
-  const { id } = req.params;
-
-  try {
-    const userId = parseInt(id, 10);
-    if (isNaN(userId)) {
-      return res.status(400).json({ error: "Invalid user ID" });
-    }
-
-    const [rows] = await db.promise().query("SELECT * FROM users WHERE id = ?", [userId]);
-
-    if (rows.length === 0) {
-      return res.status(404).json({ error: "User not found" });
-    }
-
-    res.status(200).json(rows[0]);
-  } catch (err) {
-    console.error("❌ Error fetching user:", err);
-    res.status(500).json({ error: "Failed to fetch user" });
-  }
-});
-
-
 
 // Socket.io Configuration
 const server = http.createServer(app);

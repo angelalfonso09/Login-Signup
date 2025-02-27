@@ -12,14 +12,18 @@ const Navbar = ({ theme, toggleTheme }) => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        setLoading(true);
-        setError(null);
+        const response = await axios.get("http://localhost:5000/api/auth/users", {
+          withCredentials: true, 
+        });
 
-        const response = await axios.get("http://localhost:5000/api/users/1"); // Adjust with a valid user ID
-        setUser(response.data);
+        if (response.data) {
+          setUser(response.data);
+        } else {
+          throw new Error("User data is empty.");
+        }
       } catch (err) {
+        console.error("❌ Error fetching user:", err);
         setError("Failed to load user data.");
-        console.error("Error fetching user:", err);
       } finally {
         setLoading(false);
       }
@@ -32,24 +36,23 @@ const Navbar = ({ theme, toggleTheme }) => {
     <div className={`navbar ${theme}`}>
       <div className="left-section">
         <div className="account-info">
-          <div className="account-icon">
-            <img src="/aquasense/src/assets/drei.jpg" className="w-6 h-6" />
-          </div>
           <div className="account-details">
-            <p className="account-name">{user ? user.username : "Loading..."}</p>
-            <p className="account-email">{user ? user.email : "Loading..."}</p>
+            {loading ? (
+              <p>Loading...</p>
+            ) : error ? (
+              <p className="error-text">{error}</p>
+            ) : (
+              <>
+                <p className="account-name">{user?.username || "Unknown User"}</p>
+                <p className="account-email">{user?.email || "No Email"}</p>
+              </>
+            )}
           </div>
-          <IoMdArrowDropdown className="dropdown-icon" />
         </div>
       </div>
-
       <div className="right-section">
         <FaBell className="notification-icon" />
         <button className="admin-button">Admin</button>
-        <div className="profile-pic">
-          <img src="/aquasense/src/assets/drei.jpg" className="w-full h-full object-cover" />
-        </div>
-        <IoMdArrowDropdown className="dropdown-icon" />
       </div>
     </div>
   );

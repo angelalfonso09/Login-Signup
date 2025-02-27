@@ -5,11 +5,11 @@ import SocialLogin from "../components/SocialLogin";
 import "../styles/Login/Login.css";
 import BackgroundLayout from '../components/BackgroundLayout';
 
-const Login = ({ theme, toggleTheme }) => {
+const Login = () => {
   return (
-    <BackgroundLayout variant={theme === "dark" ? "purple" : "light"}>
-      <div className={`login-container ${theme}`}>
-        <Container className="login-container-inner d-flex justify-content-center align-items-center p-5">
+<BackgroundLayout variant="purple">
+<div className="login-container">
+<Container className="login-container-inner d-flex justify-content-center align-items-center p-5">
           <Card.Body className="login-card-body">
             <h2 className="login-title text-white text-left">Login</h2>
             <p className="login-subtitle text-white text-left">Glad you're back!</p>
@@ -30,9 +30,7 @@ const Login = ({ theme, toggleTheme }) => {
               </p>
             </div>
             <div className="login-footer text-center text-muted small">
-              <a href="#" className="login-footer-link">Terms & Conditions</a> | 
-              <a href="#" className="login-footer-link">Support</a> | 
-              <a href="#" className="login-footer-link">Customer Care</a>
+              <a href="#" className="login-footer-link">Terms & Conditions</a> | <a href="#" className="login-footer-link">Support</a> | <a href="#" className="login-footer-link">Customer Care</a>
             </div>
           </Card.Body>
         </Container>
