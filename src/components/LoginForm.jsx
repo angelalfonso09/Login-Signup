@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { Form, Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom"; 
-import axios from "axios";  // Import Axios
+import axios from "axios";  
 import '../styles/Login/LoginForm.css';
 
 const LoginForm = () => {
-  const navigate = useNavigate(); // Initialize navigation
+  const navigate = useNavigate(); 
   const [formData, setFormData] = useState({ username: "", password: "" });
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -17,28 +17,33 @@ const LoginForm = () => {
   // Handle form submission
   const handleLogin = async (e) => {
     e.preventDefault();
-  
-    console.log("Form Data Before Sending:", formData); // Debugging
-  
+    setErrorMessage(""); 
+
+    console.log("Form Data Before Sending:", formData); 
+
     if (!formData.username || !formData.password) {
       setErrorMessage("All fields are required");
       return;
     }
-  
+
     try {
-      const response = await axios.post("http://localhost:5000/login",formData, {
-        headers: { "Content-Type": "application/json" } // Ensure correct headers
+      const response = await axios.post("http://localhost:5000/login", formData, {
+        headers: { "Content-Type": "application/json" }
       });
-  
-      alert("✅ Login successful! Redirecting...");
-      navigate("/dashboard");
-  
+
+      const { role, redirectUrl } = response.data;
+
+      // Store role in localStorage for session tracking
+      localStorage.setItem("userRole", role);
+
+      alert(`✅ Login successful! Redirecting to ${redirectUrl}...`);
+      navigate(redirectUrl); // Redirect dynamically based on role
+
     } catch (error) {
       console.error("Login error:", error.response?.data || error);
       setErrorMessage(error.response?.data?.error || "Login failed. Try again.");
     }
   };
-  
 
   return (
     <Form onSubmit={handleLogin}>

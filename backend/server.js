@@ -6,7 +6,6 @@ const bcrypt = require("bcrypt");
 const http = require("http");
 const { Server } = require("socket.io"); 
 
-
 const app = express();
 const port = 5000;
 const saltRounds = 10;
@@ -16,7 +15,6 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
 
 const db = mysql.createConnection({
   host: "localhost",
@@ -120,39 +118,64 @@ app.post("/login", (req, res) => {
       return res.status(400).json({ error: "Incorrect password" });
     }
 
-    res.json({ message: "Login successful", userId: user.id });
+    // Determine user role and redirect URL
+    let redirectUrl = "/dashboard"; // Default for normal users
+    if (user.role === "Admin") {
+      redirectUrl = "/adminDB";
+    } else if (user.role === "User") {
+      redirectUrl = "/userDB";
+    }
+
+    res.json({
+      message: "Login successful",
+      userId: user.id,
+      role: user.role,
+      redirectUrl: redirectUrl, // Send redirect URL to frontend
+    });
   });
 });
 
+
 // Create admin
 app.post("/admin", async (req, res) => {
-  console.log("Received data:", req.body); 
+  console.log("📩 Received data:", req.body);
 
-  const { username, email, password, confirmPassword, role = "Admin" } = req.body;
+  const { username, email, password, confirmPassword, role } = req.body;
 
-  if (!username || !email || !password || !confirmPassword) {
-    console.log("Missing fields:", { username, email, password, confirmPassword }); 
+  // Validate required fields
+  if (!username || !email || !password || !confirmPassword || !role) {
+    console.log("❌ Missing fields:", { username, email, password, confirmPassword, role });
     return res.status(400).json({ error: "All fields are required" });
   }
 
+  // Ensure passwords match
   if (password !== confirmPassword) {
     return res.status(400).json({ error: "Passwords do not match" });
+  }
+
+  // Validate role selection
+  const allowedRoles = ["Admin", "Super Admin"];
+  if (!allowedRoles.includes(role)) {
+    return res.status(400).json({ error: "Invalid role. Allowed roles: Admin, Super Admin" });
   }
 
   try {
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    // ✅ Ensure `user` table exists in your database
+    console.log("📝 Inserting into DB:", { username, email, role });
+
+    // Store the role as selected by the user
     const sql = "INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)";
     db.query(sql, [username, email, hashedPassword, role], (err, result) => {
       if (err) {
-        console.error("Error inserting user:", err);
+        console.error("❌ Error inserting user:", err);
         return res.status(500).json({ error: "Database error" });
       }
+      console.log("✅ User created successfully:", { userId: result.insertId, role });
       res.json({ message: "User created successfully", userId: result.insertId });
     });
   } catch (error) {
-    console.error("Error hashing password:", error);
+    console.error("❌ Error hashing password:", error);
     res.status(500).json({ error: "Server error" });
   }
 });
@@ -179,6 +202,25 @@ app.delete('/api/users/:id', async (req, res) => {
       return res.status(400).json({ error: 'Invalid user ID' });
     }
 
+    // Fetch the user's role before deleting
+    const [user] = await db.promise().query('SELECT role FROM users WHERE id = ?', [userId]);
+
+    if (user.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const userRole = user[0].role;
+
+    // Check if the user is a Super Admin
+    if (userRole === "Super Admin") {
+      const [superAdmins] = await db.promise().query('SELECT COUNT(*) AS count FROM users WHERE role = "Super Admin"');
+
+      if (superAdmins[0].count <= 1) {
+        return res.status(403).json({ error: 'Cannot delete the last Super Admin' });
+      }
+    }
+
+    // Proceed with deletion
     const [result] = await db.promise().query('DELETE FROM users WHERE id = ?', [userId]);
 
     if (result.affectedRows === 0) {
@@ -222,6 +264,30 @@ app.put('/api/users/:id', async (req, res) => {
     res.status(500).json({ error: 'Failed to update user' });
   }
 });
+
+// fecth data to display in navbar
+app.get("/api/users/:id", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const userId = parseInt(id, 10);
+    if (isNaN(userId)) {
+      return res.status(400).json({ error: "Invalid user ID" });
+    }
+
+    const [rows] = await db.promise().query("SELECT * FROM users WHERE id = ?", [userId]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.status(200).json(rows[0]);
+  } catch (err) {
+    console.error("❌ Error fetching user:", err);
+    res.status(500).json({ error: "Failed to fetch user" });
+  }
+});
+
 
 
 // Socket.io Configuration

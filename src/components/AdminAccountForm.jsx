@@ -24,7 +24,7 @@ const AdminCreationForm = ({ onClose, onAddAdmin }) => {
     setErrorMessage("");
     setSuccessMessage("");
 
-    console.log("Admin Data before sending:", adminData); 
+    console.log("Admin Data before sending:", adminData);
 
     if (!adminData.username || !adminData.email || !adminData.password || !adminData.confirmPassword) {
       setErrorMessage("All fields are required.");
@@ -41,7 +41,7 @@ const AdminCreationForm = ({ onClose, onAddAdmin }) => {
         username: adminData.username,
         email: adminData.email,
         password: adminData.password,
-        confirmPassword: adminData.confirmPassword, 
+        confirmPassword: adminData.confirmPassword,
         role: adminData.role,
       }, {
         headers: { "Content-Type": "application/json" }
@@ -114,14 +114,19 @@ const AdminCreationForm = ({ onClose, onAddAdmin }) => {
               />
             </Form.Group>
 
+            {/* Dropdown for Role Selection */}
             <Form.Group className="admin-form-group">
               <Form.Label>Role</Form.Label>
               <Form.Control
-                type="text"
+                as="select"
                 name="role"
                 value={adminData.role}
-                readOnly
-              />
+                onChange={handleChange}
+                required
+              >
+                <option value="Admin">Admin</option>
+                <option value="Super Admin">Super Admin</option>
+              </Form.Control>
             </Form.Group>
 
             {errorMessage && <p className="text-danger mt-3">{errorMessage}</p>}

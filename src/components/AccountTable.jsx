@@ -33,33 +33,55 @@ const UserAdminTable = ({ theme }) => {
         setLoading(false);
       }
     };
-
+  
     fetchAccounts();
-  }, []);
-
+  }, []); // 🚀 Only fetch on initial render (no need to refetch every time)
+  
   // Function to add a new admin
-  const handleAddAdmin = (newAdmin) => {
-    setAccounts([...accounts, { id: accounts.length + 1, ...newAdmin }]);
-    setShowAdminModal(false);
-  };
-
-  // Function to delete a user
-  const handleDelete = async (id) => {
+  const handleAddAdmin = async (newAdmin) => {
     try {
-      setDeleteError(null);
-      const response = await axios.delete(`http://localhost:5000/api/users/${id}`);
-
-      if (response.status === 200) {
-        setAccounts((prevAccounts) => prevAccounts.filter((acc) => acc.id !== id));
-      } else {
-        throw new Error("Unexpected response status: " + response.status);
+      const response = await axios.post("http://localhost:5000/api/users", newAdmin);
+  
+      if (response.status === 201) {
+        const createdUser = response.data; // Get newly created user from backend
+  
+        // ✅ Update state immediately to reflect UI changes
+        setAccounts((prevAccounts) => [...prevAccounts, createdUser]);
+        
+        console.log("✅ New admin added:", createdUser);
       }
-    } catch (err) {
-      setDeleteError("Failed to delete user.");
-      console.error("Error deleting user:", err);
+    } catch (error) {
+      console.error("❌ Error creating admin:", error);
+    } finally {
+      setShowAdminModal(false);
     }
   };
-
+  
+  // Function to delete a user
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this user?")) return;
+  
+    console.log("Attempting to delete user with ID:", id);
+  
+    try {
+      await axios.delete(`http://localhost:5000/api/users/${id}`);
+  
+      // Update the UI immediately
+      setAccounts((prevAccounts) => prevAccounts.filter((acc) => acc.id !== id));
+  
+      console.log("User deleted successfully, updating state...");
+  
+      // Fetch updated users from the backend to ensure consistency
+      const { data } = await axios.get("http://localhost:5000/api/users");
+      setAccounts(data);
+      
+    } catch (error) {
+      console.error("❌ Error deleting user:", error);
+    }
+  };
+  
+  
+  
   // Function to open edit modal with selected user's details
   const handleEdit = (user) => {
     setEditingUser(user);
