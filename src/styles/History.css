@@ -3,7 +3,7 @@
   flex-direction: column;
   height: 100vh;
   background-color: var(--bg-color);
-  color: var(--text-color);
+  color: white;
 }
   
 .history-container {
@@ -52,17 +52,6 @@
   transition: all 0.3s ease-in-out;
 }
 
-/* Light Mode */
-.history.light .history-contents .water-temperature-container,
-.history.light .history-contents .ph-level-container,
-.history.light .history-contents .turbudity-container,
-.history.light .history-contents .tds-container,
-.history.light .history-contents .do-container,
-.history.light .history-contents .conductivity-container {
-  background-color: white;
-  color: black;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-}
 
 /* Hover Effect */
 .history-contents > *:hover {

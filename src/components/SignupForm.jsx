@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Form, Button } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import '../styles/Signup/SignupForm.css'; 
 
@@ -10,42 +11,37 @@ const SignupForm = () => {
     phone: "",
     password: "",
     confirmPassword: "",
+    role: "User",
   });
 
-  const [message, setMessage] = useState(""); // For success/error messages
+  const [message, setMessage] = useState(""); 
+  const navigate = useNavigate(); 
 
-  // Handle input changes
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Submit form data
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validate required fields
     if (!formData.username || !formData.email || !formData.phone || !formData.password || !formData.confirmPassword) {
       setMessage("❌ All fields are required!");
       return;
     }
 
-    // Check if passwords match
     if (formData.password !== formData.confirmPassword) {
       setMessage("❌ Passwords do not match!");
       return;
     }
 
     try {
-      // Send data to backend
-      const response = await axios.post("http://localhost:5000/users", {
-        username: formData.username,
-        email: formData.email,
-        phone: formData.phone,
-        password: formData.password, 
-        confirmPassword: formData.confirmPassword,
-      });
-
+      const response = await axios.post("http://localhost:5000/users", formData);
       setMessage("✅ " + response.data.message);
+
+      setTimeout(() => {
+        navigate("/login");
+      }, 2000);
+      
     } catch (error) {
       setMessage("❌ Signup failed: " + (error.response?.data.error || "Server error"));
     }
@@ -102,12 +98,21 @@ const SignupForm = () => {
           onChange={handleChange}
         />
       </Form.Group>
+
+      <Form.Group className="mb-3">
+        <Form.Control 
+          type="text" 
+          name="role" 
+          value={formData.role} 
+          className="input-field transparent-input" 
+          readOnly 
+        />
+      </Form.Group>
       
       <Button type="submit" variant="primary" className="w-100 gradient-btn">
         Sign Up
       </Button>
 
-      {/* Show success/error message */}
       {message && <p className="mt-3 text-center" style={{ color: message.includes("❌") ? "red" : "green" }}>{message}</p>}
     </Form>
   );

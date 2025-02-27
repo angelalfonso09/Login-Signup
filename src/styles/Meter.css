@@ -1,40 +1,35 @@
-/* Define light mode variables */
-:root {
-  --bg-color: #f8f9fa;
-  --text-color: #131b42;
-  --card-bg: #ffffff;
-  --chart-fill: #6FCF97;
-}
+.gauge-meter {
+  --gauge-bg: #e3e6ea; 
+  --gauge-text: #0d1b2a;
+  --gauge-card: #ffffff;
+  --gauge-fill: #6FCF97;
 
-[data-theme="light"] {
-  --bg-color: #f8f9fa;
-  --text-color: #131b42;
-  --card-bg: #ffffff;
-  --chart-fill: #6FCF97;
-}
-
-/* Apply the theme to the body */
-body {
-  background-color: var(--bg-color);
-  color: var(--text-color);
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-/* Style the GaugeMeter component */
-.gauge-meter-container {
-  background-color: var(--card-bg);
-  padding: 1.5rem;
-  border-radius: 1rem;
-  width: 16rem;
   display: flex;
   flex-direction: column;
   align-items: center;
-  transition: background-color 0.3s ease;
+  background-color: var(--gauge-bg);
+  color: var(--gauge-text);
+  border-radius: 10px;
+  padding: 15px;
+  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.gauge-meter-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .gauge-meter-value {
-  color: var(--text-color);
-  font-size: 1.875rem; /* text-3xl */
+  font-size: 1.5rem;
   font-weight: bold;
-  margin-top: -20px;
+}
+
+/* Dark mode styles */
+[data-theme="dark"] .gauge-meter {
+  --gauge-bg: #131b42;
+  --gauge-text: #ffffff;
+  --gauge-card: #1E2A47;
+  --gauge-fill: #FF8C42;
 }

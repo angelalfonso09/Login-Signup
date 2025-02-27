@@ -1,0 +1,79 @@
+/*db light mode and dark mode*/
+.db.light {
+    --bg-color: #F5F5F5; 
+    --content-bg: #f5f5f5; 
+    --text-color: black; 
+    --sidebar-bg: #7380CD; 
+}
+
+.db.dark {
+    --bg-color: #121212;
+    --text-color: #fff;
+    background-color: linear-gradient(to right, black, #02030f, #0d1326);
+  }
+/*db light mode and dark mode*/  
+
+/*sb light mode and dark mode*/ 
+  .sidebar.light {
+    background: #11409d;
+  }
+
+  .app-container.light .navbar {
+    background: #11409d;
+  }
+
+  /* Light Mode - Menu Item */
+.sidebar.light .menu-item {
+    color: #f5f5f5;
+  }
+
+  /* Light Mode - Active Item */
+.sidebar.light .menu-item.active {
+    color: #00879E;
+  }
+
+  /* Light Mode - Active Indicator */
+.sidebar.light .menu-item.active .active-indicator {
+    background: #0056b3;
+  }
+
+  /* Light Mode - Icons */
+.sidebar.light .icon {
+    color: #f5f5f5;
+  }
+
+  /* Light Mode - Section Title */
+.sidebar.light .section-title {
+    color: rgba(0, 0, 0, 0.5);
+  }
+
+  /* Light Mode - Logout */
+.sidebar.light .logout .menu-item {
+    color: #f5f5f5;
+  }
+/*sb light mode and dark mode*/ 
+
+/*AM light mode and dark mode*/ 
+
+
+
+/*AM light mode and dark mode*/ 
+
+/*history light mode and dark mode*/ 
+/* Light Mode */
+.history.light .history-contents .water-temperature-container,
+.history.light .history-contents .ph-level-container,
+.history.light .history-contents .turbudity-container,
+.history.light .history-contents .tds-container,
+.history.light .history-contents .do-container,
+.history.light .history-contents .conductivity-container {
+  background-color: white;
+  color: black;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/*history light mode and dark mode*/ 
+
+
+
+

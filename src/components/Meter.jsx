@@ -10,31 +10,42 @@ const GaugeMeter = () => {
   const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
 
   useEffect(() => {
-    // Apply stored theme
+    // Apply theme and store in localStorage
     document.documentElement.setAttribute("data-theme", theme);
     localStorage.setItem("theme", theme);
 
-    // Fetch initial value
-    axios.get("http://localhost:5000/data").then((response) => {
-      setValue(response.data.value);
-    });
+    // Fetch initial data
+    const fetchData = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/data");
+        setValue(response.data.value);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
 
     // Listen for real-time updates
-    socket.on("updateData", (newData) => {
+    const handleUpdate = (newData) => {
       setValue(newData.value);
-    });
+    };
+    socket.on("updateData", handleUpdate);
 
-    return () => socket.disconnect();
+    return () => {
+      socket.off("updateData", handleUpdate); 
+      socket.disconnect();
+    };
   }, [theme]);
 
   const toggleTheme = () => {
     setTheme((prevTheme) => (prevTheme === "light" ? "dark" : "light"));
   };
 
-  const data = [{ name: "Progress", value, fill: "var(--chart-fill)" }];
+  const data = [{ name: "Progress", value, fill: "var(--gauge-fill)" }];
 
   return (
-    <div className="flex flex-col items-center">
+    <div className="gauge-meter">
       <div className="gauge-meter-container">
         <RadialBarChart
           width={200}

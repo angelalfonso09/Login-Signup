@@ -4,7 +4,8 @@ const cors = require("cors");
 const mysql = require("mysql2");
 const bcrypt = require("bcrypt");
 const http = require("http");
-const { Server } = require("socket.io");
+const { Server } = require("socket.io"); 
+
 
 const app = express();
 const port = 5000;
@@ -16,13 +17,43 @@ app.use(bodyParser.json());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Database connection
+
 const db = mysql.createConnection({
   host: "localhost",
   user: "root",
   password: "",
   database: "aquasense",
 });
+
+const pool = mysql.createPool({
+  host: "localhost",
+  user: "root",
+  password: "",
+  database: "aquasense",
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0,
+});
+
+const query = (sql, values) =>
+  new Promise((resolve, reject) => {
+    pool.query(sql, values, (err, results) => {
+      if (err) reject(err);
+      else resolve(results);
+    });
+  });
+
+module.exports = { pool, query };
+
+pool.getConnection((err, connection) => {
+  if (err) {
+    console.error("Error connecting to the database:", err);
+    return;
+  }
+  console.log("Connected to the database");
+  connection.release(); 
+});
+
 
 db.connect((err) => {
   if (err) {
@@ -34,7 +65,7 @@ db.connect((err) => {
 
 // Signup function
 app.post("/users", async (req, res) => {
-  const { username, email, phone, password, confirmPassword } = req.body;
+  const { username, email, phone, password, confirmPassword, role = "User" } = req.body;
 
   if (!username || !email || !phone || !password || !confirmPassword) {
     return res.status(400).json({ error: "All fields are required" });
@@ -47,8 +78,8 @@ app.post("/users", async (req, res) => {
   try {
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    const sql = "INSERT INTO users (username, email, phone, password_hash) VALUES (?, ?, ?, ?)";
-    db.query(sql, [username, email, phone, hashedPassword], (err, result) => {
+    const sql = "INSERT INTO users (username, email, phone, password_hash, role) VALUES (?, ?, ?, ?, ?)";
+    db.query(sql, [username, email, phone, hashedPassword, role], (err, result) => {
       if (err) {
         console.error("Error inserting user:", err);
         return res.status(500).json({ error: "Database error" });
@@ -60,7 +91,6 @@ app.post("/users", async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
-
 
 // Login function
 app.post("/login", (req, res) => {
@@ -96,22 +126,30 @@ app.post("/login", (req, res) => {
 
 // Create admin
 app.post("/admin", async (req, res) => {
-  const { username, email, password } = req.body;
+  console.log("Received data:", req.body); 
 
-  if (!username || !email || !password) {
+  const { username, email, password, confirmPassword, role = "Admin" } = req.body;
+
+  if (!username || !email || !password || !confirmPassword) {
+    console.log("Missing fields:", { username, email, password, confirmPassword }); 
     return res.status(400).json({ error: "All fields are required" });
+  }
+
+  if (password !== confirmPassword) {
+    return res.status(400).json({ error: "Passwords do not match" });
   }
 
   try {
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    const sql = "INSERT INTO admin (username, email, password_hash) VALUES (?, ?, ?)";
-    db.query(sql, [username, email, hashedPassword], (err, result) => {
+    // ✅ Ensure `user` table exists in your database
+    const sql = "INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)";
+    db.query(sql, [username, email, hashedPassword, role], (err, result) => {
       if (err) {
-        console.error("Error inserting admin:", err);
+        console.error("Error inserting user:", err);
         return res.status(500).json({ error: "Database error" });
       }
-      res.json({ message: "Admin created successfully", adminId: result.insertId });
+      res.json({ message: "User created successfully", userId: result.insertId });
     });
   } catch (error) {
     console.error("Error hashing password:", error);
@@ -119,27 +157,72 @@ app.post("/admin", async (req, res) => {
   }
 });
 
-// Fetch all users 
-app.get("/api/users", (req, res) => {
-  db.query("SELECT * FROM users", (err, results) => {
-    if (err) {
-      console.error("Error fetching users:", err);
-      return res.status(500).json({ error: "Database error" });
-    }
-    res.json(results);
-  });
+
+// fetch users
+app.get("/api/users", async (req, res) => {
+  try {
+    const users = await query("SELECT id, username, email, role FROM users");
+    res.json(users);
+  } catch (err) {
+    console.error("❌ Error fetching users:", err);
+    res.status(500).json({ error: "Database error while fetching users" });
+  }
 });
 
-// Fetch all admins 
-app.get("/api/admin", (req, res) => {
-  db.query("SELECT * FROM admin", (err, results) => {
-    if (err) {
-      console.error("Error fetching admins:", err);
-      return res.status(500).json({ error: "Database error" });
+// delete
+app.delete('/api/users/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const userId = parseInt(id, 10);
+    if (isNaN(userId)) {
+      return res.status(400).json({ error: 'Invalid user ID' });
     }
-    res.json(results);
-  });
+
+    const [result] = await db.promise().query('DELETE FROM users WHERE id = ?', [userId]);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.status(200).json({ message: 'User deleted successfully' });
+  } catch (err) {
+    console.error('❌ Error deleting user:', err);
+    res.status(500).json({ error: 'Failed to delete user' });
+  }
 });
+
+
+// edit account
+app.put('/api/users/:id', async (req, res) => {
+  const { id } = req.params;
+  const { username, email, phone } = req.body;
+
+  try {
+    const userId = parseInt(id, 10);
+    if (isNaN(userId)) {
+      return res.status(400).json({ error: 'Invalid user ID' });
+    }
+
+    // Update query
+    const [result] = await db
+      .promise()
+      .query(
+        'UPDATE users SET username = ?, email = ?, phone = ? WHERE id = ?',
+        [username, email, phone, userId]
+      );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'User not found or no changes made' });
+    }
+
+    res.status(200).json({ message: 'User updated successfully' });
+  } catch (err) {
+    console.error('❌ Error updating user:', err);
+    res.status(500).json({ error: 'Failed to update user' });
+  }
+});
+
 
 // Socket.io Configuration
 const server = http.createServer(app);

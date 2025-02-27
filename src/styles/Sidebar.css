@@ -10,12 +10,6 @@
   padding: 20px;
 }
 
-/* Light Mode */
-.sidebar.light {
-  background: #f9f9f9;
-  color: black;
-}
-
 .menu-item {
   display: flex;
   align-items: center;
@@ -27,19 +21,9 @@
   position: relative;
 }
 
-/* Light Mode - Menu Item */
-.sidebar.light .menu-item {
-  color: rgba(0, 0, 0, 0.7);
-}
-
 .menu-item.active {
   color: #007bff;
   font-weight: bold;
-}
-
-/* Light Mode - Active Item */
-.sidebar.light .menu-item.active {
-  color: #0056b3;
 }
 
 .menu-item.active .active-indicator {
@@ -50,19 +34,10 @@
   background: #007bff;
 }
 
-/* Light Mode - Active Indicator */
-.sidebar.light .menu-item.active .active-indicator {
-  background: #0056b3;
-}
 
 .icon {
   font-size: 16px;
   color: rgba(255, 255, 255, 0.7);
-}
-
-/* Light Mode - Icons */
-.sidebar.light .icon {
-  color: rgba(0, 0, 0, 0.7);
 }
 
 .section-title {
@@ -73,10 +48,6 @@
   text-transform: uppercase;
 }
 
-/* Light Mode - Section Title */
-.sidebar.light .section-title {
-  color: rgba(0, 0, 0, 0.5);
-}
 
 .logout {
   margin-top: auto;
@@ -84,11 +55,6 @@
 
 .logout .menu-item {
   color: rgba(255, 255, 255, 0.7);
-}
-
-/* Light Mode - Logout */
-.sidebar.light .logout .menu-item {
-  color: rgba(0, 0, 0, 0.7);
 }
 
 .active-indicator {
@@ -99,7 +65,3 @@
   left: 1;
 }
 
-/* Light Mode - Active Indicator */
-.sidebar.light .active-indicator {
-  background-color: #ffa500;
-}

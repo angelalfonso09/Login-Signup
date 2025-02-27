@@ -1,59 +1,98 @@
 import React, { useState, useEffect } from "react";
-import { Table, Container, Form, Button, Modal } from "react-bootstrap";
-import { Pencil, Trash2 } from "lucide-react"; 
-import AdminCreationForm from "./AdminAccountForm"; 
-import axios from "axios"; 
+import { Table, Container, Form, Button, Modal, Alert, Spinner } from "react-bootstrap";
+import { Pencil, Trash2 } from "lucide-react";
+import AdminCreationForm from "./AdminAccountForm";
+import axios from "axios";
 import "../styles/AC.css";
 
 const UserAdminTable = ({ theme }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterRole, setFilterRole] = useState("All");
   const [showAdminModal, setShowAdminModal] = useState(false);
-  const [accounts, setAccounts] = useState([]); 
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [deleteError, setDeleteError] = useState(null);
+  const [editError, setEditError] = useState(null);
+  const [editingUser, setEditingUser] = useState(null);
+  const [editFormData, setEditFormData] = useState({ username: "", email: "", phone: "" });
 
-  // Fetch users from the database
-  const fetchUsersAndAdmins = async () => {
-    try {
-      // Fetch users
-      const usersResponse = await fetch("http://localhost:5000/api/users");
-      if (!usersResponse.ok) throw new Error(`Users API error: ${usersResponse.status}`);
-      const users = await usersResponse.json();
-  
-      // Fetch admins
-      const adminsResponse = await fetch("http://localhost:5000/api/admin");
-      if (!adminsResponse.ok) throw new Error(`Admins API error: ${adminsResponse.status}`);
-      const admins = await adminsResponse.json();
-  
-      return { users, admins };
-    } catch (error) {
-      console.error("Error fetching users and admins:", error);
-      return { users: [], admins: [] };
-    }
-  };
-  
-  // Example usage
-  fetchUsersAndAdmins().then((data) => {
-    console.log("Users:", data.users);
-    console.log("Admins:", data.admins);
-  });
-  
-  
+  // Fetch all users from the backend
+  useEffect(() => {
+    const fetchAccounts = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await axios.get("http://localhost:5000/api/users");
+        setAccounts(response.data);
+      } catch (err) {
+        setError("Failed to fetch users.");
+        console.error("Error fetching data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
+    fetchAccounts();
+  }, []);
+
+  // Function to add a new admin
   const handleAddAdmin = (newAdmin) => {
     setAccounts([...accounts, { id: accounts.length + 1, ...newAdmin }]);
     setShowAdminModal(false);
   };
 
-  const handleDelete = (id) => {
-    setAccounts(accounts.filter((acc) => acc.id !== id));
+  // Function to delete a user
+  const handleDelete = async (id) => {
+    try {
+      setDeleteError(null);
+      const response = await axios.delete(`http://localhost:5000/api/users/${id}`);
+
+      if (response.status === 200) {
+        setAccounts((prevAccounts) => prevAccounts.filter((acc) => acc.id !== id));
+      } else {
+        throw new Error("Unexpected response status: " + response.status);
+      }
+    } catch (err) {
+      setDeleteError("Failed to delete user.");
+      console.error("Error deleting user:", err);
+    }
   };
 
-  const handleEdit = (id) => {
-    console.log(`Edit clicked for user ID: ${id}`);
+  // Function to open edit modal with selected user's details
+  const handleEdit = (user) => {
+    setEditingUser(user);
+    setEditFormData({ username: user.username, email: user.email, phone: user.phone || "" });
+    setShowEditModal(true);
   };
 
+  // Function to update user details
+  const handleEditSubmit = async () => {
+    try {
+      setEditError(null);
+      const response = await axios.put(`http://localhost:5000/api/users/${editingUser.id}`, editFormData);
+
+      if (response.status === 200) {
+        setAccounts((prevAccounts) =>
+          prevAccounts.map((acc) => (acc.id === editingUser.id ? { ...acc, ...editFormData } : acc))
+        );
+        setShowEditModal(false);
+      } else {
+        throw new Error("Unexpected response status: " + response.status);
+      }
+    } catch (err) {
+      setEditError("Failed to update user details.");
+      console.error("Error updating user:", err);
+    }
+  };
+
+  // Handle input changes in edit form
+  const handleInputChange = (e) => {
+    setEditFormData({ ...editFormData, [e.target.name]: e.target.value });
+  };
+
+  // Filter users based on search term and role
   const filteredAccounts = accounts.filter(
     (account) =>
       (filterRole === "All" || account.role === filterRole) &&
@@ -74,11 +113,7 @@ const UserAdminTable = ({ theme }) => {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-        <Form.Select
-          className="table-filter"
-          value={filterRole}
-          onChange={(e) => setFilterRole(e.target.value)}
-        >
+        <Form.Select className="table-filter" value={filterRole} onChange={(e) => setFilterRole(e.target.value)}>
           <option value="All">All</option>
           <option value="User">User</option>
           <option value="Admin">Admin</option>
@@ -89,10 +124,11 @@ const UserAdminTable = ({ theme }) => {
       </div>
 
       {/* Loading State */}
-      {loading && <p>Loading users...</p>}
+      {loading && <Spinner animation="border" />}
 
-      {/* Error State */}
-      {error && <p className="error-message">{error}</p>}
+      {/* Error Messages */}
+      {error && <Alert variant="danger">{error}</Alert>}
+      {deleteError && <Alert variant="danger">{deleteError}</Alert>}
 
       {/* Table */}
       {!loading && !error && (
@@ -102,6 +138,7 @@ const UserAdminTable = ({ theme }) => {
               <th>ID</th>
               <th>Username</th>
               <th>Email</th>
+              <th>Phone</th>
               <th>Role</th>
               <th>Actions</th>
             </tr>
@@ -113,9 +150,10 @@ const UserAdminTable = ({ theme }) => {
                   <td>{account.id}</td>
                   <td>{account.username}</td>
                   <td>{account.email}</td>
+                  <td>{account.phone || "N/A"}</td>
                   <td>{account.role}</td>
                   <td>
-                    <button className="action-btn" onClick={() => handleEdit(account.id)}>
+                    <button className="action-btn" onClick={() => handleEdit(account)}>
                       <Pencil size={16} />
                     </button>
                     <button className="action-btn" onClick={() => handleDelete(account.id)}>
@@ -126,8 +164,8 @@ const UserAdminTable = ({ theme }) => {
               ))
             ) : (
               <tr>
-                <td colSpan="5" className="no-results">
-                  No accounts found
+                <td colSpan="6" className="no-results">
+                  No users found
                 </td>
               </tr>
             )}
@@ -143,6 +181,53 @@ const UserAdminTable = ({ theme }) => {
         <Modal.Body>
           <AdminCreationForm onClose={() => setShowAdminModal(false)} onAddAdmin={handleAddAdmin} />
         </Modal.Body>
+      </Modal>
+
+      {/* Edit User Modal */}
+      <Modal show={showEditModal} onHide={() => setShowEditModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Edit User</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {editError && <Alert variant="danger">{editError}</Alert>}
+          <Form>
+            <Form.Group>
+              <Form.Label>Username</Form.Label>
+              <Form.Control
+                type="text"
+                name="username"
+                value={editFormData.username}
+                onChange={handleInputChange}
+              />
+            </Form.Group>
+            <Form.Group>
+              <Form.Label>Email</Form.Label>
+              <Form.Control
+                type="email"
+                name="email"
+                value={editFormData.email}
+                onChange={handleInputChange}
+              />
+            </Form.Group>
+            <Form.Group>
+              <Form.Label>Phone</Form.Label>
+              <Form.Control
+                type="text"
+                name="phone"
+                value={editFormData.phone}
+                onChange={handleInputChange}
+              />
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowEditModal(false)}>
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={handleEditSubmit}>
+            Save Changes
+          </Button>
+        </Modal.Footer>
       </Modal>
     </Container>
   );

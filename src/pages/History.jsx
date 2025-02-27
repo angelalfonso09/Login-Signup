@@ -8,6 +8,7 @@ import Turbudity from "../sensors/turbudity";
 import Tds from "../sensors/Tds";
 import Do from "../sensors/Do";
 import Conductivity from "../sensors/Conductivity";
+import "../styles/lightmode.css";
 
 const History = ({ theme, toggleTheme }) => {
   return (

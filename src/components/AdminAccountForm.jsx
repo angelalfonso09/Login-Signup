@@ -9,6 +9,7 @@ const AdminCreationForm = ({ onClose, onAddAdmin }) => {
     email: "",
     password: "",
     confirmPassword: "",
+    role: "Admin",
   });
 
   const [errorMessage, setErrorMessage] = useState("");
@@ -22,6 +23,8 @@ const AdminCreationForm = ({ onClose, onAddAdmin }) => {
     e.preventDefault();
     setErrorMessage("");
     setSuccessMessage("");
+
+    console.log("Admin Data before sending:", adminData); 
 
     if (!adminData.username || !adminData.email || !adminData.password || !adminData.confirmPassword) {
       setErrorMessage("All fields are required.");
@@ -38,18 +41,20 @@ const AdminCreationForm = ({ onClose, onAddAdmin }) => {
         username: adminData.username,
         email: adminData.email,
         password: adminData.password,
+        confirmPassword: adminData.confirmPassword, 
+        role: adminData.role,
       }, {
         headers: { "Content-Type": "application/json" }
       });
 
+      console.log("Response:", response.data);
       setSuccessMessage("✅ Admin created successfully!");
-      onAddAdmin({ username: adminData.username, email: adminData.email, role: "Admin" });
+      onAddAdmin({ username: adminData.username, email: adminData.email, role: adminData.role });
 
       setTimeout(() => {
-        setAdminData({ username: "", email: "", password: "", confirmPassword: "" });
-        onClose(); // Close modal after success
+        setAdminData({ username: "", email: "", password: "", confirmPassword: "", role: "Admin" });
+        onClose();
       }, 1000);
-
     } catch (error) {
       console.error("Admin creation error:", error.response?.data || error);
       setErrorMessage(error.response?.data?.error || "Failed to create admin.");
@@ -106,6 +111,16 @@ const AdminCreationForm = ({ onClose, onAddAdmin }) => {
                 onChange={handleChange}
                 placeholder="Confirm password"
                 required
+              />
+            </Form.Group>
+
+            <Form.Group className="admin-form-group">
+              <Form.Label>Role</Form.Label>
+              <Form.Control
+                type="text"
+                name="role"
+                value={adminData.role}
+                readOnly
               />
             </Form.Group>
 

@@ -2,6 +2,8 @@ import React from "react";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import "../styles/Dashboard.css";
+import "../styles/lightmode.css";
+import Meter from "../components/Meter";
 
 const Dashboard = ({ theme, toggleTheme }) => {
   return (
@@ -10,7 +12,12 @@ const Dashboard = ({ theme, toggleTheme }) => {
       <div className="db-container">
         <Sidebar theme={theme} toggleTheme={toggleTheme} />
         <div className="db-contents">
-          {/* Add dashboard content here */}
+          <Meter/>
+          <Meter/>
+          <Meter/>
+          <Meter/>
+          <Meter/>
+          <Meter/>
         </div>
       </div>
     </div>

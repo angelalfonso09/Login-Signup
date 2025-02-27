@@ -7,11 +7,6 @@
   transition: background 0.3s ease, color 0.3s ease;
 }
 
-/* Light Mode Navbar */
-.app-container.light .navbar {
-  background: linear-gradient(to right, #ffffff, #f8f9fa, #e9ecef);
-}
-
 /* Left Section */
 .left-section {
   display: flex;
@@ -38,13 +33,13 @@
 }
 
 .account-email {
-  color: #666;
+  color: #f5f5f5;
   margin: 0;
 }
 
 /* Light Mode Adjustments for Account Email */
 .app-container.light .account-email {
-  color: #444;
+  color: #f5f5f5;
 }
 
 /* Dropdown Icon */
@@ -88,7 +83,7 @@
 
 /* Light Mode Notification Icon */
 .app-container.light .notification-icon {
-  color: black;
+  color: white;
 }
 
 /* Admin Button */
