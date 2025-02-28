@@ -7,10 +7,15 @@ const http = require("http");
 const { Server } = require("socket.io"); 
 const jwt = require("jsonwebtoken");
 const router = express.Router();
+const nodemailer = require("nodemailer");
+const crypto = require("crypto");
+const sendEmail = require("./mailer"); 
+const { User } = require("../backend/models/user");
 
 const app = express();
 const port = 5000;
 const saltRounds = 10;
+require("dotenv").config();
 
 // Middleware
 app.use(cors());
@@ -25,11 +30,13 @@ const db = mysql.createConnection({
   database: "aquasense",
 });
 
+
 const pool = mysql.createPool({
-  host: "localhost",
-  user: "root",
-  password: "",
-  database: "aquasense",
+  host: process.env.DB_HOST || "localhost",
+  user: process.env.DB_USER || "root",
+  password: process.env.DB_PASS || "",
+  database: process.env.DB_NAME || "aquasense",
+  port: process.env.DB_PORT || 3306,
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
@@ -63,6 +70,56 @@ db.connect((err) => {
   console.log("Connected to the database");
 });
 
+// mailer function
+app.post("/send-email", async (req, res) => {
+  const { email, subject, message } = req.body;
+
+  const response = await sendEmail(email, subject, message);
+  res.json(response);
+});
+
+// verify code function
+app.post("/verify-code", (req, res) => {
+  console.log("Received request:", req.body); // Log request data
+
+  const { email, code } = req.body;
+  if (!email || !code) {
+    return res.status(400).json({ error: "Email and verification code are required." });
+  }
+
+  // Query the database to find the user
+  const sql = "SELECT * FROM users WHERE email = ?";
+  db.query(sql, [email], (err, results) => {
+    if (err) {
+      console.error("Database error:", err);
+      return res.status(500).json({ error: "Database error." });
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({ error: "User not found." });
+    }
+
+    const user = results[0]; // Get user data
+
+    // Check verification code
+    if (user.verification_code !== code) {
+      return res.status(400).json({ error: "Invalid verification code." });
+    }
+
+    // Update user to set them as verified
+    const updateSql = "UPDATE users SET is_verified = 1 WHERE email = ?";
+    db.query(updateSql, [email], (updateErr) => {
+      if (updateErr) {
+        console.error("Error updating user:", updateErr);
+        return res.status(500).json({ error: "Failed to verify user." });
+      }
+
+      res.json({ success: true, message: "Verification successful!" });
+    });
+  });
+});
+
+
 // Signup function
 app.post("/users", async (req, res) => {
   const { username, email, phone, password, confirmPassword, role = "User" } = req.body;
@@ -77,20 +134,49 @@ app.post("/users", async (req, res) => {
 
   try {
     const hashedPassword = await bcrypt.hash(password, saltRounds);
+    const verificationCode = crypto.randomInt(100000, 999999).toString(); // Generate 6-digit code
 
-    const sql = "INSERT INTO users (username, email, phone, password_hash, role) VALUES (?, ?, ?, ?, ?)";
-    db.query(sql, [username, email, phone, hashedPassword, role], (err, result) => {
+    const sql = "INSERT INTO users (username, email, phone, password_hash, role, verification_code, is_verified) VALUES ( ?, ?, ?, ?, ?, ?, ?)";
+    db.query(sql, [username, email, phone, hashedPassword, role, verificationCode, 0], async (err, result) => {
       if (err) {
         console.error("Error inserting user:", err);
         return res.status(500).json({ error: "Database error" });
       }
-      res.json({ message: "User registered successfully", userId: result.insertId });
+
+      try {
+        await sendVerificationEmail(email, verificationCode);
+        res.json({ message: "User registered successfully. Check your email for verification.", userId: result.insertId });
+      } catch (emailError) {
+        console.error("Error sending email:", emailError);
+        res.status(500).json({ error: "Failed to send verification email" });
+      }
     });
   } catch (error) {
     console.error("Error hashing password:", error);
     res.status(500).json({ error: "Server error" });
   }
 });
+
+// Function to send verification email
+async function sendVerificationEmail(to, code) {
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: process.env.EMAIL_USER,  // Use environment variables
+      pass: process.env.EMAIL_PASS,
+    },
+  });
+
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to,
+    subject: "Email Verification Code",
+    text: `Your verification code is: ${code}`,
+  };
+
+  await transporter.sendMail(mailOptions);
+}
+
 
 // Login function
 app.post("/login", (req, res) => {
@@ -120,6 +206,13 @@ app.post("/login", (req, res) => {
       return res.status(400).json({ error: "Incorrect password" });
     }
 
+    // Generate JWT token
+    const token = jwt.sign(
+      { id: user.id, role: user.role },
+      "your_secret_key",
+      { expiresIn: "1h" }
+    );
+
     // Determine user role and redirect URL
     let redirectUrl = "/dashboard"; // Default for normal users
     if (user.role === "Admin") {
@@ -132,6 +225,7 @@ app.post("/login", (req, res) => {
       message: "Login successful",
       userId: user.id,
       role: user.role,
+      token: token, // Send JWT token to frontend
       redirectUrl: redirectUrl, // Send redirect URL to frontend
     });
   });

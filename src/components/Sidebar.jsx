@@ -14,12 +14,7 @@ const Sidebar = ({ toggleTheme, theme }) => {
           <FaHome className="icon" />
           <span>Dashboard</span>
         </div>
-
-        <div className={`menu-item ${location.pathname === "/water" ? "active" : ""}`} onClick={() => navigate("/water")}>
-          <FaTint className="icon" />
-          <span>Water set</span>
-        </div>
-
+        
         <div className={`menu-item ${location.pathname === "/accountmanagement" ? "active" : ""}`} onClick={() => navigate("/accountmanagement")}>
           <FaCogs className="icon" />
           <span>Management</span>

@@ -31,10 +31,12 @@ const LoginForm = () => {
         headers: { "Content-Type": "application/json" }
       });
 
-      const { role, redirectUrl } = response.data;
+      const { user, token, role, redirectUrl } = response.data;
 
-      // Store role in localStorage for session tracking
-      localStorage.setItem("userRole", role);
+      // Store user data and token in localStorage
+      localStorage.setItem("user", JSON.stringify(user)); // ✅ User data for Navbar
+      localStorage.setItem("token", token); // ✅ Token for authentication
+      localStorage.setItem("userRole", role); // ✅ Role tracking
 
       alert(`✅ Login successful! Redirecting to ${redirectUrl}...`);
       navigate(redirectUrl); // Redirect dynamically based on role

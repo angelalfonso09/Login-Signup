@@ -78,10 +78,6 @@ function App() {
             element={<ProtectedRoute element={<AccountManagement theme={theme} toggleTheme={toggleTheme} />} allowedRoles={["Super Admin"]} />}
           />
           <Route
-            path="/water"
-            element={<ProtectedRoute element={<Water theme={theme} toggleTheme={toggleTheme} />} allowedRoles={["User"]} />}
-          />
-          <Route
             path="/history"
             element={<ProtectedRoute element={<History theme={theme} toggleTheme={toggleTheme} />} allowedRoles={["Super Admin", "User" , "Admin"]} />}
           />
