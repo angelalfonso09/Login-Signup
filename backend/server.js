@@ -11,6 +11,9 @@ const nodemailer = require("nodemailer");
 const crypto = require("crypto");
 const sendEmail = require("./mailer"); 
 const { User } = require("../backend/models/user");
+const { SerialPort } = require("serialport");
+const { ReadlineParser } = require("@serialport/parser-readline");
+
 
 const app = express();
 const port = 5000;
@@ -22,6 +25,12 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+//  Create HTTP server for Socket.IO
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: { origin: "*" },
+});
 
 const db = mysql.createConnection({
   host: "localhost",
@@ -61,13 +70,59 @@ pool.getConnection((err, connection) => {
   connection.release(); 
 });
 
-
 db.connect((err) => {
   if (err) {
     console.error("Error connecting to the database:", err);
     return;
   }
   console.log("Connected to the database");
+});
+
+//  Set up SerialPort (Change COM5 to your correct port)
+const serialPort = new SerialPort({ path: "COM5", baudRate: 9600 });
+const parser = serialPort.pipe(new ReadlineParser({ delimiter: "\n" }));
+
+//  Read and store data from Arduino
+parser.on("data", (data) => {
+  try {
+    const jsonData = JSON.parse(data.trim());
+    const turbidityValue = jsonData.turbidity_value;
+
+    console.log("📡 Received Data:", turbidityValue);
+
+    //  Insert into MySQL
+    const query = "INSERT INTO turbidity_readings (turbidity_value) VALUES (?)";
+    db.query(query, [turbidityValue], (err, result) => {
+      if (err) {
+        console.error("Database Insert Error:", err);
+      } else {
+        console.log("Data Inserted Successfully: ID", result.insertId);
+
+        // Emit real-time data update
+        io.emit("updateData", { value: turbidityValue });
+      }
+    });
+  } catch (err) {
+    console.error("JSON Parse Error:", err);
+  }
+});
+
+// API Route to Fetch Data
+app.get("/data", (req, res) => {
+  db.query("SELECT * FROM turbidity_readings ORDER BY id DESC LIMIT 10", (err, results) => {
+    if (err) {
+      return res.status(500).json({ error: "Database Query Error" });
+    }
+    res.json(results);
+  });
+});
+
+// Start Express & Socket.IO Server
+server.listen(port, () => {
+  console.log(`Backend running on http://localhost:${port}`);
+});
+io.listen(3001, () => {
+  console.log("WebSocket server running on port 3001");
 });
 
 // mailer function
@@ -354,14 +409,6 @@ app.put('/api/users/:id', async (req, res) => {
 
 // fecth data to display in navbar
 
-// Socket.io Configuration
-const server = http.createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: "http://localhost:5173",
-    methods: ["GET", "POST"],
-  },
-});
 
 // Fetch Data & Emit to Clients
 const fetchAndEmitData = () => {
