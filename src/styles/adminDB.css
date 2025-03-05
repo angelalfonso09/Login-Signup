@@ -1,0 +1,81 @@
+/* Dashboard.css */
+.db {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  
+  .db-container {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+  
+  .db-contents {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px;
+    overflow: hidden;
+    max-height: calc(100vh - 60px); /* Adjusted for Navbar height */
+  }
+  
+  /* Grid layout for meters */
+  .meter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+  }
+  
+  /* Light mode */
+  .light {
+    --bg-color: #f9f9f9;
+    --text-color: #333;
+  }
+  
+  /* Dark mode */
+  .dark {
+    --bg-color: #1e1e1e;
+    --text-color: #fff;
+  }
+  
+  /* Meter styling */
+  .Meter {
+    background: var(--bg-color);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    font-weight: bold;
+  }
+  
+  /* Reports Table styling */
+  .ReportsTable {
+    width: 100%;
+    flex-grow: 1;
+    background: var(--bg-color);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    overflow: auto;
+  }
+  
+  /* Prevent overflow issues */
+  @media (max-width: 768px) {
+    .db-container {
+      flex-direction: column;
+    }
+  
+    .db-contents {
+      padding: 10px;
+    }
+  
+    .meter-grid {
+      grid-template-columns: repeat(2, 1fr); /* Show 2 meters per row */
+    }
+  }
+  

@@ -1,9 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { Form, Button, Container, Card } from "react-bootstrap";
 import axios from "axios";
+import { ThemeContext } from "../context/ThemeContext";
 import "../styles/AdminAccountForm.css";
 
 const AdminCreationForm = ({ onClose, onAddAdmin }) => {
+  const { theme } = useContext(ThemeContext); // Access theme from context
+
   const [adminData, setAdminData] = useState({
     username: "",
     email: "",
@@ -24,8 +27,6 @@ const AdminCreationForm = ({ onClose, onAddAdmin }) => {
     setErrorMessage("");
     setSuccessMessage("");
 
-    console.log("Admin Data before sending:", adminData);
-
     if (!adminData.username || !adminData.email || !adminData.password || !adminData.confirmPassword) {
       setErrorMessage("All fields are required.");
       return;
@@ -37,17 +38,10 @@ const AdminCreationForm = ({ onClose, onAddAdmin }) => {
     }
 
     try {
-      const response = await axios.post("http://localhost:5000/admin", {
-        username: adminData.username,
-        email: adminData.email,
-        password: adminData.password,
-        confirmPassword: adminData.confirmPassword,
-        role: adminData.role,
-      }, {
-        headers: { "Content-Type": "application/json" }
+      const response = await axios.post("http://localhost:5000/admin", adminData, {
+        headers: { "Content-Type": "application/json" },
       });
 
-      console.log("Response:", response.data);
       setSuccessMessage("✅ Admin created successfully!");
       onAddAdmin({ username: adminData.username, email: adminData.email, role: adminData.role });
 
@@ -56,15 +50,15 @@ const AdminCreationForm = ({ onClose, onAddAdmin }) => {
         onClose();
       }, 1000);
     } catch (error) {
-      console.error("Admin creation error:", error.response?.data || error);
       setErrorMessage(error.response?.data?.error || "Failed to create admin.");
     }
   };
 
   return (
-    <Container>
-      <Card className="admin-form-card">
+    <Container className={`admin-form-container ${theme}`}>
+      <Card className={`admin-form-card ${theme}`}>
         <Card.Body>
+          <h2 className={`form-title ${theme}`}>Create Admin</h2>
           <Form onSubmit={handleSubmit}>
             <Form.Group className="admin-form-group">
               <Form.Label>Admin Username</Form.Label>
@@ -114,7 +108,6 @@ const AdminCreationForm = ({ onClose, onAddAdmin }) => {
               />
             </Form.Group>
 
-            {/* Dropdown for Role Selection */}
             <Form.Group className="admin-form-group">
               <Form.Label>Role</Form.Label>
               <Form.Control

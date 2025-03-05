@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import "../styles/History.css";
@@ -8,9 +8,12 @@ import Turbudity from "../sensors/turbudity";
 import Tds from "../sensors/Tds";
 import Do from "../sensors/Do";
 import Conductivity from "../sensors/Conductivity";
-import "../styles/lightmode.css";
+import "../styles/theme.css";
+import { ThemeContext } from "../context/ThemeContext";
 
-const History = ({ theme, toggleTheme }) => {
+const History = () => {
+  const { theme, toggleTheme } = useContext(ThemeContext);
+
   return (
     <div className={`history ${theme}`}>
       <Navbar theme={theme} toggleTheme={toggleTheme} />

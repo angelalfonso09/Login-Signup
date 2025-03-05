@@ -2,8 +2,8 @@
 .sidebar {
   width: 220px;
   height: 92vh;
-  background: #000;
-  color: white;
+  background: var(--sidebar-bg);
+  color: var(--sidebar-text);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -16,13 +16,13 @@
   gap: 10px;
   padding: 10px 0;
   cursor: pointer;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--sidebar-text-light);
   font-size: 14px;
   position: relative;
 }
 
 .menu-item.active {
-  color: #007bff;
+  color: var(--sidebar-active);
   font-weight: bold;
 }
 
@@ -31,37 +31,34 @@
   right: 0;
   height: 100%;
   width: 3px;
-  background: #007bff;
+  background: var(--sidebar-active);
 }
-
 
 .icon {
   font-size: 16px;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--sidebar-text-light);
 }
 
 .section-title {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--sidebar-text-muted);
   margin-top: 20px;
   margin-bottom: 5px;
   text-transform: uppercase;
 }
-
 
 .logout {
   margin-top: auto;
 }
 
 .logout .menu-item {
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--sidebar-text-light);
 }
 
 .active-indicator {
   width: 5px;
   height: 100%;
-  background-color: #ffcc00;
+  background-color: var(--sidebar-indicator);
   position: absolute;
-  left: 1;
+  left: 0;
 }
-

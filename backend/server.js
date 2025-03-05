@@ -1,19 +1,22 @@
+const db = require("./config/db");
+
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const mysql = require("mysql2");
 const bcrypt = require("bcrypt");
 const http = require("http");
-const { Server } = require("socket.io"); 
+const { Server } = require("socket.io");
 const jwt = require("jsonwebtoken");
 const router = express.Router();
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
-const sendEmail = require("./mailer"); 
+const sendEmail = require("./mailer");
 const { User } = require("../backend/models/user");
 const { SerialPort } = require("serialport");
 const { ReadlineParser } = require("@serialport/parser-readline");
-
+const cookieParser = require("cookie-parser");
+const authRoutes = require('./models/route');
 
 const app = express();
 const port = 5000;
@@ -26,104 +29,69 @@ app.use(bodyParser.json());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-//  Create HTTP server for Socket.IO
+// Create HTTP server for Socket.IO
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: { origin: "*" },
 });
 
-const db = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "",
-  database: "aquasense",
-});
-
-
-const pool = mysql.createPool({
-  host: process.env.DB_HOST || "localhost",
-  user: process.env.DB_USER || "root",
-  password: process.env.DB_PASS || "",
-  database: process.env.DB_NAME || "aquasense",
-  port: process.env.DB_PORT || 3306,
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0,
-});
+app.use(cookieParser());
+app.use('/api/auth', authRoutes);
+app.use(
+  cors({
+    origin: ["http://localhost:3000", "http://localhost:5173"], // Allow both ports
+    credentials: true,
+  })
+);
 
 const query = (sql, values) =>
   new Promise((resolve, reject) => {
-    pool.query(sql, values, (err, results) => {
+    db.query(sql, values, (err, results) => {
       if (err) reject(err);
       else resolve(results);
     });
   });
 
-module.exports = { pool, query };
+module.exports = { query };
 
-pool.getConnection((err, connection) => {
-  if (err) {
-    console.error("Error connecting to the database:", err);
-    return;
-  }
-  console.log("Connected to the database");
-  connection.release(); 
-});
+// Set up SerialPort (Change COM3 to your correct port)
+// const serialPort = new SerialPort({ path: "COM3", baudRate: 9600 });
+// const parser = serialPort.pipe(new ReadlineParser({ delimiter: "\n" }));
 
-db.connect((err) => {
-  if (err) {
-    console.error("Error connecting to the database:", err);
-    return;
-  }
-  console.log("Connected to the database");
-});
+// // Read and store data from Arduino
+// parser.on("data", (data) => {
+//   try {
+//     const jsonData = JSON.parse(data.trim());
+//     const turbidityValue = jsonData.turbidity_value;
 
-//  Set up SerialPort (Change COM5 to your correct port)
-const serialPort = new SerialPort({ path: "COM5", baudRate: 9600 });
-const parser = serialPort.pipe(new ReadlineParser({ delimiter: "\n" }));
+//     console.log("📡 Received Data:", turbidityValue);
 
-//  Read and store data from Arduino
-parser.on("data", (data) => {
-  try {
-    const jsonData = JSON.parse(data.trim());
-    const turbidityValue = jsonData.turbidity_value;
+//     // Insert into MySQL
+//     const query = "INSERT INTO turbidity_readings (turbidity_value) VALUES (?)";
+//     db.query(query, [turbidityValue], (err, result) => {
+//       if (err) {
+//         console.error("Database Insert Error:", err);
+//       } else {
+//         console.log("Data Inserted Successfully: ID", result.insertId);
 
-    console.log("📡 Received Data:", turbidityValue);
-
-    //  Insert into MySQL
-    const query = "INSERT INTO turbidity_readings (turbidity_value) VALUES (?)";
-    db.query(query, [turbidityValue], (err, result) => {
-      if (err) {
-        console.error("Database Insert Error:", err);
-      } else {
-        console.log("Data Inserted Successfully: ID", result.insertId);
-
-        // Emit real-time data update
-        io.emit("updateData", { value: turbidityValue });
-      }
-    });
-  } catch (err) {
-    console.error("JSON Parse Error:", err);
-  }
-});
+//         // Emit real-time data update
+//         io.emit("updateData", { value: turbidityValue });
+//       }
+//     });
+//   } catch (err) {
+//     console.error("JSON Parse Error:", err);
+//   }
+// });
 
 // API Route to Fetch Data
-app.get("/data", (req, res) => {
-  db.query("SELECT * FROM turbidity_readings ORDER BY id DESC LIMIT 10", (err, results) => {
-    if (err) {
-      return res.status(500).json({ error: "Database Query Error" });
-    }
-    res.json(results);
-  });
-});
-
-// Start Express & Socket.IO Server
-server.listen(port, () => {
-  console.log(`Backend running on http://localhost:${port}`);
-});
-io.listen(3001, () => {
-  console.log("WebSocket server running on port 3001");
-});
+// app.get("/data", (req, res) => {
+//   db.query("SELECT * FROM turbidity_readings ORDER BY id DESC LIMIT 10", (err, results) => {
+//     if (err) {
+//       return res.status(500).json({ error: "Database Query Error" });
+//     }
+//     res.json(results);
+//   });
+// });
 
 // mailer function
 app.post("/send-email", async (req, res) => {
@@ -173,7 +141,6 @@ app.post("/verify-code", (req, res) => {
     });
   });
 });
-
 
 // Signup function
 app.post("/users", async (req, res) => {
@@ -232,7 +199,6 @@ async function sendVerificationEmail(to, code) {
   await transporter.sendMail(mailOptions);
 }
 
-
 // Login function
 app.post("/login", (req, res) => {
   console.log("Received Data:", req.body);
@@ -286,7 +252,6 @@ app.post("/login", (req, res) => {
   });
 });
 
-
 // Create admin
 app.post("/admin", async (req, res) => {
   console.log("📩 Received data:", req.body);
@@ -326,7 +291,6 @@ app.post("/admin", async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
-
 
 // fetch users
 app.get("/api/users", async (req, res) => {
@@ -384,82 +348,115 @@ app.put('/api/users/:id', async (req, res) => {
   const { username, email, phone } = req.body;
 
   try {
+    // Ensure the ID is a valid number
     const userId = parseInt(id, 10);
     if (isNaN(userId)) {
       return res.status(400).json({ error: 'Invalid user ID' });
     }
 
+    // Ensure all required fields are provided
+    if (!username || !email) {
+      return res.status(400).json({ error: 'Username and email are required' });
+    }
+
+    // Log the received data for debugging
+    console.log(`🔹 Updating user ID: ${userId}, Data:`, { username, email, phone });
+
+    // Perform the update query
     const [result] = await db
       .promise()
       .query(
         'UPDATE users SET username = ?, email = ?, phone = ? WHERE id = ?',
-        [username, email, phone, userId]
+        [username, email, phone || null, userId]
       );
 
+    // Check if any rows were updated
     if (result.affectedRows === 0) {
       return res.status(404).json({ error: 'User not found or no changes made' });
     }
 
+    // Successfully updated user
     res.status(200).json({ message: 'User updated successfully' });
   } catch (err) {
     console.error('❌ Error updating user:', err);
-    res.status(500).json({ error: 'Failed to update user' });
+    res.status(500).json({ error: 'Failed to update user. Please try again later.' });
   }
 });
 
-// fecth data to display in navbar
 
+// fetch data to display in navbar
+app.get("/api/auth/users", (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) {
+    console.log("No token provided");
+    return res.status(401).json({ error: "Unauthorized" });
+  }
 
-// Fetch Data & Emit to Clients
-const fetchAndEmitData = () => {
-  db.query("SELECT * FROM gauge_data ORDER BY id DESC LIMIT 1", (err, result) => {
-    if (err) {
-      console.error("Error fetching data:", err);
-      return;
-    }
-    io.emit("updateData", result[0]); 
-  });
-};
+  try {
+    const decoded = jwt.verify(token, "your_secret_key");
+    console.log("Token decoded:", decoded);
 
-// Socket.io Connection
-io.on("connection", (socket) => {
-  console.log("A client connected:", socket.id);
+    const sql = "SELECT username, email FROM users WHERE id = ?";
+    db.query(sql, [decoded.id], (err, results) => {
+      if (err) {
+        console.error("Database error:", err);
+        return res.status(500).json({ error: "Database error" });
+      }
 
-  // Send initial data when client connects
-  fetchAndEmitData();
+      if (results.length === 0) {
+        console.log("User not found for ID:", decoded.id);
+        return res.status(404).json({ error: "User not found" });
+      }
 
-  socket.on("disconnect", () => {
-    console.log("Client disconnected:", socket.id);
-  });
+      const user = results[0];
+      console.log("✅ User found:", user);
+      res.json({ username: user.username, email: user.email });
+    });
+  } catch (err) {
+    console.error("JWT error:", err);
+    res.status(401).json({ error: "Invalid token" });
+  }
 });
 
-// Insert New Data & Emit Update
-app.post("/insert", (req, res) => {
-  const { value } = req.body;
-  db.query("INSERT INTO gauge_data (value) VALUES (?)", [value], (err, result) => {
-    if (err) {
-      console.error("Error inserting data:", err);
-      res.status(500).json({ error: "Database error" });
-    } else {
-      console.log("New Data Inserted:", value);
-      fetchAndEmitData(); 
-      res.status(201).json({ message: "Data inserted successfully" });
-    }
-  });
-});
+//  Read and store data from Arduino
+// parser.on("data", (data) => {
+//   try {
+//     const jsonData = JSON.parse(data.trim());
+//     const turbidityValue = jsonData.turbidity_value;
 
+//     console.log("📡 Received Data:", turbidityValue);
 
+//     //  Insert into MySQL
+//     const query = "INSERT INTO turbidity_readings (turbidity_value) VALUES (?)";
+//     db.query(query, [turbidityValue], (err, result) => {
+//       if (err) {
+//         console.error("Database Insert Error:", err);
+//       } else {
+//         console.log("Data Inserted Successfully: ID", result.insertId);
+
+//         // Emit real-time data update
+//         io.emit("updateData", { value: turbidityValue });
+//       }
+//     });
+//   } catch (err) {
+//     console.error("JSON Parse Error:", err);
+//   }
+// });
+
+// // API Route to Fetch Data
+// app.get("/data", (req, res) => {
+//   db.query("SELECT * FROM turbidity_readings ORDER BY id DESC LIMIT 10", (err, results) => {
+//     if (err) {
+//       return res.status(500).json({ error: "Database Query Error" });
+//     }
+//     res.json(results);
+//   });
+// });
+
+// Start Express & Socket.IO Server
 server.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+  console.log(`Backend running on http://localhost:${port}`);
 });
-
-
-app.get("/data", (req, res) => {
-  db.query("SELECT * FROM gauge_data ORDER BY id DESC LIMIT 1", (err, result) => {
-    if (err) {
-      console.error("Error fetching data:", err);
-      return res.status(500).json({ error: "Database error" });
-    }
-    res.json(result[0]); // Send latest data
-  });
+io.listen(3001, () => {
+  console.log("WebSocket server running on port 3001");
 });

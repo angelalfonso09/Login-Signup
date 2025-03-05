@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { FaBell } from "react-icons/fa";
-import { IoMdArrowDropdown } from "react-icons/io";
 import "../styles/navbar.css";
 import axios from "axios";
+import { ThemeContext } from "../context/ThemeContext"; 
 
-const Navbar = ({ theme, toggleTheme }) => {
+const Navbar = () => {
+  const { theme } = useContext(ThemeContext); 
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -12,26 +13,34 @@ const Navbar = ({ theme, toggleTheme }) => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/auth/users", {
-          withCredentials: true, 
+        const token = localStorage.getItem("token");
+        console.log("Token being sent:", token); // Debugging
+  
+        if (!token) throw new Error("No authentication token found");
+  
+        const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/auth/users`, {
+          headers: { Authorization: `Bearer ${token}` },
+          withCredentials: true,
         });
-
+  
+        console.log("User data received:", response.data); // Debugging
+  
         if (response.data) {
           setUser(response.data);
         } else {
           throw new Error("User data is empty.");
         }
       } catch (err) {
-        console.error("❌ Error fetching user:", err);
+        console.error(`❌ Error fetching user: ${err.response ? err.response.data : err.message}`);
         setError("Failed to load user data.");
       } finally {
         setLoading(false);
       }
     };
-
+  
     fetchUserData();
   }, []);
-
+  
   return (
     <div className={`navbar ${theme}`}>
       <div className="left-section">

@@ -3,7 +3,7 @@ import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import "../styles/AccountManagement.css";
 import AccountTable from "../components/AccountTable";
-import "../styles/lightmode.css";
+import "../styles/theme.css";
 
 const AccountManagement = ({ theme, toggleTheme }) => {
   return (

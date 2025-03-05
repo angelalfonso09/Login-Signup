@@ -3,7 +3,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 10px 20px;
-  background: linear-gradient(to right, #000000, #02030f, #0d1326);
+  background-color: var(--navbar-bg);
   transition: background 0.3s ease, color 0.3s ease;
 }
 
@@ -30,43 +30,19 @@
 .account-name {
   font-weight: bold;
   margin: 0;
+  color: var(--text-color);
 }
 
 .account-email {
-  color: #f5f5f5;
+  color: var(--text-color);
   margin: 0;
-}
-
-/* Light Mode Adjustments for Account Email */
-.app-container.light .account-email {
-  color: #f5f5f5;
 }
 
 /* Dropdown Icon */
 .dropdown-icon {
   margin-left: 10px;
   cursor: pointer;
-}
-
-
-
-/* Light Mode Search Bar */
-.app-container.light  {
-  background: rgba(0, 0, 0, 0.1);
-  color: black;
-}
-
-
-/* Light Mode Search Icon */
-.app-container.light  {
-  color: #333;
-}
-
-
-
-/* Light Mode Search Input */
-.app-container.light  {
-  color: black;
+  color: var(--text-color);
 }
 
 /* Right Section */
@@ -79,22 +55,27 @@
 .notification-icon {
   margin-right: 20px;
   cursor: pointer;
+  color: var(--text-color);
 }
 
-/* Light Mode Notification Icon */
-.app-container.light .notification-icon {
-  color: white;
+.notification-icon:hover {
+  color: var(--hover-bg);
 }
 
 /* Admin Button */
 .admin-button {
-  background-color: #007bff;
-  color: white;
+  background-color: var(--button-bg);
+  color: var(--text-color);
   border: none;
   padding: 5px 10px;
   border-radius: 5px;
   cursor: pointer;
   margin-right: 20px;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.admin-button:hover {
+  background-color: var(--hover-bg);
 }
 
 /* Profile Picture */
@@ -102,9 +83,5 @@
   border-radius: 50%;
   width: 30px;
   height: 30px;
-}
-
-/* Light Mode Profile Picture Border */
-.app-container.light .profile-pic img {
-  border: 2px solid #ddd;
+  border: 2px solid var(--hover-bg);
 }
