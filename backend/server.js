@@ -55,43 +55,43 @@ const query = (sql, values) =>
 module.exports = { query };
 
 // Set up SerialPort (Change COM3 to your correct port)
-// const serialPort = new SerialPort({ path: "COM3", baudRate: 9600 });
-// const parser = serialPort.pipe(new ReadlineParser({ delimiter: "\n" }));
+const serialPort = new SerialPort({ path: "COM3", baudRate: 9600 });
+const parser = serialPort.pipe(new ReadlineParser({ delimiter: "\n" }));
 
-// // Read and store data from Arduino
-// parser.on("data", (data) => {
-//   try {
-//     const jsonData = JSON.parse(data.trim());
-//     const turbidityValue = jsonData.turbidity_value;
+// Read and store data from Arduino
+parser.on("data", (data) => {
+  try {
+    const jsonData = JSON.parse(data.trim());
+    const turbidityValue = jsonData.turbidity_value;
 
-//     console.log("📡 Received Data:", turbidityValue);
+    console.log("📡 Received Data:", turbidityValue);
 
-//     // Insert into MySQL
-//     const query = "INSERT INTO turbidity_readings (turbidity_value) VALUES (?)";
-//     db.query(query, [turbidityValue], (err, result) => {
-//       if (err) {
-//         console.error("Database Insert Error:", err);
-//       } else {
-//         console.log("Data Inserted Successfully: ID", result.insertId);
+    // Insert into MySQL
+    const query = "INSERT INTO turbidity_readings (turbidity_value) VALUES (?)";
+    db.query(query, [turbidityValue], (err, result) => {
+      if (err) {
+        console.error("Database Insert Error:", err);
+      } else {
+        console.log("Data Inserted Successfully: ID", result.insertId);
 
-//         // Emit real-time data update
-//         io.emit("updateData", { value: turbidityValue });
-//       }
-//     });
-//   } catch (err) {
-//     console.error("JSON Parse Error:", err);
-//   }
-// });
+        // Emit real-time data update
+        io.emit("updateData", { value: turbidityValue });
+      }
+    });
+  } catch (err) {
+    console.error("JSON Parse Error:", err);
+  }
+});
 
 // API Route to Fetch Data
-// app.get("/data", (req, res) => {
-//   db.query("SELECT * FROM turbidity_readings ORDER BY id DESC LIMIT 10", (err, results) => {
-//     if (err) {
-//       return res.status(500).json({ error: "Database Query Error" });
-//     }
-//     res.json(results);
-//   });
-// });
+app.get("/data", (req, res) => {
+  db.query("SELECT * FROM turbidity_readings ORDER BY id DESC LIMIT 10", (err, results) => {
+    if (err) {
+      return res.status(500).json({ error: "Database Query Error" });
+    }
+    res.json(results);
+  });
+});
 
 // mailer function
 app.post("/send-email", async (req, res) => {

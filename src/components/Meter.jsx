@@ -14,7 +14,7 @@ const GaugeMeter = () => {
 
   useEffect(() => {
     // ✅ Fetch initial data from the backend
-    axios.get("http://localhost:3000/data").then((response) => {
+    axios.get("http://localhost:5000/data").then((response) => {
       if (response.data.length > 0) {
         console.log("📡 Initial Data:", response.data[0].turbidity_value);
         setValue(response.data[0].turbidity_value);
