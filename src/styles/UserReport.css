@@ -1,0 +1,63 @@
+/* Container */
+.report-form-container {
+    max-width: 500px;
+    margin: 20px auto;
+    padding: 20px;
+    background: var(--bg-color);
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    color: var(--text-color);
+    transition: background 0.3s ease, color 0.3s ease;
+  }
+  
+  /* Form */
+  .report-form {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* Labels */
+  .report-form label {
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: var(--label-color);
+  }
+  
+  /* Inputs */
+  .report-form input,
+  .report-form textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid var(--input-border);
+    border-radius: 5px;
+    font-size: 16px;
+    background-color: var(--input-bg);
+    color: var(--input-text);
+    transition: border 0.3s ease;
+  }
+  
+  .report-form input:focus,
+  .report-form textarea:focus {
+    border-color: var(--focus-border);
+    outline: none;
+  }
+  
+  /* Button */
+  .report-form button {
+    padding: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    color: white;
+    background-color: var(--btn-primary);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.2s ease;
+  }
+  
+  .report-form button:hover {
+    background-color: var(--btn-hover);
+    transform: scale(1.05);
+  }
+  

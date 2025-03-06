@@ -1,80 +1,82 @@
+:root {
+    --acctbl-container-margin: 20px;
+    --acctbl-container-padding: 15px;
+    --acctbl-container-radius: 8px;
+    
+    --acctbl-title-font-size: 22px;
+    --acctbl-title-font-weight: 600;
+    --acctbl-title-margin-bottom: 15px;
 
+    --acctbl-controls-gap: 10px;
+    --acctbl-controls-margin-bottom: 15px;
+    --acctbl-controls-height: 40px;
 
-/* Apply Theme Based on Class */
-.acctbl-container.light {
-    background: var(--acctbl-bg-light);
-    color: var(--acctbl-text-light);
+    --acctbl-input-padding: 8px;
+    --acctbl-input-radius: 5px;
+
+    --acctbl-table-border: 1px solid;
+    --acctbl-table-padding: 10px;
+    --acctbl-table-text-align: center;
+
+    --acctbl-btn-padding: 8px 12px;
+    --acctbl-btn-radius: 5px;
+    --acctbl-btn-cursor: pointer;
+}
+
+/* Apply Variables */
+.acctbl-container {
+    margin-top: var(--acctbl-container-margin);
+    padding: var(--acctbl-container-padding);
+    border-radius: var(--acctbl-container-radius);
+    background: var(--acctbl-container-bg-light);
 }
 
 .acctbl-container.dark {
-    background: var(--acctbl-bg-dark);
-    color: var(--acctbl-text-dark);
+    background: var(--acctbl-container-bg-dark);
 }
 
-/* Minimal Container */
-.acctbl-container {
-    margin-top: 20px;
-    padding: 15px;
-    border-radius: 8px;
-}
-
-/* Title */
 .acctbl-title {
     text-align: center;
-    font-size: 22px;
-    font-weight: 600;
-    margin-bottom: 15px;
+    font-size: var(--acctbl-title-font-size);
+    font-weight: var(--acctbl-title-font-weight);
+    margin-bottom: var(--acctbl-title-margin-bottom);
 }
 
-/* Search & Filter Controls */
 .acctbl-controls {
     display: flex;
     justify-content: space-between;
-    gap: 10px;
-    margin-bottom: 15px;
+    gap: var(--acctbl-controls-gap);
+    margin-bottom: var(--acctbl-controls-margin-bottom);
+    height: var(--acctbl-controls-height);
+    background: var(--acctbl-controls-bg-light);
 }
 
-.acctbl-search::placeholder {
-    color: var(--acctbl-placeholder-light); 
-    opacity: 1; 
-  }
-
-  [data-theme="dark"] {
-    color: var(--acctbl-placeholder-dark);
-  }     
+.acctbl-container.dark .acctbl-controls {
+    background: var(--acctbl-controls-bg-dark);
+}
 
 .acctbl-search,
 .acctbl-filter {
     flex: 1;
-    padding: 8px;
-    border-radius: 5px;
+    padding: var(--acctbl-input-padding);
+    border-radius: var(--acctbl-input-radius);
 }
 
-.acctbl-container.light .acctbl-search,
-.acctbl-container.light .acctbl-filter {
-    background: var(--acctbl-input-bg-light);
-    border: 1px solid var(--acctbl-input-border-light);
-    color: var(--acctbl-text-light);
-}
-
-.acctbl-container.dark .acctbl-search,
-.acctbl-container.dark .acctbl-filter {
-    background: var(--acctbl-input-bg-dark);
-    border: 1px solid var(--acctbl-input-border-dark);
-    color: var(--acctbl-text-dark);
-}
-
-/* Table Styling */
 .acctbl-table {
     width: 100%;
     border-collapse: collapse;
+    background: var(--acctbl-table-bg-light);
+}
+
+.acctbl-container.dark .acctbl-table {
+    background: var(--acctbl-table-bg-dark);
 }
 
 .acctbl-table th,
 .acctbl-table td {
-    padding: 10px;
-    text-align: center;
-    border: 1px solid;
+    padding: var(--acctbl-table-padding);
+    text-align: var(--acctbl-table-text-align);
+    border: var(--acctbl-table-border);
 }
 
 .acctbl-container.light .acctbl-table th,
@@ -87,45 +89,11 @@
     border-color: var(--acctbl-border-dark);
 }
 
-/* No Results Message */
-.acctbl-no-results {
-    text-align: center;
-    font-weight: 500;
-}
-
-.acctbl-container.light .acctbl-no-results {
-    color: #777;
-}
-
-.acctbl-container.dark .acctbl-no-results {
-    color: #bbb;
-}
-
-/* Action Buttons */
-.acctbl-action-btn {
-    background: none;
-    border: none;
-    padding: 5px;
-    cursor: pointer;
-    font-size: 16px;
-    color: inherit;
-}
-
-.acctbl-action-btn:hover {
-    opacity: 0.7;
-}
-
-/* Create Admin Button */
-.acctbl-create-btn-container {
-    text-align: center;
-    margin-top: 20px;
-}
-
 .acctbl-create-btn {
     border: none;
-    padding: 8px 12px;
-    border-radius: 5px;
-    cursor: pointer;
+    padding: var(--acctbl-btn-padding);
+    border-radius: var(--acctbl-btn-radius);
+    cursor: var(--acctbl-btn-cursor);
 }
 
 .acctbl-container.light .acctbl-create-btn {

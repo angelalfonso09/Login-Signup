@@ -30,7 +30,6 @@
 /* Light Mode */
 .reports-container.light {
   --bg-color: #f5f5f5;
-  --card-bg: #fff;
   --text-color: #000;
   --table-border: #ccc;
   --header-bg: #007bff;
@@ -43,15 +42,14 @@
   --report-title-weight: 700;
 
     /* Status Colors - Muted for better contrast */
-    --status-completed: #24a148; 
-    --status-in-review: #e5c100; 
-    --status-draft: #3d76cc; 
+    --status-completed: #2d336b7e; 
+    --status-in-review: #7886c770; 
+    --status-draft: #a9b5df67;  
 }
 
 /* Dark Mode */
 .reports-container.dark {
     --bg-color: #121212;
-    --card-bg: #1e1e1e;
     --text-color: #fff;
     --table-border: #444;
     --header-bg: #3b3f56;
@@ -64,9 +62,9 @@
     --report-title-weight: 700; 
   
   /* Status Colors - Muted for better contrast */
-  --status-completed: #24a148; 
-  --status-in-review: #e5c100; 
-  --status-draft: #3d76cc; 
+  --status-completed: #2D336B; 
+  --status-in-review: #7886C7; 
+  --status-draft: #A9B5DF; 
   }
 
 
@@ -92,24 +90,50 @@
   --button-hover: #666;
 }
 
-/* Light Mode & Dark Mode Themes */
 :root {
+  --btn-bg: #007bff;
+  --btn-hover: #0056b3;
+  --btn-text: white;
+
+  --btn-bg-light: #007bff;
+  --btn-text-light: white;
+
+  --btn-bg-dark: #222;
+  --btn-text-dark: #fff;
+}
+
+:root {
+  /* Light Theme */
+  --acctbl-container-bg-light: #f9f9f9;
   --acctbl-bg-light: #ffffff;
-  --acctbl-text-light: #000000;
-  --acctbl-border-light: #ddd;
-  --acctbl-input-bg-light: #f9f9f9;
+  --acctbl-text-light: #333;
+  --acctbl-controls-bg-light: #e6e6e6;
+  --acctbl-placeholder-light: #aaa;
+  --acctbl-input-bg-light: #fff;
   --acctbl-input-border-light: #ccc;
+  --acctbl-table-bg-light: #fff;
+  --acctbl-border-light: #ddd;
   --acctbl-button-bg-light: #007bff;
   --acctbl-button-hover-light: #0056b3;
-  --acctbl-placeholder-light: #000;
 
-  --acctbl-bg-dark: #1e1e1e;
-  --acctbl-text-dark: #f5f5f5;
-  --acctbl-border-dark: #444;
-  --acctbl-input-bg-dark: #2b2b2b;
-  --acctbl-input-border-dark: #555;
-  --acctbl-button-bg-dark: #0056b3;
-  --acctbl-button-hover-dark: #003f7f;
-  --acctbl-placeholder-dark: #fff;
+  /* Dark Theme */
+  --acctbl-container-bg-dark: #222;
+  --acctbl-bg-dark: #333;
+  --acctbl-text-dark: #fff;
+  --acctbl-controls-bg-dark: #444;
+  --acctbl-placeholder-dark: #888;
+  --acctbl-input-bg-dark: #555;
+  --acctbl-input-border-dark: #777;
+  --acctbl-table-bg-dark: #444;
+  --acctbl-border-dark: #666;
+  --acctbl-button-bg-dark: #17a2b8;
+  --acctbl-button-hover-dark: #117a8b;
+
+  /* Spacing & Borders */
+  --acctbl-margin-top: 20px;
+  --acctbl-padding: 15px;
+  --acctbl-border-radius: 8px;
+  --acctbl-font-size-title: 22px;
 }
+
 

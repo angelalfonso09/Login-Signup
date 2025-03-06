@@ -5,6 +5,7 @@ import "../styles/UserDB.css";
 import "../styles/theme.css";
 import Meter from "../components/Meter";
 import { ThemeContext } from "../context/ThemeContext";
+import UserTable from "../components/UserTable";
 
 const UserDB = () => {
   const { theme, toggleTheme } = useContext(ThemeContext);
@@ -24,6 +25,7 @@ const UserDB = () => {
             <Meter />
             <Meter />
           </div>
+          <UserTable />
         </div>
       </div>
     </div>

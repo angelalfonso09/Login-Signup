@@ -12,6 +12,7 @@
 .reports-table {
   width: 100%;
   border-collapse: collapse;
+  background-color: var(--bg-color);
 }
 
 .reports-table th,
@@ -63,3 +64,4 @@
   font-weight: var(--report-title-weight);
   text-shadow: var(--report-title-shadow);
 }
+

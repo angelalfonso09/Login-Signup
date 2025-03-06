@@ -18,6 +18,7 @@ const { ReadlineParser } = require("@serialport/parser-readline");
 const cookieParser = require("cookie-parser");
 const authRoutes = require('./models/route');
 
+
 const app = express();
 const port = 5000;
 const saltRounds = 10;
@@ -53,6 +54,14 @@ const query = (sql, values) =>
   });
 
 module.exports = { query };
+
+require('dotenv').config();
+console.log(process.env.PORT);
+
+app.get("/", (req, res) => {
+  res.send("Backend is running!");
+});
+
 
 // Set up SerialPort (Change COM3 to your correct port)
 const serialPort = new SerialPort({ path: "COM3", baudRate: 9600 });
@@ -385,38 +394,77 @@ app.put('/api/users/:id', async (req, res) => {
 
 
 // fetch data to display in navbar
-app.get("/api/auth/users", (req, res) => {
+app.use(cors({
+  origin: "http://localhost:5173", // Allow frontend URL
+  credentials: true, // Allow cookies and authorization headers
+  methods: "GET,POST,PUT,DELETE", // Allowed methods
+  allowedHeaders: "Content-Type,Authorization" // Allowed headers
+}));
+
+
+app.get("/api/auth/users", async (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];
+
   if (!token) {
-    console.log("No token provided");
-    return res.status(401).json({ error: "Unauthorized" });
+    console.log("❌ No token provided");
+    return res.status(401).json({ error: "Unauthorized: No token" });
   }
 
   try {
-    const decoded = jwt.verify(token, "your_secret_key");
-    console.log("Token decoded:", decoded);
+    const decoded = jwt.verify(token, "e265c8e7b7d5ac89322c36640b46c2fd492946cc20b1cfecbb5877545e8db43ae64312366e32fed4b52eda2b200915964971ceee8d947fad0311561645e12aeb"); // Ensure you replace this with your actual secret key
+    console.log("🔑 Token decoded:", decoded);
 
     const sql = "SELECT username, email FROM users WHERE id = ?";
-    db.query(sql, [decoded.id], (err, results) => {
-      if (err) {
-        console.error("Database error:", err);
-        return res.status(500).json({ error: "Database error" });
-      }
+    const [results] = await db.promise().query(sql, [decoded.id]); // Fixed `.promise().query()`
 
-      if (results.length === 0) {
-        console.log("User not found for ID:", decoded.id);
-        return res.status(404).json({ error: "User not found" });
-      }
+    if (results.length === 0) {
+      console.log("❌ User not found for ID:", decoded.id);
+      return res.status(404).json({ error: "User not found" });
+    }
 
-      const user = results[0];
-      console.log("✅ User found:", user);
-      res.json({ username: user.username, email: user.email });
-    });
+    const user = results[0];
+    console.log("✅ User found:", user);
+    res.json(user);
   } catch (err) {
-    console.error("JWT error:", err);
-    res.status(401).json({ error: "Invalid token" });
+    console.error("❌ JWT error:", err.message);
+    res.status(401).json({ error: "Invalid or expired token" });
   }
 });
+
+app.get("/api/auth/user", async (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
+
+  if (!token) {
+      console.log("❌ No token provided");
+      return res.status(401).json({ error: "Unauthorized: No token" });
+  }
+
+  try {
+      const decoded = jwt.verify(token, "e265c8e7b7d5ac89322c36640b46c2fd492946cc20b1cfecbb5877545e8db43ae64312366e32fed4b52eda2b200915964971ceee8d947fad0311561645e12aeb"); // Use your actual secret key
+      console.log("🔑 Token decoded:", decoded);
+
+      const sql = "SELECT username, email, role FROM users WHERE id = ?";
+      db.query(sql, [decoded.id], (err, results) => {
+          if (err) {
+              console.error("❌ MySQL Error:", err);
+              return res.status(500).json({ error: "Database error" });
+          }
+
+          if (results.length === 0) {
+              console.log("❌ User not found for ID:", decoded.id);
+              return res.status(404).json({ error: "User not found" });
+          }
+
+          const user = results[0];
+          console.log("✅ User found:", user);
+          res.json(user);
+      });
+  } catch (err) {
+      console.error("❌ JWT error:", err.message);
+      res.status(401).json({ error: "Invalid or expired token" });
+  }
+});
+
 
 //  Read and store data from Arduino
 // parser.on("data", (data) => {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import { Table, Container, Form, Button, Modal, Alert, Spinner } from "react-bootstrap";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, Plus } from "lucide-react";
 import AdminCreationForm from "./AdminAccountForm";
 import axios from "axios";
 import "../styles/AC.css";
@@ -100,7 +100,9 @@ const UserAdminTable = () => {
           <option value="User">User</option>
           <option value="Admin">Admin</option>
         </Form.Select>
-        <Button onClick={() => setShowAdminModal(true)}>Create Admin</Button>
+        <Button onClick={() => setShowAdminModal(true)}>
+          <Plus size={16} />
+        </Button>
       </div>
       {loading && <Spinner animation="border" />} {error && <Alert variant="danger">{error}</Alert>}
       <Table striped bordered hover>
@@ -155,8 +157,6 @@ const UserAdminTable = () => {
             <Form.Group>
               <Form.Label>Email</Form.Label>
               <Form.Control name="email" value={editFormData.email} onChange={handleInputChange} />
-            </Form.Group>
-            <Form.Group>
             </Form.Group>
             {editError && <Alert variant="danger">{editError}</Alert>}
             <Button type="submit">Save Changes</Button>

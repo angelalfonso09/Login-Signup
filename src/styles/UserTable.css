@@ -1,141 +1,149 @@
-/* User Table Container */
-.user-table-container {
-    padding: 20px;
-    background: var(--bg-color);
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    width: 100%;
-  }
-  
-  /* Table Styling */
-  .user-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: white;
-    border-radius: 8px;
-    overflow: hidden;
-  }
-  
-  .user-table th,
-  .user-table td {
-    padding: 12px;
-    text-align: left;
-    border: 1px solid #ddd;
-  }
-  
-  .user-table th {
-    background-color: #2c3e50;
-    color: white;
-    font-weight: bold;
-    text-transform: uppercase;
-  }
-  
-  .user-table tr:nth-child(even) {
-    background-color: #f8f9fa;
-  }
-  
-  .user-table tr:hover {
-    background-color: #e0e0e0;
-    transition: 0.2s ease-in-out;
-  }
-  
-  /* Add Report Button */
-  .add-report-btn {
-    background-color: #007bff;
-    color: white;
-    padding: 6px 12px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-  
-  .add-report-btn:hover {
-    background-color: #0056b3;
-  }
-  
-  /* Modal Styles */
-  .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .modal-content {
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-    width: 300px;
-  }
-  
-  .modal-content h3 {
-    margin-bottom: 10px;
-    text-align: center;
-  }
-  
-  .modal-content label {
-    display: block;
-    margin-top: 10px;
-    font-weight: bold;
-  }
-  
-  .modal-content input,
-  .modal-content textarea {
-    width: 100%;
-    padding: 8px;
-    margin-top: 5px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-  }
-  
-  .modal-buttons {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 15px;
-  }
-  
-  .submit-btn {
-    background-color: #28a745;
-    color: white;
-    padding: 8px 15px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-  
-  .submit-btn:hover {
-    background-color: #218838;
-  }
-  
-  .cancel-btn {
-    background-color: #dc3545;
-    color: white;
-    padding: 8px 15px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-  
-  .cancel-btn:hover {
-    background-color: #c82333;
-  }
-  
-  /* Responsive Design */
-  @media (max-width: 768px) {
-    .user-table th,
-    .user-table td {
-      padding: 8px;
-      font-size: 14px;
-    }
-  
-    .modal-content {
-      width: 90%;
-    }
-  }
-  
+/* Container */
+.reports-container {
+  padding: 20px;
+  background: var(--bg-color);
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  color: var(--text-color);
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* Table */
+.reports-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: var(--bg-color);
+}
+
+.reports-table th,
+.reports-table td {
+  padding: 10px;
+  text-align: left;
+  border-bottom: 1px solid var(--table-border);
+}
+
+.reports-table th {
+  background-color: var(--header-bg);
+  color: var(--header-text);
+}
+
+.reports-table tr.dark{
+  color: var(--text-color);
+}
+
+.reports-table tr:hover {
+  background-color: var(--row-hover);
+}
+
+/* Status Styles */
+.status {
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-weight: bold;
+}
+
+/* Status Colors */
+.status.completed {
+  background-color: var(--status-completed);
+  color: white;
+}
+
+.status.in-review {
+  background-color: var(--status-in-review);
+  color: white;
+}
+
+.status.draft {
+  background-color: var(--status-draft);
+  color: white;
+}
+
+.reports-container.dark h2 {
+  color: var(--report-title-color);
+  font-size: var(--report-title-size);
+  font-weight: var(--report-title-weight);
+  text-shadow: var(--report-title-shadow);
+}
+
+/* Floating Plus Button */
+
+.but{
+  height: 50px;
+  width: 100%;
+  display: flex;
+  justify-content: end;
+  margin-top: 15px;
+}
+.add-report-btn {
+  background-color: var(--btn-bg);
+  color: var(--btn-text);
+  border: none;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  font-size: 24px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.add-report-btn:hover {
+  background-color: var(--btn-hover);
+  transform: scale(1.1);
+}
+
+/* Light & Dark Mode Support */
+.reports-container.light .add-report-btn {
+  background-color: var(--btn-bg-light);
+  color: var(--btn-text-light);
+}
+
+.reports-container.dark .add-report-btn {
+  background-color: var(--btn-bg-dark);
+  color: var(--btn-text-dark);
+}
+
+/* .modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+} */
+/* 
+.modal {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  width: 400px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+.modal-buttons button {
+  padding: 10px 15px;
+  border: none;
+  background: #007bff;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.modal-buttons button:last-child {
+  background: #dc3545;
+} */
