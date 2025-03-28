@@ -1,0 +1,48 @@
+.widget-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #f3f4f6;
+    padding: 1.5rem;
+    border-radius: 1rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 15rem;
+  }
+  
+  .circular-progress {
+    position: relative;
+    width: 8rem;
+    height: 8rem;
+  }
+  
+  .temperature-text {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #2563eb;
+    font-weight: bold;
+  }
+  
+  .temperature-text span:first-child {
+    font-size: 0.875rem;
+  }
+  
+  .temperature-text span:nth-child(2) {
+    font-size: 2rem;
+  }
+  
+  .temperature-text span:last-child {
+    font-size: 0.875rem;
+  }
+  
+  .water-quality-text {
+    margin-top: 1rem;
+    color: #6b7280;
+    font-size: 0.875rem;
+  }
+  
+  .water-quality-text span {
+    color: #2563eb;
+    font-weight: 600;
+  }
+  

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { io } from "socket.io-client";
 import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from "recharts";
-import "./App.css";
+import "./sensorsCSS/turb.css";
 
 const TurbidityMonitor = ({ theme }) => {
   const [turbidityData, setTurbidityData] = useState([]);

@@ -24,6 +24,7 @@
     "mysql2": "^3.12.0",
     "nodemailer": "^6.10.0",
     "pg": "^8.13.3",
+    "react-circular-progressbar": "^2.2.0",
     "serialport": "^13.0.0",
     "socket.io": "^4.8.1"
   }

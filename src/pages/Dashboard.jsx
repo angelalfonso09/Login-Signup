@@ -4,7 +4,13 @@ import Sidebar from "../components/Sidebar";
 import "../styles/theme.css";
 import Meter from "../components/Meter";
 import ReportsTable from "../components/ReportsTable";
-import { ThemeContext } from "../context/ThemeContext"; // Import ThemeContext
+import { ThemeContext } from "../context/ThemeContext"; 
+import Ph from "../Meters/Ph";
+import Tds from "../Meters/Tds";
+import Conductivity from "../Meters/Conductivity";
+import Dissolved from "../Meters/Dissolved";
+import Temperature from "../Meters/Temperature";
+import Turbidity from "../Meters/Turbidity";
 
 const Dashboard = () => {
   const { theme, toggleTheme } = useContext(ThemeContext); // Access ThemeContext
@@ -18,10 +24,12 @@ const Dashboard = () => {
           <div className="meter-grid">
             <Meter />
             <Meter />
-            <Meter />
-            <Meter />
-            <Meter />
-            <Meter />
+            <Turbidity />
+            <Temperature />
+            <Dissolved />
+            <Conductivity />
+            <Tds/>
+            <Ph/>
           </div>
           <ReportsTable />
         </div>
