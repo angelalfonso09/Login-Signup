@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from "recharts";
 import "./sensorsCSS/temp.css"; 
 
-const WaterTemperature = ({ theme }) => {
+const WaterTemperature = ({ theme, updateSensorData }) => {
   const [temperatureData, setTemperatureData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -14,9 +14,12 @@ const WaterTemperature = ({ theme }) => {
         time: new Date().toLocaleTimeString(),
         temperature: simulatedTemperature,
       };
-      
+
       setTemperatureData((prevData) => [...prevData.slice(-19), newDataPoint]);
       setLoading(false);
+
+      // ✅ Send updated data to History.jsx
+      updateSensorData("Temperature", simulatedTemperature, "°C");
     }, 1000);
   };
 

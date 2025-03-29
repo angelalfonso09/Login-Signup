@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from "recharts";
-import "./sensorsCSS/tds.css"
+import "./sensorsCSS/tds.css";
 
-const TDSMonitor = ({ theme }) => {
+const TDSMonitor = ({ theme, updateSensorData }) => {
   const [tdsData, setTdsData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   const fetchTDS = () => {
     setTimeout(() => {
@@ -16,7 +14,11 @@ const TDSMonitor = ({ theme }) => {
       };
 
       setTdsData((prevData) => [...prevData.slice(-19), newDataPoint]);
-      setLoading(false);
+
+      // ✅ Send updated TDS data to History.jsx
+      if (updateSensorData) {
+        updateSensorData("TDS Level", parseFloat(randomTDS), "ppm");
+      }
     }, 1000);
   };
 
@@ -25,9 +27,6 @@ const TDSMonitor = ({ theme }) => {
     const interval = setInterval(fetchTDS, 5000);
     return () => clearInterval(interval);
   }, []);
-
-  if (loading) return <div>Loading TDS data...</div>;
-  if (error) return <div>Error: {error}</div>;
 
   return (
     <div className={`tds-monitor-container ${theme}`}>

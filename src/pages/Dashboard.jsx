@@ -24,7 +24,7 @@ const Dashboard = () => {
           <div className="meter-grid">
             <Meter />
             <Meter />
-            <Turbidity />
+            <Turbidity/>
             <Temperature />
             <Dissolved />
             <Conductivity />

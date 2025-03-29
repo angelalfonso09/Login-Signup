@@ -2,10 +2,8 @@ import React, { useState, useEffect } from "react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from "recharts";
 import "./sensorsCSS/phlevel.css"; 
 
-const PHLevelMonitor = ({ theme }) => {
+const PHLevelMonitor = ({ theme, updateSensorData }) => {
   const [phData, setPhData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   const fetchPhLevel = () => {
     setTimeout(() => {
@@ -16,7 +14,11 @@ const PHLevelMonitor = ({ theme }) => {
       };
 
       setPhData((prevData) => [...prevData.slice(-19), newDataPoint]);
-      setLoading(false);
+
+      // ✅ Send updated pH level data to History.jsx
+      if (updateSensorData) {
+        updateSensorData("pH Level", parseFloat(randomPh), "");
+      }
     }, 1000);
   };
 
@@ -25,9 +27,6 @@ const PHLevelMonitor = ({ theme }) => {
     const interval = setInterval(fetchPhLevel, 5000);
     return () => clearInterval(interval);
   }, []);
-
-  if (loading) return <div>Loading pH level data...</div>;
-  if (error) return <div>Error: {error}</div>;
 
   return (
     <div className={`ph-level-container ${theme}`}>

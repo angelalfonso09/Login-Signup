@@ -9,7 +9,7 @@ const DOMonitor = ({ theme }) => {
 
   const fetchDO = () => {
     setTimeout(() => {
-      const randomDO = (Math.random() * 14).toFixed(2); // Simulated DO value (0-14 mg/L)
+      const randomDO = (Math.random() * 14).toFixed(2); 
       const newDataPoint = {
         time: new Date().toLocaleTimeString(),
         do: parseFloat(randomDO),
