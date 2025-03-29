@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from "recharts";
-import "./sensorsCSS/do.css"
+import "./sensorsCSS/do.css";
 
-const DOMonitor = ({ theme }) => {
+const DOMonitor = ({ theme, updateSensorData }) => {
   const [doData, setDoData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   const fetchDO = () => {
     setTimeout(() => {
@@ -16,7 +14,11 @@ const DOMonitor = ({ theme }) => {
       };
 
       setDoData((prevData) => [...prevData.slice(-19), newDataPoint]);
-      setLoading(false);
+
+      // ✅ Send updated DO data to another component
+      if (updateSensorData) {
+        updateSensorData("Dissolved Oxygen Level", parseFloat(randomDO), "mg/L");
+      }
     }, 1000);
   };
 
@@ -25,9 +27,6 @@ const DOMonitor = ({ theme }) => {
     const interval = setInterval(fetchDO, 5000);
     return () => clearInterval(interval);
   }, []);
-
-  if (loading) return <div>Loading Dissolved Oxygen data...</div>;
-  if (error) return <div>Error: {error}</div>;
 
   return (
     <div className={`do-monitor-container ${theme}`}>

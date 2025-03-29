@@ -31,39 +31,39 @@ const History = () => {
     ]);
   };
 
-  const exportToCSV = () => {
-    if (sensorData.length === 0) {
-      alert("No data to export!");
-      return;
-    }
-    try {
-      const csv = Papa.unparse(sensorData);
-      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-      saveAs(blob, "RealTimeSensorData.csv");
-      console.log("CSV file exported successfully.");
-    } catch (error) {
-      console.error("Error exporting CSV:", error);
-    }
-  };
-
   const exportToExcel = () => {
     if (sensorData.length === 0) {
       alert("No data to export!");
       return;
     }
+  
     try {
-      const ws = XLSX.utils.json_to_sheet(sensorData);
       const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "RealTimeData");
+  
+      // Group data by sensor type
+      const groupedData = sensorData.reduce((acc, entry) => {
+        if (!acc[entry.Sensor]) acc[entry.Sensor] = [];
+        acc[entry.Sensor].push(entry);
+        return acc;
+      }, {});
+  
+      // Create a separate sheet for each sensor
+      Object.keys(groupedData).forEach((sensor) => {
+        const ws = XLSX.utils.json_to_sheet(groupedData[sensor]);
+        XLSX.utils.book_append_sheet(wb, ws, sensor); // Add sheet per sensor
+      });
+  
+      // Create Excel file
       const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
       const blob = new Blob([excelBuffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8" });
+  
       saveAs(blob, "RealTimeSensorData.xlsx");
-      console.log("Excel file exported successfully.");
+      console.log("Excel file exported successfully with separate sheets per sensor.");
     } catch (error) {
       console.error("Error exporting Excel:", error);
     }
   };
-
+  
   return (
     <div className={`history ${theme}`}>
       <Navbar theme={theme} toggleTheme={toggleTheme} />
@@ -79,7 +79,6 @@ const History = () => {
           <Conductivity theme={theme} updateSensorData={updateSensorData} />
 
           <div className="export-buttons">
-            <button onClick={exportToCSV} className="export-btn">Export CSV</button>
             <button onClick={exportToExcel} className="export-btn">Export Excel</button>
           </div>
         </div>

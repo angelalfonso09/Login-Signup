@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from "recharts";
-import "./sensorsCSS/conduct.css"
+import "./sensorsCSS/conduct.css";
 
-const ConductivityMonitor = ({ theme }) => {
+const ConductivityMonitor = ({ theme, updateSensorData }) => {
   const [conductivityData, setConductivityData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   const fetchConductivity = () => {
     setTimeout(() => {
@@ -16,7 +14,11 @@ const ConductivityMonitor = ({ theme }) => {
       };
 
       setConductivityData((prevData) => [...prevData.slice(-19), newDataPoint]);
-      setLoading(false);
+
+      // ✅ Send updated Conductivity data to another component
+      if (updateSensorData) {
+        updateSensorData("Water Conductivity", parseFloat(randomConductivity), "µS/cm");
+      }
     }, 1000);
   };
 
@@ -25,9 +27,6 @@ const ConductivityMonitor = ({ theme }) => {
     const interval = setInterval(fetchConductivity, 5000);
     return () => clearInterval(interval);
   }, []);
-
-  if (loading) return <div>Loading Conductivity data...</div>;
-  if (error) return <div>Error: {error}</div>;
 
   return (
     <div className={`conductivity-monitor-container ${theme}`}>
