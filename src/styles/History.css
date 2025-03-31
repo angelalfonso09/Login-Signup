@@ -5,6 +5,16 @@
   background-color: var(--bg-color);
   color: white;
 }
+
+/* New Wrapper to Contain Buttons & Grids */
+.history-content-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  overflow-y: auto;
+}
+
   
 .history-container {
   display: flex;
@@ -18,18 +28,20 @@
   overflow-y: auto; 
   padding: 20px;
 
-  /* Enhanced Grid Layout */
+  /* 3x3 Grid Layout for Graphs */
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: auto;
+  grid-template-rows: repeat(3, auto);
   gap: 20px;
   grid-template-areas: 
-    "temp temp ph"
-    "turbudity tds tds"
-    "do conductivity conductivity";
+    "filters filters export"
+    "temp ph turbudity"
+    "tds do conductivity";
 }
 
 /* Assign Grid Areas */
+.filter-buttons { grid-area: filters; display: flex; gap: 10px; height: 40px; }
+.export-buttons { grid-area: export; display: flex; justify-content: flex-end; height: 40px; }
 .water-temperature-container { grid-area: temp; }
 .ph-level-container { grid-area: ph; }
 .turbudity-container { grid-area: turbudity; }
@@ -52,7 +64,6 @@
   transition: all 0.3s ease-in-out;
 }
 
-
 /* Hover Effect */
 .history-contents > *:hover {
   transform: translateY(-5px);
@@ -63,9 +74,9 @@
   .history-contents {
     grid-template-columns: repeat(2, 1fr);
     grid-template-areas: 
-      "temp temp"
-      "ph turbudity"
-      "tds tds"
+      "filters export"
+      "temp ph"
+      "turbudity tds"
       "do conductivity";
   }
 }
@@ -74,6 +85,8 @@
   .history-contents {
     grid-template-columns: 1fr;
     grid-template-areas: 
+      "filters"
+      "export"
       "temp"
       "ph"
       "turbudity"
@@ -81,4 +94,27 @@
       "do"
       "conductivity";
   }
+  .export-buttons { justify-content: flex-start; }
+}
+
+.filter-buttons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.filter-buttons button {
+  padding: 10px 15px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  background-color: #f0f0f0;
+  cursor: pointer;
+  transition: background 0.3s ease-in-out, color 0.3s;
+}
+
+.filter-buttons button.active {
+  background-color: #007bff;
+  color: white;
+  font-weight: bold;
+  border-color: #0056b3;
 }

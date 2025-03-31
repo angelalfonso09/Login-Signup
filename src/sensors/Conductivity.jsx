@@ -28,16 +28,30 @@ const ConductivityMonitor = ({ theme, updateSensorData }) => {
     return () => clearInterval(interval);
   }, []);
 
+  // ✅ Define colors dynamically based on theme
+  const textColor = theme === "dark" ? "#ffffff" : "#333333";  // White in dark mode, black in light mode
+  const gridColor = theme === "dark" ? "#555555" : "#cccccc";  // Darker grid lines for contrast
+  const lineColor = theme === "dark" ? "#e67e22" : "#2980b9";  // Orange for dark mode, Blue for light mode
+
   return (
     <div className={`conductivity-monitor-container ${theme}`}>
-      <h2>Water Conductivity</h2>
+      <h2 style={{ color: textColor }}>Water Conductivity</h2>
       <ResponsiveContainer width="100%" height={300}>
         <LineChart data={conductivityData}>
-          <XAxis dataKey="time" tick={{ fontSize: 12 }} angle={-25} textAnchor="end" />
-          <YAxis domain={[0, 2000]} label={{ value: "µS/cm", angle: -90, position: "insideLeft" }} />
-          <Tooltip />
-          <CartesianGrid strokeDasharray="3 3" />
-          <Line type="monotone" dataKey="conductivity" stroke={theme === "dark" ? "#e67e22" : "#2980b9"} strokeWidth={2} />
+          <XAxis 
+            dataKey="time" 
+            tick={{ fontSize: 12, fill: textColor, fontWeight: "bold" }} 
+            angle={-17} 
+            textAnchor="end" 
+          />
+          <YAxis 
+            domain={[0, 2000]} 
+            label={{ value: "µS/cm", angle: -90, position: "insideLeft", fill: textColor }} 
+            tick={{ fill: textColor }} 
+          />
+          <Tooltip contentStyle={{ backgroundColor: theme === "dark" ? "#222222" : "#ffffff", color: textColor }} />
+          <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
+          <Line type="monotone" dataKey="conductivity" stroke={lineColor} strokeWidth={2} />
         </LineChart>
       </ResponsiveContainer>
     </div>

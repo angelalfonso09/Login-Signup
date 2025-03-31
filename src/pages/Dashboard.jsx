@@ -22,8 +22,6 @@ const Dashboard = () => {
         <Sidebar theme={theme} toggleTheme={toggleTheme} />
         <div className="db-contents">
           <div className="meter-grid">
-            <Meter />
-            <Meter />
             <Turbidity/>
             <Temperature />
             <Dissolved />

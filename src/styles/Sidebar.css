@@ -1,7 +1,7 @@
 /* Sidebar Styles */
 .sidebar {
   width: 220px;
-  height: 92vh;
+  height: 100%;
   background: var(--sidebar-bg);
   color: var(--sidebar-text);
   display: flex;

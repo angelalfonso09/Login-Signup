@@ -32,16 +32,30 @@ const WaterTemperature = ({ theme, updateSensorData }) => {
   if (loading) return <div>Loading temperature data...</div>;
   if (error) return <div>Error: {error}</div>;
 
+  // ✅ Define colors dynamically based on theme
+  const textColor = theme === "dark" ? "#ffffff" : "#333333";  // White in dark mode, black in light mode
+  const gridColor = theme === "dark" ? "#555555" : "#cccccc";  // Darker grid lines for contrast
+  const lineColor = theme === "dark" ? "#ffcc00" : "#ff4500";  // Yellow for dark mode, Red for light mode
+
   return (
     <div className={`water-temperature-container ${theme}`}>
-      <h2>Water Temperature</h2>
+      <h2 style={{ color: textColor }}>Water Temperature</h2>
       <ResponsiveContainer width="100%" height={300}>
         <LineChart data={temperatureData}>
-          <XAxis dataKey="time" tick={{ fontSize: 12 }} angle={-25} textAnchor="end" />
-          <YAxis domain={[0, 100]} />
-          <Tooltip />
-          <CartesianGrid strokeDasharray="3 3" />
-          <Line type="monotone" dataKey="temperature" stroke={theme === "dark" ? "#8884d8" : "#ff7300"} strokeWidth={2} />
+          <XAxis 
+            dataKey="time" 
+            tick={{ fontSize: 12, fill: textColor, fontWeight: "bold" }} 
+            angle={-17} 
+            textAnchor="end" 
+          />
+          <YAxis 
+            domain={[0, 100]} 
+            tick={{ fill: textColor }} 
+            label={{ value: "°C", angle: -90, position: "insideLeft", fill: textColor }} 
+          />
+          <Tooltip contentStyle={{ backgroundColor: theme === "dark" ? "#222222" : "#ffffff", color: textColor }} />
+          <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
+          <Line type="monotone" dataKey="temperature" stroke={lineColor} strokeWidth={2} />
         </LineChart>
       </ResponsiveContainer>
     </div>
