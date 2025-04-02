@@ -1,4 +1,3 @@
-/* Dashboard.css */
 .db {
   display: flex;
   flex-direction: column;
@@ -21,60 +20,75 @@
   gap: 20px;
   padding: 20px;
   overflow: hidden;
-  max-height: calc(100vh - 60px); /* Adjusted for Navbar height */
+  max-height: calc(100vh - 60px);
 }
 
-/* Grid layout for meters */
+/* Enhanced Grid layout for meters */
 .meter-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 15px;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  padding: 20px;
+  align-items: stretch;
 }
 
-/* Light mode */
+/* Light and Dark mode improvements */
 .light {
   --bg-color: #f9f9f9;
   --text-color: #333;
+  --card-bg: #fff;
+  --shadow-color: rgba(0, 0, 0, 0.1);
 }
 
-/* Dark mode */
 .dark {
   --bg-color: #1e1e1e;
   --text-color: #fff;
+  --card-bg: #2a2a2a;
+  --shadow-color: rgba(255, 255, 255, 0.1);
 }
 
-/* Meter styling */
-.Meter {
-  background: var(--bg-color);
+/* Improved Meter styling */
+.meter-item {
+  background: var(--card-bg);
   padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  box-shadow: 0px 4px 10px var(--shadow-color);
   text-align: center;
   font-weight: bold;
+  transition: transform 0.2s ease-in-out, box-shadow 0.3s ease-in-out;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
-/* Reports Table styling */
-.ReportsTable {
-  width: 100%;
-  flex-grow: 1;
-  background: var(--bg-color);
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  overflow: auto;
+.meter-item:hover {
+  transform: scale(1.05);
+  box-shadow: 0px 6px 15px var(--shadow-color);
 }
 
-/* Prevent overflow issues */
+.meter-label {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: var(--text-color);
+}
+
+/* Responsive Adjustments */
 @media (max-width: 768px) {
   .db-container {
     flex-direction: column;
   }
-
   .db-contents {
     padding: 10px;
   }
-
   .meter-grid {
-    grid-template-columns: repeat(2, 1fr); /* Show 2 meters per row */
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .meter-grid {
+    grid-template-columns: repeat(1, 1fr);
   }
 }

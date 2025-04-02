@@ -2,8 +2,6 @@ import React, { useContext } from "react";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import "../styles/theme.css";
-import Meter from "../components/Meter";
-import ReportsTable from "../components/ReportsTable";
 import { ThemeContext } from "../context/ThemeContext"; 
 import Ph from "../Meters/Ph";
 import Tds from "../Meters/Tds";
@@ -22,14 +20,31 @@ const Dashboard = () => {
         <Sidebar theme={theme} toggleTheme={toggleTheme} />
         <div className="db-contents">
           <div className="meter-grid">
-            <Turbidity/>
-            <Temperature />
-            <Dissolved />
-            <Conductivity />
-            <Tds/>
-            <Ph/>
+            <div className="meter-item">
+              <div className="meter-label">Turbidity</div>
+              <Turbidity/>
+            </div>
+            <div className="meter-item">
+              <div className="meter-label">Temperature</div>
+              <Temperature />
+            </div>
+            <div className="meter-item">
+              <div className="meter-label">Dissolved Oxygen</div>
+              <Dissolved />
+            </div>
+            <div className="meter-item">
+              <div className="meter-label">Conductivity</div>
+              <Conductivity />
+            </div>
+            <div className="meter-item">
+              <div className="meter-label">Total Dissolved Solids (TDS)</div>
+              <Tds/>
+            </div>
+            <div className="meter-item">
+              <div className="meter-label">pH Level</div>
+              <Ph/>
+            </div>
           </div>
-          <ReportsTable />
         </div>
       </div>
     </div>
