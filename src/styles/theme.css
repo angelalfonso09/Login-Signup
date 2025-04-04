@@ -41,7 +41,6 @@
   --report-title-size: 28px;
   --report-title-weight: 700;
 
-    /* Status Colors - Muted for better contrast */
     --status-completed: #2d336b7e; 
     --status-in-review: #7886c770; 
     --status-draft: #a9b5df67;  
@@ -61,7 +60,6 @@
     --report-title-size: 28px; 
     --report-title-weight: 700; 
   
-  /* Status Colors - Muted for better contrast */
   --status-completed: #2D336B; 
   --status-in-review: #7886C7; 
   --status-draft: #A9B5DF; 

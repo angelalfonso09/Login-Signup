@@ -88,24 +88,33 @@ const UserAdminTable = () => {
   return (
     <Container className={`acctbl-container ${theme}`}>
       <h2 className="acctbl-title">User & Admin Accounts</h2>
+
       <div className="acctbl-controls">
         <Form.Control
           type="text"
           placeholder="Search by username or email..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
+          className="acctbl-search"
         />
-        <Form.Select value={filterRole} onChange={(e) => setFilterRole(e.target.value)}>
+        <Form.Select
+          value={filterRole}
+          onChange={(e) => setFilterRole(e.target.value)}
+          className="acctbl-filter"
+        >
           <option value="All">All</option>
           <option value="User">User</option>
           <option value="Admin">Admin</option>
         </Form.Select>
-        <Button onClick={() => setShowAdminModal(true)}>
+        <Button onClick={() => setShowAdminModal(true)} className="acctbl-create-btn">
           <Plus size={16} />
         </Button>
       </div>
-      {loading && <Spinner animation="border" />} {error && <Alert variant="danger">{error}</Alert>}
-      <Table striped bordered hover>
+
+      {loading && <Spinner animation="border" />} 
+      {error && <Alert variant="danger">{error}</Alert>}
+
+      <Table className="acctbl-table">
         <thead>
           <tr>
             <th>ID</th>
@@ -124,8 +133,12 @@ const UserAdminTable = () => {
                 <td>{account.email}</td>
                 <td>{account.role}</td>
                 <td>
-                  <button onClick={() => handleEdit(account)}><Pencil size={16} /></button>
-                  <button onClick={() => handleDelete(account.id)}><Trash2 size={16} /></button>
+                  <button className="acctbl-create-btn" onClick={() => handleEdit(account)}>
+                    <Pencil size={16} />
+                  </button>
+                  <button className="acctbl-create-btn" onClick={() => handleDelete(account.id)}>
+                    <Trash2 size={16} />
+                  </button>
                 </td>
               </tr>
             ))
@@ -136,6 +149,7 @@ const UserAdminTable = () => {
           )}
         </tbody>
       </Table>
+
       <Modal show={showAdminModal} onHide={() => setShowAdminModal(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Create Admin</Modal.Title>
@@ -144,6 +158,7 @@ const UserAdminTable = () => {
           <AdminCreationForm onClose={() => setShowAdminModal(false)} onAddAdmin={handleAddAdmin} />
         </Modal.Body>
       </Modal>
+
       <Modal show={showEditModal} onHide={() => setShowEditModal(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Edit User</Modal.Title>
@@ -159,7 +174,7 @@ const UserAdminTable = () => {
               <Form.Control name="email" value={editFormData.email} onChange={handleInputChange} />
             </Form.Group>
             {editError && <Alert variant="danger">{editError}</Alert>}
-            <Button type="submit">Save Changes</Button>
+            <Button type="submit" className="acctbl-create-btn">Save Changes</Button>
           </Form>
         </Modal.Body>
       </Modal>

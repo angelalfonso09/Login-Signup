@@ -508,3 +508,19 @@ server.listen(port, () => {
 io.listen(3001, () => {
   console.log("WebSocket server running on port 3001");
 });
+
+
+// Save user to the database
+app.post('/save-user', (req, res) => {
+  const { email, name } = req.body;
+
+  // Insert user data into the 'users' table
+  const query = 'INSERT INTO users (email, username) VALUES (?, ?)';
+  db.query(query, [email, name], (err, result) => {
+    if (err) {
+      console.error('Error saving user:', err);
+      return res.status(500).send('Error saving user');
+    }
+    res.status(200).send('User saved successfully');
+  });
+});

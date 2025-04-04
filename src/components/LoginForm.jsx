@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Form, Button } from "react-bootstrap";
-import { useNavigate } from "react-router-dom"; 
+import { useNavigate } from "react-router-dom";
 import axios from "axios";  
 import '../styles/Login/LoginForm.css';
 
@@ -9,12 +9,10 @@ const LoginForm = () => {
   const [formData, setFormData] = useState({ username: "", password: "" });
   const [errorMessage, setErrorMessage] = useState("");
 
-  // Handle input changes
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Handle form submission
   const handleLogin = async (e) => {
     e.preventDefault();
     setErrorMessage(""); 
@@ -33,13 +31,12 @@ const LoginForm = () => {
 
       const { user, token, role, redirectUrl } = response.data;
 
-      // Store user data and token in localStorage
-      localStorage.setItem("user", JSON.stringify(user)); // ✅ User data for Navbar
-      localStorage.setItem("token", token); // ✅ Token for authentication
-      localStorage.setItem("userRole", role); // ✅ Role tracking
+      localStorage.setItem("user", JSON.stringify(user)); 
+      localStorage.setItem("token", token); 
+      localStorage.setItem("userRole", role); 
 
       alert(`✅ Login successful! Redirecting to ${redirectUrl}...`);
-      navigate(redirectUrl); // Redirect dynamically based on role
+      navigate(redirectUrl); 
 
     } catch (error) {
       console.error("Login error:", error.response?.data || error);
@@ -74,7 +71,7 @@ const LoginForm = () => {
       </Form.Group>
 
       <Form.Group className="mb-3">
-        <Form.Check type="checkbox" label="Remember me" className="text-white" />
+        <Form.Check type="checkbox" label="Remember me" className="text-white" required />
       </Form.Group>
 
       <Button type="submit" variant="primary" className="w-100 gradient-btn">

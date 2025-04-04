@@ -39,8 +39,7 @@
 
 /* Light Mode - Input Fields */
 .app-container.light input {
-    background: white;
-    color: black;
+    color: white;
     border: 1px solid #ccc;
 }
 
