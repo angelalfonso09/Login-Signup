@@ -1,37 +1,39 @@
 import React, { useState, useEffect } from "react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from "recharts";
+import io from 'socket.io-client';
 import "./sensorsCSS/phlevel.css"; 
 
 const PHLevelMonitor = ({ theme, updateSensorData }) => {
   const [phData, setPhData] = useState([]);
 
-  const fetchPhLevel = () => {
-    setTimeout(() => {
-      const randomPh = (Math.random() * 14).toFixed(2);
+  useEffect(() => {
+    // Connect to the backend via Socket.io
+    const socket = io("http://localhost:5000");
+
+    // Listen for real-time pH level data updates
+    socket.on("updatePHData", (data) => {
       const newDataPoint = {
         time: new Date().toLocaleTimeString(),
-        ph: parseFloat(randomPh),
+        ph: parseFloat(data.value),
       };
-
       setPhData((prevData) => [...prevData.slice(-19), newDataPoint]);
 
-      // ✅ Send updated pH level data to History.jsx
+      // Send updated pH level data to History.jsx
       if (updateSensorData) {
-        updateSensorData("pH Level", parseFloat(randomPh), "");
+        updateSensorData("pH Level", parseFloat(data.value), "");
       }
-    }, 1000);
-  };
+    });
 
-  useEffect(() => {
-    fetchPhLevel();
-    const interval = setInterval(fetchPhLevel, 5000);
-    return () => clearInterval(interval);
-  }, []);
+    // Cleanup on unmount
+    return () => {
+      socket.disconnect();
+    };
+  }, [updateSensorData]);
 
-  // ✅ Define colors dynamically based on theme
-  const textColor = theme === "dark" ? "#ffffff" : "#333333";  // White in dark mode, black in light mode
-  const gridColor = theme === "dark" ? "#555555" : "#cccccc";  // Darker grid lines for contrast
-  const lineColor = theme === "dark" ? "#8884d8" : "#ff7300";  // Purple for dark mode, Orange for light mode
+  // Define colors dynamically based on theme
+  const textColor = theme === "dark" ? "#ffffff" : "#333333";
+  const gridColor = theme === "dark" ? "#555555" : "#cccccc";
+  const lineColor = theme === "dark" ? "#8884d8" : "#ff7300";
 
   return (
     <div className={`ph-level-container ${theme}`}>
