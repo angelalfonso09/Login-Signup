@@ -70,9 +70,6 @@ const LoginForm = () => {
         />
       </Form.Group>
 
-      <Form.Group className="mb-3">
-        <Form.Check type="checkbox" label="Remember me" className="text-white" required />
-      </Form.Group>
 
       <Button type="submit" variant="primary" className="w-100 gradient-btn">
         Login

@@ -1,32 +1,52 @@
-import React from "react";
+import React, { useState, useContext } from "react";
 import { CircularProgressbarWithChildren, buildStyles } from "react-circular-progressbar";
-import "../styles/MetersCss/Ph.css";
+import "react-circular-progressbar/dist/styles.css";
+// You might need to create this CSS file or adjust the existing one
+// import "../styles/MetersCss/Ph.css";
+import { ThemeContext } from "../context/ThemeContext";
 
 const Ph = () => {
-  const temperature = 28;
-  const waterQuality = "Great";
-  const percentage = (temperature / 100) * 100; // Assuming max temp is 100
+  const { theme } = useContext(ThemeContext);
+  const [isConnected, setIsConnected] = useState(true);
+  const phValue = 7.2; // Example pH value
+  const waterQuality = "Neutral"; // Example water quality
+  const percentage = ((phValue - 0) / 14) * 100; // Assuming pH scale is 0-14
 
   return (
-    <div className="flex flex-col items-center bg-gray-100 p-6 rounded-2xl shadow-lg w-60">
-      <div className="relative w-32 h-32">
+    <div className={`widget-container ${theme}`}>
+      {/* Toggle */}
+      <div className="toggle-wrapper">
+        <div
+          className={`custom-toggle ${isConnected ? "connected" : "disconnected"}`}
+          onClick={() => setIsConnected(!isConnected)}
+        >
+          <div className="slider" />
+          <div className="toggle-label connected-label">Connected</div>
+          <div className="toggle-label disconnected-label">Disconnected</div>
+        </div>
+      </div>
+
+      {/* Meter */}
+      <div className="meter-container">
         <CircularProgressbarWithChildren
           value={percentage}
           styles={buildStyles({
-            pathColor: "#2563eb",
-            trailColor: "#e5e7eb",
+            pathColor: isConnected ? "#2563eb" : "#d9534f",
+            trailColor: theme === "dark" ? "#333" : "#e5e7eb",
             strokeLinecap: "round",
           })}
         >
-          <div className="flex flex-col items-center text-blue-600 font-bold">
-            <span className="text-sm">100</span>
-            <span className="text-2xl">{temperature}</span>
-            <span className="text-sm">°C</span>
+          <div className="temperature-text"> {/* Reusing the style, adjust if needed */}
+            <span className="label">pH</span>
+            <span className="value">{phValue}</span>
+            {/* pH doesn't typically have a unit */}
           </div>
         </CircularProgressbarWithChildren>
       </div>
-      <p className="mt-4 text-gray-500 text-sm">
-        Water quality: <span className="text-blue-600 font-semibold">{waterQuality}</span>
+
+      {/* Water Quality */}
+      <p className={`water-quality-text ${theme === "dark" ? "text-white" : "text-gray-600"}`}>
+        Water Quality: <span className="text-blue-600 font-bold">{waterQuality}</span>
       </p>
     </div>
   );
