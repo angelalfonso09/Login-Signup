@@ -1,35 +1,54 @@
 import React, { useContext } from "react";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
-import "../styles/UserDB.css";
-import "../styles/theme.css";
-import Meter from "../components/Meter";
+import styles from "../styles/Userdb.module.css"; // Import the CSS Module
 import { ThemeContext } from "../context/ThemeContext";
-import UserTable from "../components/UserTable";
+import Ph from "../Meters/Ph";
+import Tds from "../Meters/Tds";
+import Conductivity from "../Meters/Conductivity";
+import Dissolved from "../Meters/Dissolved";
+import Temperature from "../Meters/Temperature";
+import Turbidity from "../Meters/Turbidity";
 
-const UserDB = () => {
+const Userdb = () => {
   const { theme, toggleTheme } = useContext(ThemeContext);
 
   return (
-    <div className={`user ${theme}`}>
+    <div className={`${styles.userDb} ${theme}`}>
       <Navbar theme={theme} toggleTheme={toggleTheme} />
-      <div className="user-container">
+      <div className={styles.userDbContainer}>
         <Sidebar theme={theme} toggleTheme={toggleTheme} />
-        <div className="user-contents">
-          {/* Meters */}
-          <div className="meter-grid">
-            <Meter />
-            <Meter />
-            <Meter />
-            <Meter />
-            <Meter />
-            <Meter />
+        <div className={styles.userDbContents}>
+          <div className={styles.meterRowFlex}>
+            <div className={styles.meterWidget}>
+              <div className={styles.meterLabel}>Turbidity</div>
+              <Turbidity />
+            </div>
+            <div className={styles.meterWidget}>
+              <div className={styles.meterLabel}>Temperature</div>
+              <Temperature />
+            </div>
+            <div className={styles.meterWidget}>
+              <div className={styles.meterLabel}>Dissolved Oxygen</div>
+              <Dissolved />
+            </div>
+            <div className={styles.meterWidget}>
+              <div className={styles.meterLabel}>Conductivity</div>
+              <Conductivity />
+            </div>
+            <div className={styles.meterWidget}>
+              <div className={styles.meterLabel}>Total Dissolved Solids (TDS)</div>
+              <Tds />
+            </div>
+            <div className={styles.meterWidget}>
+              <div className={styles.meterLabel}>pH Level</div>
+              <Ph />
+            </div>
           </div>
-          <UserTable />
         </div>
       </div>
     </div>
   );
 };
 
-export default UserDB;
+export default Userdb;

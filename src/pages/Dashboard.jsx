@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
-import styles from "../styles/Dashboard.module.css"; // Import the CSS Module
+import styles from "../styles/Dashboard.module.css"; 
 import { ThemeContext } from "../context/ThemeContext";
 import Ph from "../Meters/Ph";
 import Tds from "../Meters/Tds";

@@ -2,6 +2,7 @@
     --acctbl-container-margin: 20px;
     --acctbl-container-padding: 15px;
     --acctbl-container-radius: 8px;
+    --acctbl-container-bg-dark: rgba(7, 11, 23, 1);
     
     --acctbl-title-font-size: 22px;
     --acctbl-title-font-weight: 600;
@@ -27,12 +28,12 @@
     --acctbl-btn-cursor: pointer;
 
     --acctbl-table-bg-light: #ffffff;
-    --acctbl-table-bg-dark: #2c2c3b;
+    --acctbl-table-bg-dark: linear-gradient(to right, #020202, #0a0a1a);
 
     --acctbl-th-bg-light: #f1f1f1;
-    --acctbl-th-bg-dark: #3a3a4d;
+    --acctbl-th-bg-dark: linear-gradient(to right, #020202, #0a0a1a);
     --acctbl-td-bg-light: #ffffff;
-    --acctbl-td-bg-dark: #2c2c3b;
+    --acctbl-td-bg-dark: linear-gradient(to right, #020202, #0a0a1a);
     --acctbl-border-light: #ddd;
     --acctbl-border-dark: #555;
 }

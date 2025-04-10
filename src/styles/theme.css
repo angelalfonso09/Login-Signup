@@ -17,14 +17,27 @@
   --background-color: #121212;
   --text-color: #ffffff;
   --button-bg: #333;
-  --navbar-bg: #1f1f1f;
-  --sidebar-bg: #181818;
+  --navbar-bg: rgba(7, 11, 23, 1);
+  --sidebar-bg: rgba(0,0,0,255);
   --sidebar-text: #ffffff;
   --hover-bg: #292929;
   --active-indicator: #ffcc00;
   --gauge-bg: #131b42;
   --gauge-text: #ffffff;
   --gauge-fill: #FF8C42;
+}
+
+/* another universal cs */
+
+.light {
+  --bg-color: #f9f9f9;
+  --text-color: #333;
+}
+
+/* Dark mode */
+.dark {
+  --bg-color: linear-gradient(to right, #020202, #0a0a1a);
+  --text-color: #fff;
 }
 
 /* Light Mode */

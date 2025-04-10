@@ -32,16 +32,7 @@
   }
   
   /* Light mode */
-  .light {
-    --bg-color: #f9f9f9;
-    --text-color: #333;
-  }
-  
-  /* Dark mode */
-  .dark {
-    --bg-color: #1e1e1e;
-    --text-color: #fff;
-  }
+
   
   /* Meter styling */
   .Meter {
