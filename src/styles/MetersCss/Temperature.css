@@ -1,14 +1,24 @@
 :root {
   --dark-mode-bg: #1e1e2f;
-  --dark-mode-bg-rgba: rgba(30, 30, 47, 1); 
-  --light-mode-bg: #f3f4f6; 
+  --dark-mode-bg-rgba: rgba(30, 30, 47, 1);
+  --light-mode-bg: #f9f9f9;
+  --toggle-slider-light: white;
+  --toggle-slider-dark: #d3d3d3;
+  --toggle-text-light: white;
+  --toggle-text-dark: #f9f9f9;
+  --widget-text-light: #333;
+  --widget-text-dark: #f9f9f9;
+}
+
+[data-theme="dark"] {
+  --custom-toggle-bg-dark: #444444; 
 }
 
 .widget-container {
   width: 100%;
   max-width: 300px;
   padding: 1rem;
-  background-color: var(--dark-mode-bg); /* Use the hexadecimal for consistency */
+  background-color: var(--dark-mode-bg); 
   border-radius: 20px;
   text-align: center;
   height: 350px;
@@ -28,7 +38,7 @@
   position: relative;
   width: 200px;
   height: 42px;
-  background-color: #1e1e2f;
+  background-color: var(--custom-toggle-bg-light);
   border-radius: 9999px;
   cursor: pointer;
   overflow: hidden;
@@ -37,6 +47,10 @@
   justify-content: center;
   margin-bottom: 15px;
   margin-top: 3px;
+}
+
+.custom-toggle.dark {
+  background-color: var(--custom-toggle-bg-dark);
 }
 
 .toggle-label {
