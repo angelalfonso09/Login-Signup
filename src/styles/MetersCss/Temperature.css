@@ -8,10 +8,14 @@
   --toggle-text-dark: #f9f9f9;
   --widget-text-light: #333;
   --widget-text-dark: #f9f9f9;
+  --toggle-label-light:black;
+  --slider-bg-light: #87CEEB;
 }
 
 [data-theme="dark"] {
   --custom-toggle-bg-dark: #444444; 
+  --toggle-label-dark:white;
+  --slider-bg-dark: white;
 }
 
 .widget-container {
@@ -60,7 +64,11 @@
   font-size: 0.95rem;
   font-weight: 600;
   transition: color 0.3s ease;
-  color: white;
+  color: var(--toggle-label-light);
+}
+
+.toggle-label.dark{
+  color: var(--toggle-label-dark);
 }
 
 .slider {
@@ -69,10 +77,14 @@
   height: 100%;
   top: 0;
   left: 0;
-  background-color: white;
   border-radius: 9999px;
   z-index: 1;
   transition: transform 0.3s ease;
+  background-color: var(--slider-bg-light);
+}
+
+.slider.dark {
+  background-color: var(--slider-bg-dark);
 }
 
 .custom-toggle.connected .slider {
