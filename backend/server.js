@@ -441,7 +441,7 @@ app.get("/api/auth/user", async (req, res) => {
 
 
 //Set up SerialPort (Change COM3 to your correct port)
-const serialPort = new SerialPort({ path: "COM5", baudRate: 9600 });
+const serialPort = new SerialPort({ path: "COM3", baudRate: 9600 });
 const parser = serialPort.pipe(new ReadlineParser({ delimiter: "\n" }));
 
 //Read and store data from Arduino
@@ -606,4 +606,53 @@ app.post('/save-user', (req, res) => {
     }
     res.status(200).send('User saved successfully');
   });
+});
+
+let sensorConnected = false;  // To keep track of sensor connection status
+
+// Function to show the connection status
+function showSensorConnectionStatus(isConnected) {
+  if (isConnected) {
+    console.log("Sensor is connected.");
+  } else {
+    console.log("Sensor is disconnected.");
+  }
+}
+
+// Check if the sensor is connected when the port opens
+serialPort.on("open", () => {
+  if (!sensorConnected) {
+    sensorConnected = true;  // Set to connected
+    showSensorConnectionStatus(true);  // Show connected status
+  }
+});
+
+// Listen for data from the sensor
+parser.on("data", (data) => {
+  try {
+    const jsonData = JSON.parse(data.trim());
+    const turbidityValue = jsonData.turbidity_value;
+
+    console.log("📡 Received Data:", turbidityValue);
+
+    // Insert into MySQL
+    const query = "INSERT INTO turbidity_readings (turbidity_value) VALUES (?)";
+    db.query(query, [turbidityValue], (err, result) => {
+      if (err) {
+        console.error("Database Insert Error:", err);
+      } else {
+        console.log("Data Inserted Successfully: ID", result.insertId);
+      }
+    });
+  } catch (err) {
+    console.error("JSON Parse Error:", err);
+  }
+});
+
+// Handle sensor disconnection
+serialPort.on("close", () => {
+  if (sensorConnected) {
+    sensorConnected = false;  // Set to disconnected
+    showSensorConnectionStatus(false);  // Show disconnected status
+  }
 });

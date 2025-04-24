@@ -6,19 +6,17 @@ import { ThemeContext } from "../context/ThemeContext";
 
 const Navbar = () => {
   const { theme } = useContext(ThemeContext);
-  const [users, setUsers] = useState(null); // Renamed from 'user' to 'users'
+  const [users, setUsers] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showModal, setShowModal] = useState(false); // 🔔 New state for modal visibility
 
-  const backendURL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000"; // Fallback for safety
+  const backendURL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         const token = localStorage.getItem("token");
-        console.log("🔑 Token being sent:", token);
-        console.log(`Backend URL: ${backendURL}`);
-
         if (!token) throw new Error("No authentication token found");
 
         const response = await axios.get(`${backendURL}/api/auth/users`, {
@@ -26,8 +24,7 @@ const Navbar = () => {
           withCredentials: true,
         });
 
-        console.log("✅ User data received:", response.data);
-        setUsers(response.data); // Changed 'setUser' to 'setUsers'
+        setUsers(response.data);
       } catch (err) {
         console.error(`❌ Error fetching user:`, err.response ? err.response.data : err.message);
         setError("Failed to load user data.");
@@ -50,6 +47,8 @@ const Navbar = () => {
     }
   };
 
+  
+
   return (
     <div className={`navbar ${theme}`}>
       <div className="left-section">
@@ -70,7 +69,7 @@ const Navbar = () => {
       </div>
 
       <div className="right-section">
-        <FaBell className="notification-icon" />
+        <FaBell className="notification-icon" onClick={() => setShowModal(true)} />
         {users?.role === "super_admin" && (
           <button className="super-admin-button" onClick={handleAdminClick}>
             Super Admin Panel
@@ -87,6 +86,21 @@ const Navbar = () => {
           </button>
         )}
       </div>
+
+      {/* 🔔 Notification Modal */}
+      {showModal && (
+        <div className="notif-modal-overlay" onClick={() => setShowModal(false)}>
+          <div className="notif-modal" onClick={(e) => e.stopPropagation()}>
+            <h3>🔔 Notifications</h3>
+            <ul>
+              <li>✅ Your profile was updated.</li>
+              <li>📅 New event scheduled for Friday.</li>
+              <li>🔧 System maintenance at 10 PM.</li>
+            </ul>
+            <button className="close-btn" onClick={() => setShowModal(false)}>Close</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

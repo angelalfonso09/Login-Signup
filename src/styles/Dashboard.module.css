@@ -30,10 +30,11 @@ overflow: hidden;
 .meterRowFlex {
   display: flex;
   flex-direction: row;
-  gap: 10px;
   overflow-x: auto; 
   overflow-y: hidden;
   padding-bottom: 20px; 
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
 }
 
 .meterRowFlex::-webkit-scrollbar {
