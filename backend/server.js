@@ -3,7 +3,7 @@ const db = require("./config/db");
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
-const mysql = require("mysql2");
+const mysql = require("mysql2/promise");
 const bcrypt = require("bcrypt");
 const http = require("http");
 const { Server } = require("socket.io");
@@ -654,5 +654,30 @@ serialPort.on("close", () => {
   if (sensorConnected) {
     sensorConnected = false;  // Set to disconnected
     showSensorConnectionStatus(false);  // Show disconnected status
+  }
+});
+
+const pool = mysql.createPool({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+});
+
+// ✅ Route to get latest water quality data
+app.get("/api/sensors/latest", async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      `SELECT * FROM sensor_readings ORDER BY created_at DESC LIMIT 1`
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "No water quality data found." });
+    }
+
+    res.json(rows[0]);
+  } catch (err) {
+    console.error("❌ Error fetching water quality data:", err.message);
+    res.status(500).json({ message: "Internal server error." });
   }
 });
