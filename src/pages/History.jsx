@@ -6,12 +6,13 @@ import Temp from "../sensors/temp";
 import PhLevel from "../sensors/phlevel";
 import Turbudity from "../sensors/turbudity";
 import Tds from "../sensors/Tds";
-import Do from "../sensors/Do";
+import Sal from "../sensors/sal";
 import Conductivity from "../sensors/Conductivity";
 import "../styles/theme.css";
 import { ThemeContext } from "../context/ThemeContext";
 import { saveAs } from "file-saver";
 import * as XLSX from "xlsx";
+import ElectricalConductivity from "../sensors/ElectricalConductivity"; 
 
 const History = () => {
   const { theme, toggleTheme } = useContext(ThemeContext);
@@ -116,9 +117,9 @@ const History = () => {
             <PhLevel theme={theme} updateSensorData={updateSensorData} filteredData={getFilteredData()} />
             <Turbudity theme={theme} updateSensorData={updateSensorData} filteredData={getFilteredData()} />
             <Tds theme={theme} updateSensorData={updateSensorData} filteredData={getFilteredData()} />
-            <Do theme={theme} updateSensorData={updateSensorData} filteredData={getFilteredData()} />
+            <Sal theme={theme} updateSensorData={updateSensorData} filteredData={getFilteredData()} />
             <Conductivity theme={theme} updateSensorData={updateSensorData} filteredData={getFilteredData()} />
-  
+            <ElectricalConductivity theme={theme} updateSensorData={updateSensorData} filteredData={getFilteredData()} />
             {/* Export Button */}
             <div className="export-buttons">
               <button onClick={exportToExcel} className="export-btn">Export Excel</button>

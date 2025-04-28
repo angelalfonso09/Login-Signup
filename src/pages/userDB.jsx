@@ -6,7 +6,7 @@ import { ThemeContext } from "../context/ThemeContext";
 import Ph from "../Meters/Ph";
 import Tds from "../Meters/Tds";
 import Conductivity from "../Meters/Conductivity";
-import Dissolved from "../Meters/Dissolved";
+import Salinity from "../Meters/Salinity";
 import Temperature from "../Meters/Temperature";
 import Turbidity from "../Meters/Turbidity";
 
@@ -29,8 +29,8 @@ const Userdb = () => {
               <Temperature />
             </div>
             <div className={styles.meterWidget}>
-              <div className={styles.meterLabel}>Dissolved Oxygen</div>
-              <Dissolved />
+              <div className={styles.meterLabel}>Salinity</div>
+              <Salinity />
             </div>
             <div className={styles.meterWidget}>
               <div className={styles.meterLabel}>Conductivity</div>

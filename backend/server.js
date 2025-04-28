@@ -441,243 +441,243 @@ app.get("/api/auth/user", async (req, res) => {
 
 
 //Set up SerialPort (Change COM3 to your correct port)
-const serialPort = new SerialPort({ path: "COM3", baudRate: 9600 });
-const parser = serialPort.pipe(new ReadlineParser({ delimiter: "\n" }));
+// const serialPort = new SerialPort({ path: "COM3", baudRate: 9600 });
+// const parser = serialPort.pipe(new ReadlineParser({ delimiter: "\n" }));
 
-//Read and store data from Arduino
-parser.on("data", (data) => {
-  try {
-    const jsonData = JSON.parse(data.trim());
-    const turbidityValue = jsonData.turbidity_value;
+// //Read and store data from Arduino
+// parser.on("data", (data) => {
+//   try {
+//     const jsonData = JSON.parse(data.trim());
+//     const turbidityValue = jsonData.turbidity_value;
 
-    console.log("📡 Received Data:", turbidityValue);
+//     console.log("📡 Received Data:", turbidityValue);
 
-    // Insert into MySQL
-    const query = "INSERT INTO turbidity_readings (turbidity_value) VALUES (?)";
-    db.query(query, [turbidityValue], (err, result) => {
-      if (err) {
-        console.error("Database Insert Error:", err);
-      } else {
-        console.log("Data Inserted Successfully: ID", result.insertId);
+//     // Insert into MySQL
+//     const query = "INSERT INTO turbidity_readings (turbidity_value) VALUES (?)";
+//     db.query(query, [turbidityValue], (err, result) => {
+//       if (err) {
+//         console.error("Database Insert Error:", err);
+//       } else {
+//         console.log("Data Inserted Successfully: ID", result.insertId);
 
-        // Emit real-time data update
-        io.emit("updateData", { value: turbidityValue });
-      }
-    });
-  } catch (err) {
-    console.error("JSON Parse Error:", err);
-  }
-});
+//         // Emit real-time data update
+//         io.emit("updateData", { value: turbidityValue });
+//       }
+//     });
+//   } catch (err) {
+//     console.error("JSON Parse Error:", err);
+//   }
+// });
 
-//API Route to Fetch Data
-app.get("/data", (req, res) => {
-  db.query("SELECT * FROM turbidity_readings ORDER BY id DESC LIMIT 10", (err, results) => {
-    if (err) {
-      return res.status(500).json({ error: "Database Query Error" });
-    }
-    res.json(results);
-  });
-});
+// //API Route to Fetch Data
+// app.get("/data", (req, res) => {
+//   db.query("SELECT * FROM turbidity_readings ORDER BY id DESC LIMIT 10", (err, results) => {
+//     if (err) {
+//       return res.status(500).json({ error: "Database Query Error" });
+//     }
+//     res.json(results);
+//   });
+// });
 
-//Read and store data from Arduino
-parser.on("data", (data) => {
-  try {
-    const jsonData = JSON.parse(data.trim());
+// //Read and store data from Arduino
+// parser.on("data", (data) => {
+//   try {
+//     const jsonData = JSON.parse(data.trim());
 
-    // Check if turbidity, pH, TDS, and salinity values exist in the received data
-    const turbidityValue = jsonData.turbidity_value;
-    const phValue = jsonData.ph_value;
-    const tdsValue = jsonData.tds_value; // New data for TDS
-    const salinityValue = jsonData.salinity_value; // New data for Salinity
+//     // Check if turbidity, pH, TDS, and salinity values exist in the received data
+//     const turbidityValue = jsonData.turbidity_value;
+//     const phValue = jsonData.ph_value;
+//     const tdsValue = jsonData.tds_value; // New data for TDS
+//     const salinityValue = jsonData.salinity_value; // New data for Salinity
 
-    // Handling turbidity data
-    if (turbidityValue !== undefined) {
-      console.log("📡 Received Turbidity Data:", turbidityValue);
+//     // Handling turbidity data
+//     if (turbidityValue !== undefined) {
+//       console.log("📡 Received Turbidity Data:", turbidityValue);
 
-      // Insert turbidity data into MySQL
-      const query = "INSERT INTO turbidity_readings (turbidity_value) VALUES (?)";
-      db.query(query, [turbidityValue], (err, result) => {
-        if (err) {
-          console.error("Turbidity Database Insert Error:", err);
-        } else {
-          console.log("Turbidity Data Inserted Successfully: ID", result.insertId);
-          // Emit real-time turbidity data update
-          io.emit("updateTurbidityData", { value: turbidityValue });
-        }
-      });
-    }
+//       // Insert turbidity data into MySQL
+//       const query = "INSERT INTO turbidity_readings (turbidity_value) VALUES (?)";
+//       db.query(query, [turbidityValue], (err, result) => {
+//         if (err) {
+//           console.error("Turbidity Database Insert Error:", err);
+//         } else {
+//           console.log("Turbidity Data Inserted Successfully: ID", result.insertId);
+//           // Emit real-time turbidity data update
+//           io.emit("updateTurbidityData", { value: turbidityValue });
+//         }
+//       });
+//     }
 
-    // Handling pH data
-    if (phValue !== undefined) {
-      console.log("📡 Received pH Level Data:", phValue);
+//     // Handling pH data
+//     if (phValue !== undefined) {
+//       console.log("📡 Received pH Level Data:", phValue);
 
-      // Insert pH data into MySQL
-      const query = "INSERT INTO phlevel_readings (ph_value) VALUES (?)";
-      db.query(query, [phValue], (err, result) => {
-        if (err) {
-          console.error("pH Database Insert Error:", err);
-        } else {
-          console.log("pH Data Inserted Successfully: ID", result.insertId);
-          // Emit real-time pH data update
-          io.emit("updatePHData", { value: phValue });
-        }
-      });
-    }
+//       // Insert pH data into MySQL
+//       const query = "INSERT INTO phlevel_readings (ph_value) VALUES (?)";
+//       db.query(query, [phValue], (err, result) => {
+//         if (err) {
+//           console.error("pH Database Insert Error:", err);
+//         } else {
+//           console.log("pH Data Inserted Successfully: ID", result.insertId);
+//           // Emit real-time pH data update
+//           io.emit("updatePHData", { value: phValue });
+//         }
+//       });
+//     }
 
-    // Handling TDS data
-    if (tdsValue !== undefined) {
-      console.log("📡 Received TDS Data:", tdsValue);
+//     // Handling TDS data
+//     if (tdsValue !== undefined) {
+//       console.log("📡 Received TDS Data:", tdsValue);
 
-      // Insert TDS data into MySQL
-      const query = "INSERT INTO tds_readings (tds_value) VALUES (?)";
-      db.query(query, [tdsValue], (err, result) => {
-        if (err) {
-          console.error("TDS Database Insert Error:", err);
-        } else {
-          console.log("TDS Data Inserted Successfully: ID", result.insertId);
-          // Emit real-time TDS data update
-          io.emit("updateTDSData", { value: tdsValue });
-        }
-      });
-    }
+//       // Insert TDS data into MySQL
+//       const query = "INSERT INTO tds_readings (tds_value) VALUES (?)";
+//       db.query(query, [tdsValue], (err, result) => {
+//         if (err) {
+//           console.error("TDS Database Insert Error:", err);
+//         } else {
+//           console.log("TDS Data Inserted Successfully: ID", result.insertId);
+//           // Emit real-time TDS data update
+//           io.emit("updateTDSData", { value: tdsValue });
+//         }
+//       });
+//     }
 
-    // Handling Salinity data
-    if (salinityValue !== undefined) {
-      console.log("📡 Received Salinity Data:", salinityValue);
+//     // Handling Salinity data
+//     if (salinityValue !== undefined) {
+//       console.log("📡 Received Salinity Data:", salinityValue);
 
-      // Insert Salinity data into MySQL
-      const query = "INSERT INTO salinity_readings (salinity_value) VALUES (?)";
-      db.query(query, [salinityValue], (err, result) => {
-        if (err) {
-          console.error("Salinity Database Insert Error:", err);
-        } else {
-          console.log("Salinity Data Inserted Successfully: ID", result.insertId);
-          // Emit real-time Salinity data update
-          io.emit("updateSalinityData", { value: salinityValue });
-        }
-      });
-    }
+//       // Insert Salinity data into MySQL
+//       const query = "INSERT INTO salinity_readings (salinity_value) VALUES (?)";
+//       db.query(query, [salinityValue], (err, result) => {
+//         if (err) {
+//           console.error("Salinity Database Insert Error:", err);
+//         } else {
+//           console.log("Salinity Data Inserted Successfully: ID", result.insertId);
+//           // Emit real-time Salinity data update
+//           io.emit("updateSalinityData", { value: salinityValue });
+//         }
+//       });
+//     }
 
-  } catch (err) {
-    console.error("JSON Parse Error:", err);
-  }
-});
-
-
-// Backend: Separate event for turbidity and pH level
-parser.on("data", (data) => {
-  try {
-    const jsonData = JSON.parse(data.trim());
-
-    const turbidityValue = jsonData.turbidity_value;
-    const phValue = jsonData.ph_value;
-
-    if (turbidityValue !== undefined) {
-      console.log("📡 Received Turbidity Data:", turbidityValue);
-
-      // Emit turbidity data update
-      io.emit("updateTurbidityData", { value: turbidityValue });
-    }
-
-    if (phValue !== undefined) {
-      console.log("📡 Received pH Data:", phValue);
-
-      // Emit pH data update
-      io.emit("updatePHData", { value: phValue });
-    }
-
-  } catch (err) {
-    console.error("JSON Parse Error:", err);
-  }
-});
+//   } catch (err) {
+//     console.error("JSON Parse Error:", err);
+//   }
+// });
 
 
+// // Backend: Separate event for turbidity and pH level
+// parser.on("data", (data) => {
+//   try {
+//     const jsonData = JSON.parse(data.trim());
 
-// Save user to the database
-app.post('/save-user', (req, res) => {
-  const { email, name } = req.body;
+//     const turbidityValue = jsonData.turbidity_value;
+//     const phValue = jsonData.ph_value;
 
-  // Insert user data into the 'users' table
-  const query = 'INSERT INTO users (email, username) VALUES (?, ?)';
-  db.query(query, [email, name], (err, result) => {
-    if (err) {
-      console.error('Error saving user:', err);
-      return res.status(500).send('Error saving user');
-    }
-    res.status(200).send('User saved successfully');
-  });
-});
+//     if (turbidityValue !== undefined) {
+//       console.log("📡 Received Turbidity Data:", turbidityValue);
 
-let sensorConnected = false;  // To keep track of sensor connection status
+//       // Emit turbidity data update
+//       io.emit("updateTurbidityData", { value: turbidityValue });
+//     }
 
-// Function to show the connection status
-function showSensorConnectionStatus(isConnected) {
-  if (isConnected) {
-    console.log("Sensor is connected.");
-  } else {
-    console.log("Sensor is disconnected.");
-  }
-}
+//     if (phValue !== undefined) {
+//       console.log("📡 Received pH Data:", phValue);
 
-// Check if the sensor is connected when the port opens
-serialPort.on("open", () => {
-  if (!sensorConnected) {
-    sensorConnected = true;  // Set to connected
-    showSensorConnectionStatus(true);  // Show connected status
-  }
-});
+//       // Emit pH data update
+//       io.emit("updatePHData", { value: phValue });
+//     }
 
-// Listen for data from the sensor
-parser.on("data", (data) => {
-  try {
-    const jsonData = JSON.parse(data.trim());
-    const turbidityValue = jsonData.turbidity_value;
+//   } catch (err) {
+//     console.error("JSON Parse Error:", err);
+//   }
+// });
 
-    console.log("📡 Received Data:", turbidityValue);
 
-    // Insert into MySQL
-    const query = "INSERT INTO turbidity_readings (turbidity_value) VALUES (?)";
-    db.query(query, [turbidityValue], (err, result) => {
-      if (err) {
-        console.error("Database Insert Error:", err);
-      } else {
-        console.log("Data Inserted Successfully: ID", result.insertId);
-      }
-    });
-  } catch (err) {
-    console.error("JSON Parse Error:", err);
-  }
-});
 
-// Handle sensor disconnection
-serialPort.on("close", () => {
-  if (sensorConnected) {
-    sensorConnected = false;  // Set to disconnected
-    showSensorConnectionStatus(false);  // Show disconnected status
-  }
-});
+// // Save user to the database
+// app.post('/save-user', (req, res) => {
+//   const { email, name } = req.body;
 
-const pool = mysql.createPool({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-});
+//   // Insert user data into the 'users' table
+//   const query = 'INSERT INTO users (email, username) VALUES (?, ?)';
+//   db.query(query, [email, name], (err, result) => {
+//     if (err) {
+//       console.error('Error saving user:', err);
+//       return res.status(500).send('Error saving user');
+//     }
+//     res.status(200).send('User saved successfully');
+//   });
+// });
 
-// ✅ Route to get latest water quality data
-app.get("/api/sensors/latest", async (req, res) => {
-  try {
-    const [rows] = await pool.query(
-      `SELECT * FROM sensor_readings ORDER BY created_at DESC LIMIT 1`
-    );
+// let sensorConnected = false;  // To keep track of sensor connection status
 
-    if (rows.length === 0) {
-      return res.status(404).json({ message: "No water quality data found." });
-    }
+// // Function to show the connection status
+// function showSensorConnectionStatus(isConnected) {
+//   if (isConnected) {
+//     console.log("Sensor is connected.");
+//   } else {
+//     console.log("Sensor is disconnected.");
+//   }
+// }
 
-    res.json(rows[0]);
-  } catch (err) {
-    console.error("❌ Error fetching water quality data:", err.message);
-    res.status(500).json({ message: "Internal server error." });
-  }
-});
+// // Check if the sensor is connected when the port opens
+// serialPort.on("open", () => {
+//   if (!sensorConnected) {
+//     sensorConnected = true;  // Set to connected
+//     showSensorConnectionStatus(true);  // Show connected status
+//   }
+// });
+
+// // Listen for data from the sensor
+// parser.on("data", (data) => {
+//   try {
+//     const jsonData = JSON.parse(data.trim());
+//     const turbidityValue = jsonData.turbidity_value;
+
+//     console.log("📡 Received Data:", turbidityValue);
+
+//     // Insert into MySQL
+//     const query = "INSERT INTO turbidity_readings (turbidity_value) VALUES (?)";
+//     db.query(query, [turbidityValue], (err, result) => {
+//       if (err) {
+//         console.error("Database Insert Error:", err);
+//       } else {
+//         console.log("Data Inserted Successfully: ID", result.insertId);
+//       }
+//     });
+//   } catch (err) {
+//     console.error("JSON Parse Error:", err);
+//   }
+// });
+
+// // Handle sensor disconnection
+// serialPort.on("close", () => {
+//   if (sensorConnected) {
+//     sensorConnected = false;  // Set to disconnected
+//     showSensorConnectionStatus(false);  // Show disconnected status
+//   }
+// });
+
+// const pool = mysql.createPool({
+//   host: process.env.DB_HOST,
+//   user: process.env.DB_USER,
+//   password: process.env.DB_PASSWORD,
+//   database: process.env.DB_NAME,
+// });
+
+// // ✅ Route to get latest water quality data
+// app.get("/api/sensors/latest", async (req, res) => {
+//   try {
+//     const [rows] = await pool.query(
+//       `SELECT * FROM sensor_readings ORDER BY created_at DESC LIMIT 1`
+//     );
+
+//     if (rows.length === 0) {
+//       return res.status(404).json({ message: "No water quality data found." });
+//     }
+
+//     res.json(rows[0]);
+//   } catch (err) {
+//     console.error("❌ Error fetching water quality data:", err.message);
+//     res.status(500).json({ message: "Internal server error." });
+//   }
+// });
