@@ -31,7 +31,7 @@ const NewSensor = () => {
         <CircularProgressbarWithChildren
           value={percentage}
           styles={buildStyles({
-            pathColor: isConnected ? "#2563eb" : "#d9534f",
+            pathColor: isConnected ? "#20a44c" : "#d9534f",
             trailColor: theme === "dark" ? "#333" : "#e5e7eb",
             strokeLinecap: "round",
           })}

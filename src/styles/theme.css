@@ -2,9 +2,9 @@
   --background-color: #ffffff;
   --text-color: #000000;
   --button-bg: #e0e0e0;
-  --sidebar-bg: #87CEEB;
-  --navbar-bg: #ADD8E6;
-  --sidebar-text: #333;
+  --sidebar-bg: #20a44c;
+  --navbar-bg: #0a782f; 
+  --sidebar-text: #d8e4fc;
   --hover-bg: #dcdcdc;
   --active-indicator: #007bff;
   --gauge-bg: #ffffff;
@@ -30,7 +30,7 @@
 /* another universal cs */
 
 .light {
-  --bg-color: #dcf0fa;
+  --bg-color: #f0ecec;
   --text-color: #333;
 }
 

@@ -29,13 +29,12 @@ overflow: hidden;
 
 .meterRowFlex {
   display: flex;
-  flex-direction: row;
-  overflow-x: auto; 
-  overflow-y: hidden;
-  padding-bottom: 20px; 
-  scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+  padding-bottom: 20px;
 }
+
 
 .meterRowFlex::-webkit-scrollbar {
   display: none; 

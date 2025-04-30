@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from "recharts";
-import "./sensorsCSS/temp.css";  // 👉 create a CSS file similar to temp.css
+import "./sensorsCSS/ec.css";  // 👉 create a CSS file similar to temp.css
 
 const ElectricalConductivity = ({ theme, updateSensorData }) => {
   const [conductivityData, setConductivityData] = useState([]);
