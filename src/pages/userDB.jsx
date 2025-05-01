@@ -9,6 +9,7 @@ import Conductivity from "../Meters/Conductivity";
 import Salinity from "../Meters/Salinity";
 import Temperature from "../Meters/Temperature";
 import Turbidity from "../Meters/Turbidity";
+import ElectricalCon from "../Meters/ElectricalCon"; 
 
 const Userdb = () => {
   const { theme, toggleTheme } = useContext(ThemeContext);
@@ -43,6 +44,10 @@ const Userdb = () => {
             <div className={styles.meterWidget}>
               <div className={styles.meterLabel}>pH Level</div>
               <Ph />
+            </div>
+            <div className={styles.meterWidget}>
+              <div className={styles.meterLabel}>Electrical Conductivity(Compensated)</div>
+              <ElectricalCon />
             </div>
           </div>
         </div>
