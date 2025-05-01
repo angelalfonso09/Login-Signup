@@ -1,32 +1,66 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { CircularProgressbarWithChildren, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
-// You might need to create this CSS file or adjust the existing one
-// import "../styles/MetersCss/Ph.css";
 import { ThemeContext } from "../context/ThemeContext";
+import socket from "./socket";
 
 const Ph = () => {
   const { theme } = useContext(ThemeContext);
-  const [isConnected, setIsConnected] = useState(true);
-  const phValue = 7.2; // Example pH value
-  const waterQuality = "Neutral"; // Example water quality
-  const percentage = ((phValue - 0) / 14) * 100; // Assuming pH scale is 0-14
+  const [isConnected, setIsConnected] = useState(socket.connected);
+  const [phValue, setPhValue] = useState(7.0); // Default neutral pH
+
+  useEffect(() => {
+    const handleConnect = () => setIsConnected(true);
+    const handleDisconnect = () => setIsConnected(false);
+    const handlePhData = (newData) => {
+      console.log("🔄 New pH Data:", newData);
+      setPhValue(newData.value);
+    };
+
+    // Fetch latest pH value on mount (fallback)
+    const fetchLatestPh = async () => {
+      try {
+        const response = await fetch("http://localhost:3001/api/sensors/latest");
+        if (!response.ok) throw new Error("No data found");
+        const latestData = await response.json();
+        setPhValue(latestData.ph_value);
+        console.log("📂 Fetched latest pH value:", latestData.ph_value);
+      } catch (err) {
+        console.warn("⚠️ Could not fetch latest pH data:", err.message);
+      }
+    };
+
+    fetchLatestPh();
+
+    socket.on("connect", handleConnect);
+    socket.on("disconnect", handleDisconnect);
+    socket.on("updatePHData", handlePhData);
+
+    return () => {
+      socket.off("connect", handleConnect);
+      socket.off("disconnect", handleDisconnect);
+      socket.off("updatePHData", handlePhData);
+    };
+  }, []);
+
+  const getWaterQuality = () => {
+    if (phValue >= 6.5 && phValue <= 8.5) return "Neutral";
+    if (phValue < 6.5) return "Acidic";
+    return "Alkaline";
+  };
+
+  const percentage = (phValue / 14) * 100; // pH scale is 0-14
 
   return (
     <div className={`widget-container ${theme}`}>
-      {/* Toggle */}
       <div className="toggle-wrapper">
-        <div
-          className={`custom-toggle ${isConnected ? "connected" : "disconnected"}`}
-          onClick={() => setIsConnected(!isConnected)}
-        >
+        <div className={`custom-toggle ${isConnected ? "connected" : "disconnected"}`}>
           <div className="slider" />
           <div className="toggle-label connected-label">Connected</div>
           <div className="toggle-label disconnected-label">Disconnected</div>
         </div>
       </div>
 
-      {/* Meter */}
       <div className="meter-container">
         <CircularProgressbarWithChildren
           value={percentage}
@@ -36,17 +70,18 @@ const Ph = () => {
             strokeLinecap: "round",
           })}
         >
-          <div className="temperature-text"> {/* Reusing the style, adjust if needed */}
+          <div className="temperature-text">
             <span className="label">pH</span>
-            <span className="value">{phValue}</span>
-            {/* pH doesn't typically have a unit */}
+            <span className="value">{phValue.toFixed(2)}</span>
           </div>
         </CircularProgressbarWithChildren>
       </div>
 
-      {/* Water Quality */}
       <p className={`water-quality-text ${theme === "dark" ? "text-white" : "text-gray-600"}`}>
-        Water Quality: <span className="text-blue-600 font-bold">{waterQuality}</span>
+        Water Quality:{" "}
+        <span className={`font-bold ${getWaterQuality() === "Neutral" ? "text-blue-600" : getWaterQuality() === "Acidic" ? "text-red-500" : "text-green-500"}`}>
+          {getWaterQuality()}
+        </span>
       </p>
     </div>
   );

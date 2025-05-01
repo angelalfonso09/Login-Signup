@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import { FaBell } from "react-icons/fa";
 import "../styles/navbar.css";
 import axios from "axios";
 import { ThemeContext } from "../context/ThemeContext";
+import io from "socket.io-client";
 
 const Navbar = () => {
   const { theme } = useContext(ThemeContext);
@@ -12,16 +13,14 @@ const Navbar = () => {
   const [showModal, setShowModal] = useState(false);
 
   const [sensorData, setSensorData] = useState(null);
-  const [prevSensorData, setPrevSensorData] = useState(null);
-  const [notifications, setNotifications] = useState([
-    "✅ Your profile was updated.",
-    "📅 New event scheduled for Friday.",
-    "🔧 System maintenance at 10 PM.",
-  ]);
+  const [notifications, setNotifications] = useState([]);
 
   const backendURL =
     import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
+  const socket = useRef(null);
+  const prevSensorRef = useRef(null);
 
+  // Fetch user info (as is)
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -48,38 +47,77 @@ const Navbar = () => {
     fetchUserData();
   }, []);
 
+  // Real-time turbidity updates via Socket.IO
   useEffect(() => {
-    const interval = setInterval(async () => {
-      try {
-        const response = await axios.get(`${backendURL}/api/sensors/latest`, {
-          withCredentials: true,
-        });
-  
-        const latestData = response.data;
-        console.log("Fetched Data:", latestData); // Log the fetched data for debugging
-  
-        // Check if turbidity is high (greater than 60) and compare with previous sensor data
-        if (
-          latestData?.turbidity &&
-          parseFloat(latestData.turbidity) > 60 &&
-          (!prevSensorData || prevSensorData.turbidity !== latestData.turbidity)
-        ) {
-          setNotifications((prev) => [
-            `⚠️ High Turbidity Detected: ${latestData.turbidity}% at ${new Date().toLocaleTimeString()}`,
-            ...prev,
-          ]);
+    socket.current = io(backendURL, { withCredentials: true });
+
+    socket.current.on("connect", () => {
+      console.log("Socket connected:", socket.current.id); // Log socket connection
+    });
+
+    const handleUpdate = (latestData) => {
+      console.log("📡 Received turbidity update:", latestData);
+
+      const turbidityValue = parseFloat(latestData?.turbidity);
+      const timestamp = new Date().toLocaleTimeString();
+
+      if (!isNaN(turbidityValue)) {
+        const prevData = prevSensorRef.current;
+
+        // Clean water (exactly 100)
+        if (turbidityValue === 100 && (!prevData || prevData.turbidity !== 100)) {
+          setNotifications((prev) => {
+            const newNotifications = [
+              `✅ Water is clean (100%) as of ${timestamp}`,
+              ...prev.filter((notif) => !notif.includes("Turbidity Status")),
+            ];
+            console.log("Notifications updated (clean water):", newNotifications);
+            return newNotifications;
+          });
         }
-  
-        setPrevSensorData(latestData);  // Save the latest data as the previous data
-        setSensorData(latestData);       // Set the latest data as the current sensor data
-      } catch (err) {
-        console.error("❌ Failed to fetch sensor data:", err.message);
+
+        // Not clean water (<40)
+        else if (turbidityValue < 40 && (!prevData || prevData.turbidity >= 40)) {
+          setNotifications((prev) => {
+            const newNotifications = [
+              `⚠️ Turbidity Alert: Water is not clean (${turbidityValue}%) as of ${timestamp}`,
+              ...prev.filter((notif) => !notif.includes("Turbidity Status")),
+            ];
+            console.log("Notifications updated (alert):", newNotifications);
+            return newNotifications;
+          });
+        }
+
+        // Neutral (40–99) — clear notifications
+        else if (
+          turbidityValue >= 40 &&
+          turbidityValue < 100 &&
+          prevData &&
+          (prevData.turbidity < 40 || prevData.turbidity === 100)
+        ) {
+          setNotifications((prev) => {
+            const newNotifications = prev.filter(
+              (notif) =>
+                !notif.includes("Turbidity Alert") && !notif.includes("Water is clean")
+            );
+            console.log("Notifications updated (neutral):", newNotifications);
+            return newNotifications;
+          });
+        }
+
+        prevSensorRef.current = latestData;
+        setSensorData(latestData);
       }
-    }, 10000); // Poll every 10 seconds
-  
-    return () => clearInterval(interval);
-  }, [prevSensorData]);
-  
+    };
+
+    socket.current.on("updateTurbidityData", handleUpdate);
+
+    return () => {
+      socket.current.off("updateTurbidityData", handleUpdate);
+      socket.current.disconnect();
+    };
+  }, [backendURL]);
+
   const handleAdminClick = () => {
     alert(`Welcome, ${users?.role}! Redirecting to the admin panel...`);
     if (users?.role === "super_admin") {
@@ -123,7 +161,6 @@ const Navbar = () => {
           )}
         </div>
 
-
         {users?.role === "super_admin" && (
           <button className="super-admin-button" onClick={handleAdminClick}>
             Super Admin Panel
@@ -163,8 +200,6 @@ const Navbar = () => {
           </div>
         </div>
       )}
-
-      
     </div>
   );
 };

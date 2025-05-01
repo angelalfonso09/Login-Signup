@@ -1,32 +1,66 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { CircularProgressbarWithChildren, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
-// You might need to create this CSS file or adjust the existing one
-// import "../styles/MetersCss/Dissolved.css";
 import { ThemeContext } from "../context/ThemeContext";
+import socket from "./socket";
 
 const Dissolved = () => {
   const { theme } = useContext(ThemeContext);
-  const [isConnected, setIsConnected] = useState(true);
-  const dissolvedOxygen = 8.5; // Example dissolved oxygen value
-  const waterQuality = "Excellent"; // Example water quality
-  const percentage = (dissolvedOxygen / 15) * 100; // Example: Assuming max DO is 15 ppm
+  const [isConnected, setIsConnected] = useState(socket.connected);
+  const [salinity, setSalinity] = useState(0);
+
+  useEffect(() => {
+    const handleConnect = () => setIsConnected(true);
+    const handleDisconnect = () => setIsConnected(false);
+    const handleSalinityData = (newData) => {
+      console.log("🔄 New Salinity Data:", newData);
+      setSalinity(newData.value);
+    };
+
+    // Fetch latest salinity value on mount (fallback)
+    const fetchLatestSalinity = async () => {
+      try {
+        const response = await fetch("http://localhost:3001/api/sensors/latest");
+        if (!response.ok) throw new Error("No data found");
+        const latestData = await response.json();
+        setSalinity(latestData.salinity_value);
+        console.log("📂 Fetched latest salinity value:", latestData.salinity_value);
+      } catch (err) {
+        console.warn("⚠️ Could not fetch latest salinity data:", err.message);
+      }
+    };
+
+    fetchLatestSalinity();
+
+    socket.on("connect", handleConnect);
+    socket.on("disconnect", handleDisconnect);
+    socket.on("updateSalinityData", handleSalinityData);
+
+    return () => {
+      socket.off("connect", handleConnect);
+      socket.off("disconnect", handleDisconnect);
+      socket.off("updateSalinityData", handleSalinityData);
+    };
+  }, []);
+
+  const getWaterQuality = () => {
+    if (salinity <= 35) return "Excellent";
+    if (salinity <= 50) return "Moderate";
+    return "Poor";
+  };
+
+  const percentage = (salinity / 100) * 100; // Assuming max salinity is 100 PSU
 
   return (
     <div className={`widget-container ${theme}`}>
-      {/* Toggle */}
       <div className="toggle-wrapper">
-        <div
-          className={`custom-toggle ${isConnected ? "connected" : "disconnected"}`}
-          onClick={() => setIsConnected(!isConnected)}
-        >
+        <div className={`custom-toggle ${isConnected ? "connected" : "disconnected"}`}>
           <div className="slider" />
           <div className="toggle-label connected-label">Connected</div>
           <div className="toggle-label disconnected-label">Disconnected</div>
         </div>
       </div>
 
-      {/* Meter */}
       <div className="meter-container">
         <CircularProgressbarWithChildren
           value={percentage}
@@ -36,17 +70,22 @@ const Dissolved = () => {
             strokeLinecap: "round",
           })}
         >
-          <div className="temperature-text"> {/* Reusing the style, adjust if needed */}
-            <span className="label">Dissolved O₂</span>
-            <span className="value">{dissolvedOxygen}</span>
-            <span className="unit">ppm</span> {/* Assuming ppm is the unit */}
+          <div className="temperature-text">
+            <span className="label">Salinity</span>
+            <span className="value">{salinity}</span>
+            <span className="unit">PSU</span>
           </div>
         </CircularProgressbarWithChildren>
       </div>
 
-      {/* Water Quality */}
       <p className={`water-quality-text ${theme === "dark" ? "text-white" : "text-gray-600"}`}>
-        Water Quality: <span className="text-blue-600 font-bold">{waterQuality}</span>
+        Water Quality:{" "}
+        <span className={`font-bold ${
+          getWaterQuality() === "Excellent" ? "text-blue-600" :
+          getWaterQuality() === "Moderate" ? "text-yellow-400" : "text-red-500"
+        }`}>
+          {getWaterQuality()}
+        </span>
       </p>
     </div>
   );
