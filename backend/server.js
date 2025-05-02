@@ -494,40 +494,64 @@ parser.on("data", (data) => {
     const temperatureValue = jsonData.temperature_celsius;
 
     // Handling Turbidity data
-    if (turbidityValue !== undefined) {
-      console.log("📡 Turbidity:", turbidityValue);
+    
 
-      const query = "INSERT INTO turbidity_readings (turbidity_value) VALUES (?)";
-      db.query(query, [turbidityValue], (err, result) => {
-        if (err) return console.error("Turbidity DB Error:", err);
-        io.emit("updateTurbidityData", { value: turbidityValue });
+if (turbidityValue !== undefined) {
+  console.log("📡 Received Turbidity Data:", turbidityValue);
 
-        // === Notification Logic ===
-        const threshold = 20;
-        let status = "CLEAN";
-        let message = "";
+  // Insert into turbidity_readings
+  const query = "INSERT INTO turbidity_readings (turbidity_value) VALUES (?)";
+  db.query(query, [turbidityValue], (err, result) => {
+    if (err) {
+      console.error("❌ Turbidity Database Insert Error:", err.sqlMessage);
+      return;
+    }
+    console.log("✅ Turbidity Data Inserted Successfully: ID", result.insertId);
 
-        if (turbidityValue > threshold) {
-          status = "NOT_CLEAN";
-          message = `⚠️ Warning! High turbidity detected (${turbidityValue}) — water not clean.`;
+    // Emit the turbidity data to clients via socket.io
+    io.emit("updateTurbidityData", { value: turbidityValue });
+
+    // Only insert the notification if turbidity is below threshold (40)
+    if (turbidityValue < 40) {
+      insertNotification(result.insertId, turbidityValue);
+    }
+  });
+}
+
+function insertNotification(water_quality_id, turbidityValue) {
+  const threshold = 40;
+  const status = 'Unread'; // Since turbidity is less than threshold, status is 'Unread'
+  const message = `⚠️ Alert: Turbidity level dropped below threshold (${threshold}). Current value: ${turbidityValue}`;
+
+  const notifQuery = `
+    INSERT INTO notifications (water_quality_id, message, status)
+    VALUES (?, ?, ?)
+  `;
+  
+  db.query(notifQuery, [water_quality_id, message, status], (notifErr, notifResult) => {
+    if (notifErr) {
+      console.error("❌ Notification Insert Error:", notifErr.sqlMessage);
+      console.error("❌ Full SQL:", notifErr.sql);
+    } else {
+      console.log("⚠️ Notification Inserted Successfully: ID", notifResult.insertId);
+
+      // Emit the notification data to clients via socket.io
+      io.emit("newNotification", { message: message, status: status });
+    }
+  });
+}
+
+    // Handling pH data
+    if (phValue !== undefined) {
+      console.log("📡 Received pH Level Data:", phValue);
+      const query = "INSERT INTO phlevel_readings (ph_value) VALUES (?)";
+      db.query(query, [phValue], (err, result) => {
+        if (err) {
+          console.error("pH Database Insert Error:", err);
         } else {
-          status = "CLEAN";
-          message = `✅ Turbidity (${turbidityValue}) is safe — water is clean.`;
+          console.log("pH Data Inserted Successfully: ID", result.insertId);
+          io.emit("updatePHData", { value: phValue });
         }
-
-        const notifQuery = "INSERT INTO notifications (message, turbidity, status) VALUES (?, ?, ?)";
-        db.query(notifQuery, [message, turbidityValue, status], (err, result) => {
-          if (err) return console.error("Notification DB Error:", err);
-          console.log("🔔 Notification:", message);
-
-          io.emit("newNotification", {
-            id: result.insertId,
-            message,
-            turbidity: turbidityValue,
-            status,
-            created_at: new Date().toISOString(),
-          });
-        });
       });
     }
 
@@ -722,4 +746,48 @@ app.get("/api/sensors/latest", async (req, res) => {
     console.error("❌ Error fetching water quality data:", err.message);
     res.status(500).json({ message: "Internal server error." });
   }
+});
+
+// Middleware to authenticate JWT tokens
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1]; // Bearer <token>
+
+  if (!token) {
+    return res.status(403).json({ error: "Token required" });
+  }
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    if (err) {
+      return res.status(403).json({ error: "Invalid token" });
+    }
+    req.user = user;
+    next();
+  });
+};
+
+// Get unread notifications
+app.get("/api/notifications/unread", authenticateToken, (req, res) => {
+  const query = "SELECT id, message, created_at, status FROM notifications WHERE status = 'Unread' ORDER BY created_at DESC";
+  
+  db.query(query, (err, results) => {
+    if (err) {
+      console.error("❌ Error fetching notifications:", err);
+      return res.status(500).json({ error: "Failed to fetch notifications" });
+    }
+    res.json(results || []); // Send the unread notifications back to the client
+  });
+});
+
+// Mark notifications as read (optional for a feature where the backend updates read status)
+app.post("/api/notifications/mark-read", authenticateToken, (req, res) => {
+  const query = "UPDATE notifications SET status = 'Read' WHERE status = 'Unread'";
+  
+  db.query(query, (err, results) => {
+    if (err) {
+      console.error("❌ Error updating notifications:", err);
+      return res.status(500).json({ error: "Failed to update notifications" });
+    }
+    res.json({ message: "Notifications marked as read" });
+  });
 });

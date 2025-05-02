@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useContext, useRef } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { FaBell } from "react-icons/fa";
 import "../styles/navbar.css";
 import axios from "axios";
 import { ThemeContext } from "../context/ThemeContext";
-import io from "socket.io-client";
 
 const Navbar = () => {
   const { theme } = useContext(ThemeContext);
@@ -11,16 +10,12 @@ const Navbar = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
-
-  const [sensorData, setSensorData] = useState(null);
   const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0); // For optimized unread count
 
-  const backendURL =
-    import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
-  const socket = useRef(null);
-  const prevSensorRef = useRef(null);
+  const backendURL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
 
-  // Fetch user info (as is)
+  // Fetch user info
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -34,10 +29,7 @@ const Navbar = () => {
 
         setUsers(response.data);
       } catch (err) {
-        console.error(
-          `❌ Error fetching user:`,
-          err.response ? err.response.data : err.message
-        );
+        console.error("❌ Error fetching user:", err.response ? err.response.data : err.message);
         setError("Failed to load user data.");
       } finally {
         setLoading(false);
@@ -47,86 +39,42 @@ const Navbar = () => {
     fetchUserData();
   }, []);
 
-  // Real-time turbidity updates via Socket.IO
-  useEffect(() => {
-    socket.current = io(backendURL, { withCredentials: true });
+  // Fetch unread notifications from the database
+  const fetchUnreadNotifications = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("No authentication token found");
 
-    socket.current.on("connect", () => {
-      console.log("Socket connected:", socket.current.id); // Log socket connection
-    });
+      const response = await axios.get(`${backendURL}/api/notifications/unread`, {
+        headers: { Authorization: `Bearer ${token}` },
+        withCredentials: true,
+      });
 
-    const handleUpdate = (latestData) => {
-      console.log("📡 Received turbidity update:", latestData);
-
-      const turbidityValue = parseFloat(latestData?.turbidity);
-      const timestamp = new Date().toLocaleTimeString();
-
-      if (!isNaN(turbidityValue)) {
-        const prevData = prevSensorRef.current;
-
-        // Clean water (exactly 100)
-        if (turbidityValue === 100 && (!prevData || prevData.turbidity !== 100)) {
-          setNotifications((prev) => {
-            const newNotifications = [
-              `✅ Water is clean (100%) as of ${timestamp}`,
-              ...prev.filter((notif) => !notif.includes("Turbidity Status")),
-            ];
-            console.log("Notifications updated (clean water):", newNotifications);
-            return newNotifications;
-          });
-        }
-
-        // Not clean water (<40)
-        else if (turbidityValue < 40 && (!prevData || prevData.turbidity >= 40)) {
-          setNotifications((prev) => {
-            const newNotifications = [
-              `⚠️ Turbidity Alert: Water is not clean (${turbidityValue}%) as of ${timestamp}`,
-              ...prev.filter((notif) => !notif.includes("Turbidity Status")),
-            ];
-            console.log("Notifications updated (alert):", newNotifications);
-            return newNotifications;
-          });
-        }
-
-        // Neutral (40–99) — clear notifications
-        else if (
-          turbidityValue >= 40 &&
-          turbidityValue < 100 &&
-          prevData &&
-          (prevData.turbidity < 40 || prevData.turbidity === 100)
-        ) {
-          setNotifications((prev) => {
-            const newNotifications = prev.filter(
-              (notif) =>
-                !notif.includes("Turbidity Alert") && !notif.includes("Water is clean")
-            );
-            console.log("Notifications updated (neutral):", newNotifications);
-            return newNotifications;
-          });
-        }
-
-        prevSensorRef.current = latestData;
-        setSensorData(latestData);
-      }
-    };
-
-    socket.current.on("updateTurbidityData", handleUpdate);
-
-    return () => {
-      socket.current.off("updateTurbidityData", handleUpdate);
-      socket.current.disconnect();
-    };
-  }, [backendURL]);
-
-  const handleAdminClick = () => {
-    alert(`Welcome, ${users?.role}! Redirecting to the admin panel...`);
-    if (users?.role === "super_admin") {
-      window.location.href = "/super-admin-dashboard";
-    } else if (users?.role === "admin") {
-      window.location.href = "/admin-dashboard";
-    } else {
-      alert("You do not have admin privileges.");
+      // Set notifications as unread from the database
+      setNotifications(response.data);
+      setUnreadCount(response.data.filter((notif) => !notif.read).length); // Update unread count
+    } catch (err) {
+      console.error("❌ Error fetching notifications:", err.response ? err.response.data : err.message);
     }
+  };
+
+  // Fetch unread notifications when component mounts
+  useEffect(() => {
+    fetchUnreadNotifications(); // Initial fetch
+    const interval = setInterval(fetchUnreadNotifications, 5000); // Fetch every 5 seconds
+
+    // Clear interval on component unmount
+    return () => clearInterval(interval);
+  }, []);
+
+  // Handle showing the modal when clicking the bell icon
+  const handleNotificationClick = () => {
+    setShowModal(true);
+    // Mark all notifications as read
+    setNotifications((prevNotifications) => 
+      prevNotifications.map((notif) => ({ ...notif, read: true }))
+    );
+    setUnreadCount(0); // Reset unread count
   };
 
   return (
@@ -140,9 +88,7 @@ const Navbar = () => {
               <p className="error-text">{error}</p>
             ) : (
               <>
-                <p className="account-name">
-                  {users?.username || "Unknown User"}
-                </p>
+                <p className="account-name">{users?.username || "Unknown User"}</p>
                 <p className="account-email">{users?.email || "No Email"}</p>
               </>
             )}
@@ -152,43 +98,27 @@ const Navbar = () => {
 
       <div className="right-section">
         <div className="notification-wrapper">
-          <FaBell
-            className="notification-icon"
-            onClick={() => setShowModal(true)}
-          />
-          {notifications.length > 0 && (
-            <span className="notification-badge">{notifications.length}</span>
+          <FaBell className="notification-icon" onClick={handleNotificationClick} />
+          {unreadCount > 0 && (
+            <span className="notification-badge">{unreadCount}</span>
           )}
         </div>
-
-        {users?.role === "super_admin" && (
-          <button className="super-admin-button" onClick={handleAdminClick}>
-            Super Admin Panel
-          </button>
-        )}
-        {users?.role === "admin" && (
-          <button className="admin-button" onClick={handleAdminClick}>
-            Admin Panel
-          </button>
-        )}
-        {users?.role === "user" && (
-          <button className="user-button" disabled>
-            User Account
-          </button>
-        )}
       </div>
 
+      {/* Modal to show notifications */}
       {showModal && (
-        <div
-          className="notif-modal-overlay"
-          onClick={() => setShowModal(false)}
-        >
+        <div className="notif-modal-overlay" onClick={() => setShowModal(false)}>
           <div className="notif-modal" onClick={(e) => e.stopPropagation()}>
             <h3>🔔 Notifications</h3>
             <ul>
               {notifications.length > 0 ? (
                 notifications.map((notif, index) => (
-                  <li key={index}>{notif}</li>
+                  <li key={index}>
+                    <p>{notif.message}</p>
+                    <span className="notif-time">
+                      {new Date(notif.created_at).toLocaleString()}
+                    </span>
+                  </li>
                 ))
               ) : (
                 <li>No notifications yet 📭</li>
