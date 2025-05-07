@@ -1,0 +1,35 @@
+.Notifpage{
+    display: flex;
+    height: 100vh;
+    background: var(--bg-color);
+    color: var(--text-color);
+}
+
+.Notifpage-content{
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column; 
+    gap: 20px;
+    padding: 20px;
+    overflow: auto;
+    max-height: calc(100vh - 60px);
+}
+
+.Notifpage-content::-webkit-scrollbar {
+    display: none; 
+}
+
+/* Notification.css additional enhancements */
+.Notifpage-content {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+.Notifpage-content::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+}
+
+button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}

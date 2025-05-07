@@ -1,5 +1,4 @@
 const db = require("./config/db");
-
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
@@ -16,12 +15,11 @@ const { User } = require("../backend/models/user");
 const { SerialPort } = require("serialport");
 const { ReadlineParser } = require("@serialport/parser-readline");
 const cookieParser = require("cookie-parser");
-const authRoutes = require('./models/route');
-
-
+const authRoutes = require("./models/route");
 const app = express();
 const port = 5000;
 const saltRounds = 10;
+
 require("dotenv").config();
 
 // Middleware
@@ -37,7 +35,7 @@ const io = new Server(server, {
 });
 
 app.use(cookieParser());
-app.use('/api/auth', authRoutes);
+app.use("/api/auth", authRoutes);
 app.use(
   cors({
     origin: ["http://localhost:3000", "http://localhost:5173"], // Allow both ports
@@ -55,14 +53,12 @@ const query = (sql, values) =>
 
 module.exports = { query };
 
-require('dotenv').config();
+require("dotenv").config();
 console.log(process.env.PORT);
 
 app.get("/", (req, res) => {
   res.send("Backend is running!");
 });
-
-
 
 // Start Express & Socket.IO Server
 server.listen(port, () => {
@@ -71,7 +67,6 @@ server.listen(port, () => {
 io.listen(3001, () => {
   console.log("WebSocket server running on port 3001");
 });
-
 
 // mailer function
 app.post("/send-email", async (req, res) => {
@@ -87,7 +82,9 @@ app.post("/verify-code", (req, res) => {
 
   const { email, code } = req.body;
   if (!email || !code) {
-    return res.status(400).json({ error: "Email and verification code are required." });
+    return res
+      .status(400)
+      .json({ error: "Email and verification code are required." });
   }
 
   // Query the database to find the user
@@ -124,7 +121,14 @@ app.post("/verify-code", (req, res) => {
 
 // Signup function
 app.post("/users", async (req, res) => {
-  const { username, email, phone, password, confirmPassword, role = "User" } = req.body;
+  const {
+    username,
+    email,
+    phone,
+    password,
+    confirmPassword,
+    role = "User",
+  } = req.body;
 
   if (!username || !email || !phone || !password || !confirmPassword) {
     return res.status(400).json({ error: "All fields are required" });
@@ -138,21 +142,30 @@ app.post("/users", async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, saltRounds);
     const verificationCode = crypto.randomInt(100000, 999999).toString(); // Generate 6-digit code
 
-    const sql = "INSERT INTO users (username, email, phone, password_hash, role, verification_code, is_verified) VALUES ( ?, ?, ?, ?, ?, ?, ?)";
-    db.query(sql, [username, email, phone, hashedPassword, role, verificationCode, 0], async (err, result) => {
-      if (err) {
-        console.error("Error inserting user:", err);
-        return res.status(500).json({ error: "Database error" });
-      }
+    const sql =
+      "INSERT INTO users (username, email, phone, password_hash, role, verification_code, is_verified) VALUES ( ?, ?, ?, ?, ?, ?, ?)";
+    db.query(
+      sql,
+      [username, email, phone, hashedPassword, role, verificationCode, 0],
+      async (err, result) => {
+        if (err) {
+          console.error("Error inserting user:", err);
+          return res.status(500).json({ error: "Database error" });
+        }
 
-      try {
-        await sendVerificationEmail(email, verificationCode);
-        res.json({ message: "User registered successfully. Check your email for verification.", userId: result.insertId });
-      } catch (emailError) {
-        console.error("Error sending email:", emailError);
-        res.status(500).json({ error: "Failed to send verification email" });
+        try {
+          await sendVerificationEmail(email, verificationCode);
+          res.json({
+            message:
+              "User registered successfully. Check your email for verification.",
+            userId: result.insertId,
+          });
+        } catch (emailError) {
+          console.error("Error sending email:", emailError);
+          res.status(500).json({ error: "Failed to send verification email" });
+        }
       }
-    });
+    );
   } catch (error) {
     console.error("Error hashing password:", error);
     res.status(500).json({ error: "Server error" });
@@ -164,7 +177,7 @@ async function sendVerificationEmail(to, code) {
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
-      user: process.env.EMAIL_USER,  
+      user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS,
     },
   });
@@ -202,7 +215,7 @@ app.post("/login", (req, res) => {
 
     const user = results[0];
     const isMatch = await bcrypt.compare(password, user.password_hash);
-
+  
     if (!isMatch) {
       return res.status(400).json({ error: "Incorrect password" });
     }
@@ -213,6 +226,8 @@ app.post("/login", (req, res) => {
       "your_secret_key",
       { expiresIn: "1h" }
     );
+
+    console.log("Backend: Generated Auth Token for user:", token); // Log the generated token
 
     // Determine user role and redirect URL
     let redirectUrl = "/dashboard"; // Default for normal users
@@ -239,7 +254,13 @@ app.post("/admin", async (req, res) => {
   const { username, email, password, confirmPassword, role } = req.body;
 
   if (!username || !email || !password || !confirmPassword || !role) {
-    console.log("❌ Missing fields:", { username, email, password, confirmPassword, role });
+    console.log("❌ Missing fields:", {
+      username,
+      email,
+      password,
+      confirmPassword,
+      role,
+    });
     return res.status(400).json({ error: "All fields are required" });
   }
 
@@ -249,7 +270,9 @@ app.post("/admin", async (req, res) => {
 
   const allowedRoles = ["Admin", "Super Admin"];
   if (!allowedRoles.includes(role)) {
-    return res.status(400).json({ error: "Invalid role. Allowed roles: Admin, Super Admin" });
+    return res
+      .status(400)
+      .json({ error: "Invalid role. Allowed roles: Admin, Super Admin" });
   }
 
   try {
@@ -257,14 +280,21 @@ app.post("/admin", async (req, res) => {
 
     console.log("📝 Inserting into DB:", { username, email, role });
 
-    const sql = "INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)";
+    const sql =
+      "INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)";
     db.query(sql, [username, email, hashedPassword, role], (err, result) => {
       if (err) {
         console.error("❌ Error inserting user:", err);
         return res.status(500).json({ error: "Database error" });
       }
-      console.log("✅ User created successfully:", { userId: result.insertId, role });
-      res.json({ message: "User created successfully", userId: result.insertId });
+      console.log("✅ User created successfully:", {
+        userId: result.insertId,
+        role,
+      });
+      res.json({
+        message: "User created successfully",
+        userId: result.insertId,
+      });
     });
   } catch (error) {
     console.error("❌ Error hashing password:", error);
@@ -284,46 +314,56 @@ app.get("/api/users", async (req, res) => {
 });
 
 // delete
-app.delete('/api/users/:id', async (req, res) => {
+app.delete("/api/users/:id", async (req, res) => {
   const { id } = req.params;
 
   try {
     const userId = parseInt(id, 10);
     if (isNaN(userId)) {
-      return res.status(400).json({ error: 'Invalid user ID' });
+      return res.status(400).json({ error: "Invalid user ID" });
     }
 
-    const [user] = await db.promise().query('SELECT role FROM users WHERE id = ?', [userId]);
+    const [user] = await db
+      .promise()
+      .query("SELECT role FROM users WHERE id = ?", [userId]);
 
     if (user.length === 0) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(404).json({ error: "User not found" });
     }
 
     const userRole = user[0].role;
 
     if (userRole === "Super Admin") {
-      const [superAdmins] = await db.promise().query('SELECT COUNT(*) AS count FROM users WHERE role = "Super Admin"');
+      const [superAdmins] = await db
+        .promise()
+        .query(
+          'SELECT COUNT(*) AS count FROM users WHERE role = "Super Admin"'
+        );
 
       if (superAdmins[0].count <= 1) {
-        return res.status(403).json({ error: 'Cannot delete the last Super Admin' });
+        return res
+          .status(403)
+          .json({ error: "Cannot delete the last Super Admin" });
       }
     }
 
-    const [result] = await db.promise().query('DELETE FROM users WHERE id = ?', [userId]);
+    const [result] = await db
+      .promise()
+      .query("DELETE FROM users WHERE id = ?", [userId]);
 
     if (result.affectedRows === 0) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(404).json({ error: "User not found" });
     }
 
-    res.status(200).json({ message: 'User deleted successfully' });
+    res.status(200).json({ message: "User deleted successfully" });
   } catch (err) {
-    console.error('❌ Error deleting user:', err);
-    res.status(500).json({ error: 'Failed to delete user' });
+    console.error("❌ Error deleting user:", err);
+    res.status(500).json({ error: "Failed to delete user" });
   }
 });
 
 // edit account
-app.put('/api/users/:id', async (req, res) => {
+app.put("/api/users/:id", async (req, res) => {
   const { id } = req.params;
   const { username, email, phone } = req.body;
 
@@ -331,463 +371,446 @@ app.put('/api/users/:id', async (req, res) => {
     // Ensure the ID is a valid number
     const userId = parseInt(id, 10);
     if (isNaN(userId)) {
-      return res.status(400).json({ error: 'Invalid user ID' });
+      return res.status(400).json({ error: "Invalid user ID" });
     }
 
     // Ensure all required fields are provided
     if (!username || !email) {
-      return res.status(400).json({ error: 'Username and email are required' });
+      return res.status(400).json({ error: "Username and email are required" });
     }
 
     // Log the received data for debugging
-    console.log(`🔹 Updating user ID: ${userId}, Data:`, { username, email, phone });
+    console.log(`🔹 Updating user ID: ${userId}, Data:`, {
+      username,
+      email,
+      phone,
+    });
 
     // Perform the update query
     const [result] = await db
       .promise()
       .query(
-        'UPDATE users SET username = ?, email = ?, phone = ? WHERE id = ?',
+        "UPDATE users SET username = ?, email = ?, phone = ? WHERE id = ?",
         [username, email, phone || null, userId]
       );
 
     // Check if any rows were updated
     if (result.affectedRows === 0) {
-      return res.status(404).json({ error: 'User not found or no changes made' });
+      return res
+        .status(404)
+        .json({ error: "User not found or no changes made" });
     }
 
     // Successfully updated user
-    res.status(200).json({ message: 'User updated successfully' });
+    res.status(200).json({ message: "User updated successfully" });
   } catch (err) {
-    console.error('❌ Error updating user:', err);
-    res.status(500).json({ error: 'Failed to update user. Please try again later.' });
+    console.error("❌ Error updating user:", err);
+    res
+      .status(500)
+      .json({ error: "Failed to update user. Please try again later." });
   }
 });
 
-
-// fetch data to display in navbar
-app.use(cors({
-  origin: "http://localhost:5173", // Allow frontend URL
-  credentials: true, // Allow cookies and authorization headers
-  methods: "GET,POST,PUT,DELETE", // Allowed methods
-  allowedHeaders: "Content-Type,Authorization" // Allowed headers
-}));
-
-
-app.get("/api/auth/users", async (req, res) => {
-  const token = req.headers.authorization?.split(" ")[1];
-
-  if (!token) {
-    console.log("❌ No token provided");
-    return res.status(401).json({ error: "Unauthorized: No token" });
-  }
-
-  try {
-    const decoded = jwt.verify(token, "e265c8e7b7d5ac89322c36640b46c2fd492946cc20b1cfecbb5877545e8db43ae64312366e32fed4b52eda2b200915964971ceee8d947fad0311561645e12aeb"); // Ensure you replace this with your actual secret key
-    console.log("🔑 Token decoded:", decoded);
-
-    const sql = "SELECT username, email FROM users WHERE id = ?";
-    const [results] = await db.promise().query(sql, [decoded.id]); // Fixed `.promise().query()`
-
-    if (results.length === 0) {
-      console.log("❌ User not found for ID:", decoded.id);
-      return res.status(404).json({ error: "User not found" });
-    }
-
-    const user = results[0];
-    console.log("✅ User found:", user);
-    res.json(user);
-  } catch (err) {
-    console.error("❌ JWT error:", err.message);
-    res.status(401).json({ error: "Invalid or expired token" });
-  }
-});
-
+// fetching for navbar
 app.get("/api/auth/user", async (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];
 
+  console.log("➡️ Request received for /api/auth/user. Token:", token);
+
   if (!token) {
-      console.log("❌ No token provided");
-      return res.status(401).json({ error: "Unauthorized: No token" });
+    console.log("❌ No token provided in the Authorization header.");
+    return res.status(401).json({ error: "Unauthorized: No token provided" });
   }
 
   try {
-      const decoded = jwt.verify(token, "e265c8e7b7d5ac89322c36640b46c2fd492946cc20b1cfecbb5877545e8db43ae64312366e32fed4b52eda2b200915964971ceee8d947fad0311561645e12aeb"); // Use your actual secret key
-      console.log("🔑 Token decoded:", decoded);
+    let decoded;
+    try {
+      decoded = jwt.verify(token, "your_secret_key"); // Use your actual secret key
+      console.log("🔑 Token successfully verified. Decoded payload:", decoded);
+    } catch (jwtErr) {
+      console.error("❌ JWT Verification Error:", jwtErr.message);
+      return res.status(401).json({ error: "Unauthorized: Invalid or expired token", details: jwtErr.message });
+    }
 
+    const userId = decoded.id;
+    console.log("👤 Decoded User ID:", userId);
+
+    try {
       const sql = "SELECT username, email, role FROM users WHERE id = ?";
-      db.query(sql, [decoded.id], (err, results) => {
-          if (err) {
-              console.error("❌ MySQL Error:", err);
-              return res.status(500).json({ error: "Database error" });
-          }
+      db.query(sql, [userId], (dbErr, results) => {
+        if (dbErr) {
+          console.error("❌ MySQL Query Error:", dbErr.message);
+          return res.status(500).json({ error: "Database query error", details: dbErr.message });
+        }
 
-          if (results.length === 0) {
-              console.log("❌ User not found for ID:", decoded.id);
-              return res.status(404).json({ error: "User not found" });
-          }
+        if (results.length === 0) {
+          console.log(`❌ User not found in database with ID: ${userId}`);
+          return res.status(404).json({ error: "User not found in database" });
+        }
 
-          const user = results[0];
-          console.log("✅ User found:", user);
-          res.json(user);
+        const user = results[0];
+        console.log("✅ User data found:", user);
+        res.json({ username: user.username, email: user.email, role: user.role });
       });
-  } catch (err) {
-      console.error("❌ JWT error:", err.message);
-      res.status(401).json({ error: "Invalid or expired token" });
+    } catch (dbQueryErr) {
+      console.error("❌ Error executing database query:", dbQueryErr.message);
+      return res.status(500).json({ error: "Error executing database query", details: dbQueryErr.message });
+    }
+
+  } catch (generalErr) {
+    console.error("🔥 General error in /api/auth/user:", generalErr.message);
+    return res.status(500).json({ error: "Internal server error", details: generalErr.message });
   }
 });
+
 
 //ITO START NG ARDUINO GRRR RAWR RAWR HAHAHAHAHAH
 
+// //Set up SerialPort (Change COM3 to your correct port)
+// const serialPort = new SerialPort({ path: "COM3", baudRate: 9600 });
+// const parser = serialPort.pipe(new ReadlineParser({ delimiter: "\n" }));
 
+// //Read and store data from Arduino
+// parser.on("data", (data) => {
+//   try {
+//     const jsonData = JSON.parse(data.trim());
+//     const turbidityValue = jsonData.turbidity_value;
 
-//Set up SerialPort (Change COM3 to your correct port)
-const serialPort = new SerialPort({ path: "COM5", baudRate: 9600 });
-const parser = serialPort.pipe(new ReadlineParser({ delimiter: "\n" }));
+//     console.log("📡 Received Data:", turbidityValue);
 
-//Read and store data from Arduino
-parser.on("data", (data) => {
-  try {
-    const jsonData = JSON.parse(data.trim());
-    const turbidityValue = jsonData.turbidity_value;
+//     // Insert into MySQL
+//     const query = "INSERT INTO turbidity_readings (turbidity_value) VALUES (?)";
+//     db.query(query, [turbidityValue], (err, result) => {
+//       if (err) {
+//         console.error("Database Insert Error:", err);
+//       } else {
+//         console.log("Data Inserted Successfully: ID", result.insertId);
 
-    console.log("📡 Received Data:", turbidityValue);
+//         // Emit real-time data update
+//         io.emit("updateData", { value: turbidityValue });
+//       }
+//     });
+//   } catch (err) {
+//     console.error("JSON Parse Error:", err);
+//   }
+// });
 
-    // Insert into MySQL
-    const query = "INSERT INTO turbidity_readings (turbidity_value) VALUES (?)";
-    db.query(query, [turbidityValue], (err, result) => {
-      if (err) {
-        console.error("Database Insert Error:", err);
-      } else {
-        console.log("Data Inserted Successfully: ID", result.insertId);
+// //API Route to Fetch Data
+// app.get("/data", (req, res) => {
+//   db.query("SELECT * FROM turbidity_readings ORDER BY id DESC LIMIT 10", (err, results) => {
+//     if (err) {
+//       return res.status(500).json({ error: "Database Query Error" });
+//     }
+//     res.json(results);
+//   });
+// });
 
-        // Emit real-time data update
-        io.emit("updateData", { value: turbidityValue });
-      }
-    });
-  } catch (err) {
-    console.error("JSON Parse Error:", err);
-  }
-});
+// //Read and store data from Arduino
+// parser.on("data", (data) => {
+//   try {
+//     const jsonData = JSON.parse(data.trim());
 
-//API Route to Fetch Data
-app.get("/data", (req, res) => {
-  db.query("SELECT * FROM turbidity_readings ORDER BY id DESC LIMIT 10", (err, results) => {
-    if (err) {
-      return res.status(500).json({ error: "Database Query Error" });
-    }
-    res.json(results);
-  });
-});
+//     // Extract all sensor values from received JSON data
+//     const turbidityValue = jsonData.turbidity_value;
+//     const phValue = jsonData.ph_value;
+//     const tdsValue = jsonData.tds_value;
+//     const salinityValue = jsonData.salinity_value;
+//     const ecValue = jsonData.ec_value_mS;
+//     const ecCompensatedValue = jsonData.ec_compensated_mS;
+//     const temperatureValue = jsonData.temperature_celsius;
 
-//Read and store data from Arduino
-parser.on("data", (data) => {
-  try {
-    const jsonData = JSON.parse(data.trim());
+//     // Handling Turbidity data
 
-    // Extract all sensor values from received JSON data
-    const turbidityValue = jsonData.turbidity_value;
-    const phValue = jsonData.ph_value;
-    const tdsValue = jsonData.tds_value;
-    const salinityValue = jsonData.salinity_value;
-    const ecValue = jsonData.ec_value_mS;
-    const ecCompensatedValue = jsonData.ec_compensated_mS;
-    const temperatureValue = jsonData.temperature_celsius;
+// if (turbidityValue !== undefined) {
+//   console.log("📡 Received Turbidity Data:", turbidityValue);
 
-    // Handling Turbidity data
-    
+//   // Insert into turbidity_readings
+//   const query = "INSERT INTO turbidity_readings (turbidity_value) VALUES (?)";
+//   db.query(query, [turbidityValue], (err, result) => {
+//     if (err) {
+//       console.error("❌ Turbidity Database Insert Error:", err.sqlMessage);
+//       return;
+//     }
+//     console.log("✅ Turbidity Data Inserted Successfully: ID", result.insertId);
 
-if (turbidityValue !== undefined) {
-  console.log("📡 Received Turbidity Data:", turbidityValue);
+//     // Emit the turbidity data to clients via socket.io
+//     io.emit("updateTurbidityData", { value: turbidityValue });
 
-  // Insert into turbidity_readings
-  const query = "INSERT INTO turbidity_readings (turbidity_value) VALUES (?)";
-  db.query(query, [turbidityValue], (err, result) => {
-    if (err) {
-      console.error("❌ Turbidity Database Insert Error:", err.sqlMessage);
-      return;
-    }
-    console.log("✅ Turbidity Data Inserted Successfully: ID", result.insertId);
+//     // Only insert the notification if turbidity is below threshold (40)
+//     if (turbidityValue < 40) {
+//       insertNotification(result.insertId, turbidityValue);
+//     }
+//   });
+// }
 
-    // Emit the turbidity data to clients via socket.io
-    io.emit("updateTurbidityData", { value: turbidityValue });
+// function insertNotification(water_quality_id, turbidityValue) {
+//   const threshold = 40;
+//   const status = 'Unread'; // Since turbidity is less than threshold, status is 'Unread'
+//   const message = `⚠️ Alert: Turbidity level dropped below threshold (${threshold}). Current value: ${turbidityValue}`;
 
-    // Only insert the notification if turbidity is below threshold (40)
-    if (turbidityValue < 40) {
-      insertNotification(result.insertId, turbidityValue);
-    }
-  });
-}
+//   const notifQuery = `
+//     INSERT INTO notifications (water_quality_id, message, status)
+//     VALUES (?, ?, ?)
+//   `;
 
-function insertNotification(water_quality_id, turbidityValue) {
-  const threshold = 40;
-  const status = 'Unread'; // Since turbidity is less than threshold, status is 'Unread'
-  const message = `⚠️ Alert: Turbidity level dropped below threshold (${threshold}). Current value: ${turbidityValue}`;
+//   db.query(notifQuery, [water_quality_id, message, status], (notifErr, notifResult) => {
+//     if (notifErr) {
+//       console.error("❌ Notification Insert Error:", notifErr.sqlMessage);
+//       console.error("❌ Full SQL:", notifErr.sql);
+//     } else {
+//       console.log("⚠️ Notification Inserted Successfully: ID", notifResult.insertId);
 
-  const notifQuery = `
-    INSERT INTO notifications (water_quality_id, message, status)
-    VALUES (?, ?, ?)
-  `;
-  
-  db.query(notifQuery, [water_quality_id, message, status], (notifErr, notifResult) => {
-    if (notifErr) {
-      console.error("❌ Notification Insert Error:", notifErr.sqlMessage);
-      console.error("❌ Full SQL:", notifErr.sql);
-    } else {
-      console.log("⚠️ Notification Inserted Successfully: ID", notifResult.insertId);
+//       // Emit the notification data to clients via socket.io
+//       io.emit("newNotification", { message: message, status: status });
+//     }
+//   });
+// }
 
-      // Emit the notification data to clients via socket.io
-      io.emit("newNotification", { message: message, status: status });
-    }
-  });
-}
+//     // Handling pH data
+//     if (phValue !== undefined) {
+//       console.log("📡 Received pH Level Data:", phValue);
+//       const query = "INSERT INTO phlevel_readings (ph_value) VALUES (?)";
+//       db.query(query, [phValue], (err, result) => {
+//         if (err) {
+//           console.error("pH Database Insert Error:", err);
+//         } else {
+//           console.log("pH Data Inserted Successfully: ID", result.insertId);
+//           io.emit("updatePHData", { value: phValue });
+//         }
+//       });
+//     }
 
-    // Handling pH data
-    if (phValue !== undefined) {
-      console.log("📡 Received pH Level Data:", phValue);
-      const query = "INSERT INTO phlevel_readings (ph_value) VALUES (?)";
-      db.query(query, [phValue], (err, result) => {
-        if (err) {
-          console.error("pH Database Insert Error:", err);
-        } else {
-          console.log("pH Data Inserted Successfully: ID", result.insertId);
-          io.emit("updatePHData", { value: phValue });
-        }
-      });
-    }
+//     // Handling TDS data
+//     if (tdsValue !== undefined) {
+//       console.log("📡 Received TDS Data:", tdsValue);
+//       const query = "INSERT INTO tds_readings (tds_value) VALUES (?)";
+//       db.query(query, [tdsValue], (err, result) => {
+//         if (err) {
+//           console.error("TDS Database Insert Error:", err);
+//         } else {
+//           console.log("TDS Data Inserted Successfully: ID", result.insertId);
+//           io.emit("updateTDSData", { value: tdsValue });
+//         }
+//       });
+//     }
 
-    // Handling TDS data
-    if (tdsValue !== undefined) {
-      console.log("📡 Received TDS Data:", tdsValue);
-      const query = "INSERT INTO tds_readings (tds_value) VALUES (?)";
-      db.query(query, [tdsValue], (err, result) => {
-        if (err) {
-          console.error("TDS Database Insert Error:", err);
-        } else {
-          console.log("TDS Data Inserted Successfully: ID", result.insertId);
-          io.emit("updateTDSData", { value: tdsValue });
-        }
-      });
-    }
+//     // Handling Salinity data
+//     if (salinityValue !== undefined) {
+//       console.log("📡 Received Salinity Data:", salinityValue);
+//       const query = "INSERT INTO salinity_readings (salinity_value) VALUES (?)";
+//       db.query(query, [salinityValue], (err, result) => {
+//         if (err) {
+//           console.error("Salinity Database Insert Error:", err);
+//         } else {
+//           console.log("Salinity Data Inserted Successfully: ID", result.insertId);
+//           io.emit("updateSalinityData", { value: salinityValue });
+//         }
+//       });
+//     }
 
-    // Handling Salinity data
-    if (salinityValue !== undefined) {
-      console.log("📡 Received Salinity Data:", salinityValue);
-      const query = "INSERT INTO salinity_readings (salinity_value) VALUES (?)";
-      db.query(query, [salinityValue], (err, result) => {
-        if (err) {
-          console.error("Salinity Database Insert Error:", err);
-        } else {
-          console.log("Salinity Data Inserted Successfully: ID", result.insertId);
-          io.emit("updateSalinityData", { value: salinityValue });
-        }
-      });
-    }
+//     // Handling EC data
+//     if (ecValue !== undefined) {
+//       console.log("📡 Received EC Data (mS/cm):", ecValue);
+//       const query = "INSERT INTO ec_readings (ec_value_mS) VALUES (?)";
+//       db.query(query, [ecValue], (err, result) => {
+//         if (err) {
+//           console.error("EC Database Insert Error:", err);
+//         } else {
+//           console.log("EC Data Inserted Successfully: ID", result.insertId);
+//           io.emit("updateECData", { value: ecValue });
+//         }
+//       });
+//     }
 
-    // Handling EC data
-    if (ecValue !== undefined) {
-      console.log("📡 Received EC Data (mS/cm):", ecValue);
-      const query = "INSERT INTO ec_readings (ec_value_mS) VALUES (?)";
-      db.query(query, [ecValue], (err, result) => {
-        if (err) {
-          console.error("EC Database Insert Error:", err);
-        } else {
-          console.log("EC Data Inserted Successfully: ID", result.insertId);
-          io.emit("updateECData", { value: ecValue });
-        }
-      });
-    }
+//     // Handling EC (Compensated) data
+//     if (ecCompensatedValue !== undefined) {
+//       console.log("📡 Received Compensated EC Data (mS/cm):", ecCompensatedValue);
+//       const query = "INSERT INTO ec_compensated_readings (ec_compensated_mS) VALUES (?)";
+//       db.query(query, [ecCompensatedValue], (err, result) => {
+//         if (err) {
+//           console.error("Compensated EC Database Insert Error:", err);
+//         } else {
+//           console.log("Compensated EC Data Inserted Successfully: ID", result.insertId);
+//           io.emit("updateECCompensatedData", { value: ecCompensatedValue });
+//         }
+//       });
+//     }
 
-    // Handling EC (Compensated) data
-    if (ecCompensatedValue !== undefined) {
-      console.log("📡 Received Compensated EC Data (mS/cm):", ecCompensatedValue);
-      const query = "INSERT INTO ec_compensated_readings (ec_compensated_mS) VALUES (?)";
-      db.query(query, [ecCompensatedValue], (err, result) => {
-        if (err) {
-          console.error("Compensated EC Database Insert Error:", err);
-        } else {
-          console.log("Compensated EC Data Inserted Successfully: ID", result.insertId);
-          io.emit("updateECCompensatedData", { value: ecCompensatedValue });
-        }
-      });
-    }
+//     // Handling Temperature data
+//     if (temperatureValue !== undefined) {
+//       console.log("📡 Received Temperature Data (°C):", temperatureValue);
+//       const query = "INSERT INTO temperature_readings (temperature_celsius) VALUES (?)";
+//       db.query(query, [temperatureValue], (err, result) => {
+//         if (err) {
+//           console.error("Temperature Database Insert Error:", err);
+//         } else {
+//           console.log("Temperature Data Inserted Successfully: ID", result.insertId);
+//           io.emit("updateTemperatureData", { value: temperatureValue });
+//         }
+//       });
+//     }
 
-    // Handling Temperature data
-    if (temperatureValue !== undefined) {
-      console.log("📡 Received Temperature Data (°C):", temperatureValue);
-      const query = "INSERT INTO temperature_readings (temperature_celsius) VALUES (?)";
-      db.query(query, [temperatureValue], (err, result) => {
-        if (err) {
-          console.error("Temperature Database Insert Error:", err);
-        } else {
-          console.log("Temperature Data Inserted Successfully: ID", result.insertId);
-          io.emit("updateTemperatureData", { value: temperatureValue });
-        }
-      });
-    }
+//   } catch (err) {
+//     console.error("JSON Parse Error:", err);
+//   }
+// });
 
-  } catch (err) {
-    console.error("JSON Parse Error:", err);
-  }
-});
+// // Backend: Separate event for turbidity and pH level
+// parser.on("data", (data) => {
+//   try {
+//     const jsonData = JSON.parse(data.trim());
 
-// Backend: Separate event for turbidity and pH level
-parser.on("data", (data) => {
-  try {
-    const jsonData = JSON.parse(data.trim());
+//     const turbidityValue = jsonData.turbidity_value;
+//     const phValue = jsonData.ph_value;
 
-    const turbidityValue = jsonData.turbidity_value;
-    const phValue = jsonData.ph_value;
+//     if (turbidityValue !== undefined) {
+//       console.log("📡 Received Turbidity Data:", turbidityValue);
 
-    if (turbidityValue !== undefined) {
-      console.log("📡 Received Turbidity Data:", turbidityValue);
+//       // Emit turbidity data update
+//       io.emit("updateTurbidityData", { value: turbidityValue });
+//     }
 
-      // Emit turbidity data update
-      io.emit("updateTurbidityData", { value: turbidityValue });
-    }
+//     if (phValue !== undefined) {
+//       console.log("📡 Received pH Data:", phValue);
 
-    if (phValue !== undefined) {
-      console.log("📡 Received pH Data:", phValue);
+//       // Emit pH data update
+//       io.emit("updatePHData", { value: phValue });
+//     }
 
-      // Emit pH data update
-      io.emit("updatePHData", { value: phValue });
-    }
+//   } catch (err) {
+//     console.error("JSON Parse Error:", err);
+//   }
+// });
 
-  } catch (err) {
-    console.error("JSON Parse Error:", err);
-  }
-});
+// // Save user to the database
+// app.post('/save-user', (req, res) => {
+//   const { email, name } = req.body;
 
+//   // Insert user data into the 'users' table
+//   const query = 'INSERT INTO users (email, username) VALUES (?, ?)';
+//   db.query(query, [email, name], (err, result) => {
+//     if (err) {
+//       console.error('Error saving user:', err);
+//       return res.status(500).send('Error saving user');
+//     }
+//     res.status(200).send('User saved successfully');
+//   });
+// });
 
+// let sensorConnected = false;  // To keep track of sensor connection status
 
-// Save user to the database
-app.post('/save-user', (req, res) => {
-  const { email, name } = req.body;
+// // Function to show the connection status
+// function showSensorConnectionStatus(isConnected) {
+//   if (isConnected) {
+//     console.log("Sensor is connected.");
+//   } else {
+//     console.log("Sensor is disconnected.");
+//   }
+// }
 
-  // Insert user data into the 'users' table
-  const query = 'INSERT INTO users (email, username) VALUES (?, ?)';
-  db.query(query, [email, name], (err, result) => {
-    if (err) {
-      console.error('Error saving user:', err);
-      return res.status(500).send('Error saving user');
-    }
-    res.status(200).send('User saved successfully');
-  });
-});
+// // Check if the sensor is connected when the port opens
+// serialPort.on("open", () => {
+//   if (!sensorConnected) {
+//     sensorConnected = true;  // Set to connected
+//     showSensorConnectionStatus(true);  // Show connected status
+//   }
+// });
 
-let sensorConnected = false;  // To keep track of sensor connection status
+// // Listen for data from the sensor
+// parser.on("data", (data) => {
+//   try {
+//     const jsonData = JSON.parse(data.trim());
+//     const turbidityValue = jsonData.turbidity_value;
 
-// Function to show the connection status
-function showSensorConnectionStatus(isConnected) {
-  if (isConnected) {
-    console.log("Sensor is connected.");
-  } else {
-    console.log("Sensor is disconnected.");
-  }
-}
+//     console.log("📡 Received Data:", turbidityValue);
 
-// Check if the sensor is connected when the port opens
-serialPort.on("open", () => {
-  if (!sensorConnected) {
-    sensorConnected = true;  // Set to connected
-    showSensorConnectionStatus(true);  // Show connected status
-  }
-});
+//     // Insert into MySQL
+//     const query = "INSERT INTO turbidity_readings (turbidity_value) VALUES (?)";
+//     db.query(query, [turbidityValue], (err, result) => {
+//       if (err) {
+//         console.error("Database Insert Error:", err);
+//       } else {
+//         console.log("Data Inserted Successfully: ID", result.insertId);
+//       }
+//     });
+//   } catch (err) {
+//     console.error("JSON Parse Error:", err);
+//   }
+// });
 
-// Listen for data from the sensor
-parser.on("data", (data) => {
-  try {
-    const jsonData = JSON.parse(data.trim());
-    const turbidityValue = jsonData.turbidity_value;
+// // Handle sensor disconnection
+// serialPort.on("close", () => {
+//   if (sensorConnected) {
+//     sensorConnected = false;  // Set to disconnected
+//     showSensorConnectionStatus(false);  // Show disconnected status
+//   }
+// });
 
-    console.log("📡 Received Data:", turbidityValue);
+// const pool = mysql.createPool({
+//   host: process.env.DB_HOST,
+//   user: process.env.DB_USER,
+//   password: process.env.DB_PASSWORD,
+//   database: process.env.DB_NAME,
+// });
 
-    // Insert into MySQL
-    const query = "INSERT INTO turbidity_readings (turbidity_value) VALUES (?)";
-    db.query(query, [turbidityValue], (err, result) => {
-      if (err) {
-        console.error("Database Insert Error:", err);
-      } else {
-        console.log("Data Inserted Successfully: ID", result.insertId);
-      }
-    });
-  } catch (err) {
-    console.error("JSON Parse Error:", err);
-  }
-});
+// // ✅ Route to get latest water quality data
+// app.get("/api/sensors/latest", async (req, res) => {
+//   try {
+//     const [rows] = await pool.query(
+//       `SELECT * FROM sensor_readings ORDER BY created_at DESC LIMIT 1`
+//     );
 
-// Handle sensor disconnection
-serialPort.on("close", () => {
-  if (sensorConnected) {
-    sensorConnected = false;  // Set to disconnected
-    showSensorConnectionStatus(false);  // Show disconnected status
-  }
-});
+//     if (rows.length === 0) {
+//       return res.status(404).json({ message: "No water quality data found." });
+//     }
 
-const pool = mysql.createPool({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-});
+//     res.json(rows[0]);
+//   } catch (err) {
+//     console.error("❌ Error fetching water quality data:", err.message);
+//     res.status(500).json({ message: "Internal server error." });
+//   }
+// });
 
-// ✅ Route to get latest water quality data
-app.get("/api/sensors/latest", async (req, res) => {
-  try {
-    const [rows] = await pool.query(
-      `SELECT * FROM sensor_readings ORDER BY created_at DESC LIMIT 1`
-    );
+// // Middleware to authenticate JWT tokens
+// const authenticateToken = (req, res, next) => {
+//   const authHeader = req.headers["authorization"];
+//   const token = authHeader && authHeader.split(" ")[1]; // Bearer <token>
 
-    if (rows.length === 0) {
-      return res.status(404).json({ message: "No water quality data found." });
-    }
+//   if (!token) {
+//     return res.status(403).json({ error: "Token required" });
+//   }
 
-    res.json(rows[0]);
-  } catch (err) {
-    console.error("❌ Error fetching water quality data:", err.message);
-    res.status(500).json({ message: "Internal server error." });
-  }
-});
+//   jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+//     if (err) {
+//       return res.status(403).json({ error: "Invalid token" });
+//     }
+//     req.user = user;
+//     next();
+//   });
+// };
 
-// Middleware to authenticate JWT tokens
-const authenticateToken = (req, res, next) => {
-  const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1]; // Bearer <token>
+// // Get unread notifications
+// app.get("/api/notifications/unread", authenticateToken, (req, res) => {
+//   const query = "SELECT id, message, created_at, status FROM notifications WHERE status = 'Unread' ORDER BY created_at DESC";
 
-  if (!token) {
-    return res.status(403).json({ error: "Token required" });
-  }
+//   db.query(query, (err, results) => {
+//     if (err) {
+//       console.error("❌ Error fetching notifications:", err);
+//       return res.status(500).json({ error: "Failed to fetch notifications" });
+//     }
+//     res.json(results || []); // Send the unread notifications back to the client
+//   });
+// });
 
-  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-    if (err) {
-      return res.status(403).json({ error: "Invalid token" });
-    }
-    req.user = user;
-    next();
-  });
-};
+// // Mark notifications as read (optional for a feature where the backend updates read status)
+// app.post("/api/notifications/mark-read", authenticateToken, (req, res) => {
+//   const query = "UPDATE notifications SET status = 'Read' WHERE status = 'Unread'";
 
-// Get unread notifications
-app.get("/api/notifications/unread", authenticateToken, (req, res) => {
-  const query = "SELECT id, message, created_at, status FROM notifications WHERE status = 'Unread' ORDER BY created_at DESC";
-  
-  db.query(query, (err, results) => {
-    if (err) {
-      console.error("❌ Error fetching notifications:", err);
-      return res.status(500).json({ error: "Failed to fetch notifications" });
-    }
-    res.json(results || []); // Send the unread notifications back to the client
-  });
-});
-
-// Mark notifications as read (optional for a feature where the backend updates read status)
-app.post("/api/notifications/mark-read", authenticateToken, (req, res) => {
-  const query = "UPDATE notifications SET status = 'Read' WHERE status = 'Unread'";
-  
-  db.query(query, (err, results) => {
-    if (err) {
-      console.error("❌ Error updating notifications:", err);
-      return res.status(500).json({ error: "Failed to update notifications" });
-    }
-    res.json({ message: "Notifications marked as read" });
-  });
-});
+//   db.query(query, (err, results) => {
+//     if (err) {
+//       console.error("❌ Error updating notifications:", err);
+//       return res.status(500).json({ error: "Failed to update notifications" });
+//     }
+//     res.json({ message: "Notifications marked as read" });
+//   });
+// });

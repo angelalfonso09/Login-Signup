@@ -1,9 +1,4 @@
 :root {
-    --acctbl-container-margin: 20px;
-    --acctbl-container-padding: 15px;
-    --acctbl-container-radius: 8px;
-    --acctbl-container-bg-dark: #1e1e2f;
-    
     --acctbl-title-font-size: 22px;
     --acctbl-title-font-weight: 600;
     --acctbl-title-margin-bottom: 15px;
@@ -40,19 +35,31 @@
 
 /* Apply Variables */
 .acctbl-container {
-    margin-top: var(--acctbl-container-margin);
-    padding: var(--acctbl-container-padding);
-    border-radius: var(--acctbl-container-radius);
     background: var(--acctbl-container-bg-light);
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
 }
 
+h1{
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.acctbl-container{
+    width: 100%;
+    margin-top: 50px;
+    display: flex;
+    justify-content: start;
+
+}
 .acctbl-container.light {
     background-color: #ffffff;
     color: #000;
   }
 
 .acctbl-container.dark {
-    background: var(--acctbl-container-bg-dark);
+    background: transparent;
 }
 
 .acctbl-title {
@@ -78,7 +85,7 @@
 }
 
 .acctbl-container.dark .acctbl-controls {
-    background: var(--acctbl-container-bg-dark);
+    background: transparent;
 }
 
 .acctbl-search,

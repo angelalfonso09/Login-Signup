@@ -9,6 +9,7 @@ import AccountManagement from "./pages/AccountManagement";
 import History from "./pages/History";
 import AdminDB from "./pages/adminDB";
 import UserDB from "./pages/userDB";
+import Notifications from "./pages/Notifications";
 
 import { ThemeProvider, ThemeContext } from "./context/ThemeContext"; // Import ThemeContext
 import "./styles/common/App.css";
@@ -45,6 +46,7 @@ const ThemedApp = () => {
           {/* Other Routes */}
           <Route path="/accountmanagement" element={<ProtectedRoute element={<AccountManagement />} allowedRoles={["Super Admin"]} />} />
           <Route path="/history" element={<ProtectedRoute element={<History />} allowedRoles={["Super Admin", "User", "Admin"]} />} />
+          <Route path="/notifications" element={<ProtectedRoute element={<Notifications />} allowedRoles={["Super Admin", "User", "Admin"]} />} />
         </Routes>
       </Router>
     </div>

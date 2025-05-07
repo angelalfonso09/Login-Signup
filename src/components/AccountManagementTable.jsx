@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useContext } from "react";
 import { Table, Container, Form, Button, Modal, Alert, Spinner } from "react-bootstrap";
 import { Pencil, Trash2, Plus } from "lucide-react";
-import AdminCreationForm from "./AdminAccountForm";
+import AdminCreationForm from "./AddAdminAccountForm";
 import axios from "axios";
-import "../styles/AC.css";
+import "../styles/Components Css/AccountManagementTable.css";
 import { ThemeContext } from "../context/ThemeContext";
 
 const UserAdminTable = () => {
@@ -87,6 +87,7 @@ const UserAdminTable = () => {
 
   return (
     <Container className={`acctbl-container ${theme}`}>
+      <h1>Account Management</h1>
       <h2 className="acctbl-title">User & Admin Accounts</h2>
 
       <div className="acctbl-controls">

@@ -32,9 +32,9 @@ overflow: hidden;
   flex-wrap: wrap;
   justify-content: center;
   gap: 20px;
-  padding-bottom: 20px;
+  padding-bottom: 20px; 
+  padding: 2rem;
 }
-
 
 .meterRowFlex::-webkit-scrollbar {
   display: none; 

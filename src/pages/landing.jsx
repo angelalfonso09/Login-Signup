@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "../styles/landing.css";
+import "../styles/Pages Css/landing.css";
 
 const AquaSense = () => {
   const navigate = useNavigate();

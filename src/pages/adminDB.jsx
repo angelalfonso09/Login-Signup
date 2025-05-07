@@ -1,15 +1,15 @@
 import React, { useContext } from "react";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
-import styles from "../styles/Userdb.module.css"; // Import the CSS Module
+import styles from "../styles/Pages Css/Userdb.module.css"; // Import the CSS Module
 import { ThemeContext } from "../context/ThemeContext";
-import Ph from "../Meters/Ph";
-import Tds from "../Meters/Tds";
-import Conductivity from "../Meters/Conductivity";
-import Salinity from "../Meters/Salinity";
-import Temperature from "../Meters/Temperature";
-import Turbidity from "../Meters/Turbidity";
-import ElectricalCon from "../Meters/ElectricalCon"; 
+import Ph from "../Dashboard Meters/Ph";
+import Tds from "../Dashboard Meters/Tds";
+import Conductivity from "../Dashboard Meters/Conductivity";
+import Salinity from "../Dashboard Meters/Salinity";
+import Temperature from "../Dashboard Meters/Temperature";
+import Turbidity from "../Dashboard Meters/Turbidity";
+import ElectricalCon from "../Dashboard Meters/ElectricalCon"; 
 
 const AdminDB = () => {
   const { theme, toggleTheme } = useContext(ThemeContext);

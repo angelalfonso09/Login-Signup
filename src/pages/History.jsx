@@ -1,7 +1,7 @@
 import React, { useContext, useState } from "react";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
-import "../styles/History.css";
+import "../styles/Pages Css/History.css";
 import Temp from "../sensors/temp";
 import PhLevel from "../sensors/phlevel";
 import Turbudity from "../sensors/turbudity";
@@ -90,7 +90,7 @@ const History = () => {
   
   return (
     <div className={`history ${theme}`}>
-      <Navbar theme={theme} toggleTheme={toggleTheme} />
+      {/* <Navbar theme={theme} toggleTheme={toggleTheme} /> */}
       <div className="history-container">
         <Sidebar theme={theme} toggleTheme={toggleTheme} />
   

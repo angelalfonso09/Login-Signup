@@ -10,6 +10,43 @@
   padding: 20px;
 }
 
+.User {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+margin-bottom: 1.5rem; 
+border-bottom: 1px solid #444; 
+width: 100%;
+padding-top: 1rem;
+padding-right: 1rem;
+padding-bottom: 1rem;
+}
+
+
+
+.User h2 {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #eee; 
+  margin-bottom: 0.2rem; 
+  margin-left: 0;
+}
+
+.User h4 {
+  font-size: 1.1rem;
+  color: #aaa; 
+  margin-top: 0; 
+  margin-left: 0;
+}
+
+/* Optional: Style for the username if you decide to re-introduce it */
+/* .User h1 {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #fff;
+  margin-bottom: 0.1rem;
+} */
+
 .menu-item {
   display: flex;
   align-items: center;
@@ -19,6 +56,7 @@
   color: var(--sidebar-text-light);
   font-size: 14px;
   position: relative;
+  width: 100%;
 }
 
 .menu-item.active {
