@@ -87,8 +87,10 @@ const UserAdminTable = () => {
 
   return (
     <Container className={`acctbl-container ${theme}`}>
-      <h1>Account Management</h1>
-      <h2 className="acctbl-title">User & Admin Accounts</h2>
+
+      <header>
+      <h1 className="Table-title">Account Management</h1>
+      </header>
 
       <div className="acctbl-controls">
         <Form.Control

@@ -23,12 +23,11 @@
     --acctbl-btn-cursor: pointer;
 
     --acctbl-table-bg-light: #ffffff;
-    --acctbl-table-bg-dark: #2d2d44;
 
     --acctbl-th-bg-light: #f1f1f1;
-    --acctbl-th-bg-dark: #2d2d44;
+
     --acctbl-td-bg-light: #ffffff;
-    --acctbl-td-bg-dark: #2d2d44;
+
     --acctbl-border-light: #ddd;
     --acctbl-border-dark: #555;
 }
@@ -36,12 +35,18 @@
 /* Apply Variables */
 .acctbl-container {
     background: var(--acctbl-container-bg-light);
-    display: flex;
     flex-direction: column;
-    justify-content: start;
+    height: fit-content;
+    width: 100%;
+    display: flex; 
 }
 
-h1{
+header{
+    width: 100%;
+    margin-bottom: 30px;
+}
+
+.Table-title{
     font-size: 2rem;
     font-weight: 700;
 }

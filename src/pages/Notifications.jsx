@@ -1,15 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Bell, CheckCircle, AlertTriangle, XCircle, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import Sidebar from "../components/Sidebar";
-import '../styles/Pages Css/Notifications.css';
+import '../styles/Pages Css/Notifications.css'; // Keep this for the overall page layout
+import Sidebar from '../components/Sidebar'; // Adjust the import path as necessary
+import { ThemeContext } from '../context/ThemeContext'; // Adjust the import path for your ThemeContext
 
 const generateMockNotifications = () => {
   const now = new Date();
   const tenMinutesAgo = new Date(now.getTime() - 10 * 60 * 1000).toISOString();
   const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000).toISOString();
   const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
-  const twoDaysAgo = new Date(now.getTime() - 48 * 60 * 60 * 1000).toISOString();
+  const twoDaysAgo = new Date(now.getTime() - 48 * 60 * 1000).toISOString();
 
   return [
     { id: '1', type: 'success', message: 'Your data was successfully updated!', read: false, createdAt: now.toISOString() },
@@ -22,6 +23,7 @@ const generateMockNotifications = () => {
 };
 
 const NotificationIcon = ({ type }) => {
+  // Icon colors can be adjusted based on the theme if needed by adding dynamic classes
   switch (type) {
     case 'success':
       return <CheckCircle className="h-5 w-5 text-green-500" />;
@@ -37,9 +39,15 @@ const NotificationIcon = ({ type }) => {
 };
 
 const NotificationCard = ({ notification, onMarkAsRead, onDelete }) => {
-  const getBackgroundColor = () => notification.read ? 'bg-gray-800/50' : 'bg-gray-800';
-  const getTextColor = () => notification.read ? 'text-gray-400' : 'text-white';
-  const getDescriptionColor = () => notification.read ? 'text-gray-500' : 'text-gray-300';
+  const { theme } = useContext(ThemeContext);
+
+  const getBackgroundColorClass = () =>
+    notification.read ? `notification-card-read-${theme}` : `notification-card-unread-${theme}`;
+  const getTextColorClass = () =>
+    notification.read ? `notification-type-read-${theme}` : `notification-type-unread-${theme}`;
+  const getDescriptionColorClass = () =>
+    notification.read ? `notification-message-read-${theme}` : `notification-message-unread-${theme}`;
+  const getBorderColorClass = () => `border-${theme}-700`;
 
   return (
     <motion.div
@@ -48,39 +56,39 @@ const NotificationCard = ({ notification, onMarkAsRead, onDelete }) => {
       exit={{ opacity: 0, y: -10 }}
       transition={{ duration: 0.3 }}
     >
-      <div className={`${getBackgroundColor()} group p-4 rounded-xl shadow-md border border-gray-700 transition-all`}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-gray-700 rounded-full">
+      <div className={`notification-card ${getBackgroundColorClass()} group ${getBorderColorClass()} transition-all`}>
+        <div className="notification-content">
+          <div className="notification-info">
+            <div className="notification-icon-wrapper">
               <NotificationIcon type={notification.type} />
             </div>
             <div>
-              <h4 className={`text-base font-semibold ${getTextColor()}`}>
+              <h4 className={`notification-type ${getTextColorClass()}`}>
                 {notification.type.charAt(0).toUpperCase() + notification.type.slice(1)}
               </h4>
-              <p className={`text-sm ${getDescriptionColor()}`}>{notification.message}</p>
+              <p className={`notification-message ${getDescriptionColorClass()}`}>{notification.message}</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="notification-actions">
             {!notification.read && (
               <button
                 onClick={() => onMarkAsRead(notification.id)}
-                className="hover:text-blue-500 transition"
+                className={`notification-actions button hover:text-blue-500 transition text-${theme}-text`}
                 title="Mark as Read"
               >
-                <CheckCircle className="h-5 w-5" />
+                <CheckCircle className={`mark-read-icon text-${theme}-icon`} />
               </button>
             )}
             <button
               onClick={() => onDelete(notification.id)}
-              className="hover:text-red-500 transition"
+              className={`notification-actions button hover:text-red-500 transition text-${theme}-text`}
               title="Delete"
             >
-              <Trash2 className="h-5 w-5" />
+              <Trash2 className={`delete-icon text-${theme}-icon`} />
             </button>
           </div>
         </div>
-        <p className="text-xs text-gray-500 mt-2 ml-14">
+        <p className={`notification-timestamp text-${theme}-secondary-text`}>
           {new Date(notification.createdAt).toLocaleString()}
         </p>
       </div>
@@ -91,6 +99,7 @@ const NotificationCard = ({ notification, onMarkAsRead, onDelete }) => {
 const NotificationsPage = () => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { theme } = useContext(ThemeContext);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -117,20 +126,31 @@ const NotificationsPage = () => {
   };
 
   const unreadCount = notifications.filter(n => !n.read).length;
+  const getButtonBorderClass = () => `border-${theme}-600`;
+  const getButtonTextColorClass = () => `text-${theme}-text`;
+  const getButtonHoverBgClass = () => `hover:bg-${theme}-hover`;
+  const getDisabledOpacityClass = () => `disabled:opacity-40`;
+  const getHeaderTextColorClass = () => `text-${theme}-heading`;
+
+  const getDeleteButtonBorderClass = () => `border-red-500`;
+  const getDeleteButtonTextColorClass = () => `text-red-400`;
+  const getDeleteButtonHoverBgClass = () => `hover:bg-red-500/20`;
+
+  const getLoadingTextColorClass = () => `text-${theme}-secondary-text`;
+  const getNoNotificationsTextColorClass = () => `text-${theme}-secondary-text italic`;
 
   return (
-    <div className="bg-gray-950 min-h-screen p-6">
-      <div className="max-w-3xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-            <Bell className="h-6 w-6" />
+    <div className={`notifications-container bg-${theme}-background text-${theme}-text`}>
+      <div className="notifications-wrapper">
+        <div className="notifications-header">
+          <h1 className={`notifications-title ${theme}-text`}>
             Notifications
           </h1>
-          <div className="flex flex-wrap gap-2">
+          <div className="notifications-actions">
             <button
               onClick={markAllAsRead}
               disabled={unreadCount === 0}
-              className="flex items-center gap-2 px-4 py-2 rounded-md border border-gray-600 text-sm text-white hover:bg-gray-800 disabled:opacity-40"
+              className={`notifications-button mark-as-read-button border-${theme}-600 text-${theme}-text hover:bg-${theme}-hover disabled:opacity-40`}
             >
               <CheckCircle className="w-4 h-4" />
               Mark all as read
@@ -138,7 +158,7 @@ const NotificationsPage = () => {
             <button
               onClick={deleteAllNotifications}
               disabled={notifications.length === 0}
-              className="flex items-center gap-2 px-4 py-2 rounded-md border border-red-500 text-red-400 hover:bg-red-500/20 disabled:opacity-40"
+              className={`notifications-button delete-all-button border-red-500 text-red-400 hover:bg-red-500/20 disabled:opacity-40`}
             >
               <Trash2 className="w-4 h-4" />
               Delete all
@@ -147,9 +167,9 @@ const NotificationsPage = () => {
         </div>
 
         {loading ? (
-          <div className="text-gray-400 text-center">Loading notifications...</div>
+          <div className={`loading-text text-${theme}-secondary-text`}>Loading notifications...</div>
         ) : notifications.length === 0 ? (
-          <div className="text-gray-500 text-center italic">No notifications available.</div>
+          <div className={`no-notifications-text text-${theme}-secondary-text italic`}>No notifications available.</div>
         ) : (
           <AnimatePresence>
             {notifications.map(notification => (

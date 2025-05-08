@@ -16,7 +16,7 @@ const Userdb = () => {
 
   return (
     <div className={`${styles.userDb} ${theme}`}>
-      <Navbar theme={theme} toggleTheme={toggleTheme} />
+      {/* <Navbar theme={theme} toggleTheme={toggleTheme} /> */}
       <div className={styles.userDbContainer}>
         <Sidebar theme={theme} toggleTheme={toggleTheme} />
         <div className={styles.userDbContents}>

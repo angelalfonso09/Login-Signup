@@ -5,13 +5,7 @@ import styles from "../styles/Pages Css/Dashboard.module.css";
 import { ThemeContext } from "../context/ThemeContext";
 import DashboardPage from "../components/DashboardPage";
 import EstablishmentSensors from "../components/DashboardEstablishment";
-// import Ph from "../Meters/Ph";
-// import Tds from "../Meters/Tds";
-// import Conductivity from "../Meters/Conductivity";
-// import Salinity from "../Meters/Salinity";
-// import Temperature from "../Meters/Temperature";
-// import Turbidity from "../Meters/Turbidity";
-// import ElectricalCon from "../Meters/ElectricalCon";
+
 
 const Dashboard = () => {
   const { theme, toggleTheme } = useContext(ThemeContext);
@@ -25,49 +19,11 @@ const Dashboard = () => {
           <div className={styles.meterRowFlex}>
 
             <DashboardPage/>
-            <EstablishmentSensors/>
-            <EstablishmentSensors/>
-            <EstablishmentSensors/>
-            {/* 
-            <div className={styles.meterWidget}>
-              <div className={styles.meterLabel}>Turbidity</div>
-              <Turbidity />
+            <div className={styles.establishmentContainer}>
+              <EstablishmentSensors />
+              <EstablishmentSensors />
+              <EstablishmentSensors />
             </div>
-
-            <div className={styles.meterWidget}>
-              <div className={styles.meterLabel}>Temperature</div>
-              <Temperature />
-            </div>
-
-            <div className={styles.meterWidget}>
-              <div className={styles.meterLabel}>Salinity</div>
-              <Salinity />
-            </div>
-
-            <div className={styles.meterWidget}>
-              <div className={styles.meterLabel}>Conductivity</div>
-              <Conductivity />
-            </div>
-
-            <div className={styles.meterWidget}>
-              <div className={styles.meterLabel}>
-                Total Dissolved Solids (TDS)
-              </div>
-              <Tds />
-            </div>
-
-            <div className={styles.meterWidget}>
-              <div className={styles.meterLabel}>pH Level</div>
-              <Ph />
-            </div>
-
-            <div className={styles.meterWidget}>
-              <div className={styles.meterLabel}>
-                Electrical Conductivity(Compensated)
-              </div>
-              <ElectricalCon />
-            </div>
-             */}
           </div>
         </div>
       </div>

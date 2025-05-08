@@ -41,14 +41,6 @@ const SocialLogin = () => {
         className="social-icon"
         onClick={handleGoogleLogin} // Handle click event to login with Google
       />
-      <BsFacebook
-        className="social-icon"
-        style={{ color: "#4267B2" }}
-      />
-      <BsGithub
-        className="social-icon"
-        style={{ color: "#FFFFFF" }}
-      />
     </div>
   );
 };

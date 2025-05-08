@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/Pages Css/landing.css";
 
+
+
 const AquaSense = () => {
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState("home");
@@ -105,7 +107,7 @@ const AquaSense = () => {
         <div className="about-container">
           {/* Left Side - Image */}
           <div className="about-image">
-            <img src="your-image-path/image.png" alt="Aquasense Robot" />
+            {/* <img src="your-image-path/image.png" /> */}
           </div>
 
           {/* Right Side - Content */}
@@ -204,25 +206,25 @@ const AquaSense = () => {
 
       <footer className="footer">
         <h2 className="footer-title">AQUASENSE</h2>
-        <nav className="footer-nav">
+        {/* <nav className="footer-nav">
           <a href="#">Categories</a>
           <a href="#">About</a>
           <a href="#">Services</a>
           <a href="#">Portfolio</a>
           <a href="#">Pages</a>
           <a href="#">Support</a>
-        </nav>
+        </nav> */}
         <p className="footer-text">
           Lorem ipsum Neque porro quisquam est qui do lorem ipsum quia dolor sit amet,
           Neque porro elit NeDaque porro.
         </p>
         <div className="footer-socials">
-          <a href="#"><img src="/icons/facebook.png" alt="Facebook" /></a>
-          <a href="#"><img src="/icons/instagram.png" alt="Instagram" /></a>
-          <a href="#"><img src="/icons/whatsapp.png" alt="WhatsApp" /></a>
-          <a href="#"><img src="/icons/linkedin.png" alt="LinkedIn" /></a>
-          <a href="#"><img src="/icons/pinterest.png" alt="Pinterest" /></a>
-          <a href="#"><img src="/icons/twitter.png" alt="Twitter" /></a>
+          <a href="#"><img src="/src/assets/facebook.png" alt="Facebook" /></a>
+          <a href="#"><img src="/src/assets/instagram.png" alt="Instagram" /></a>
+          <a href="#"><img src="/src/assets/whatsapp.png" alt="WhatsApp" /></a>
+          <a href="#"><img src="/src/assets/linkedin.png" alt="LinkedIn" /></a>
+          <a href="#"><img src="/src/assets/pinterest.png" alt="Pinterest" /></a>
+          <a href="#"><img src="/src/assets/x.png" alt="Twitter" /></a>
         </div>
         <p className="footer-copyright">
           Copyright © 2003-2023 Creatic Agency. All Rights Reserved.

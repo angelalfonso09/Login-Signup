@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import '../styles/Establishment.css';
+import '../styles/Components Css/Establishment.css';
 
 import Turbidity from "../Dashboard Meters/Turbidity";
 import Ph from "../Dashboard Meters/Ph";

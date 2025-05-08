@@ -1,6 +1,5 @@
 /* Sidebar Styles */
 .sidebar {
-  width: 220px;
   height: 100%;
   background: var(--sidebar-bg);
   color: var(--sidebar-text);
@@ -22,8 +21,6 @@ padding-right: 1rem;
 padding-bottom: 1rem;
 }
 
-
-
 .User h2 {
   font-size: 1.5rem;
   font-weight: bold;
@@ -34,7 +31,7 @@ padding-bottom: 1rem;
 
 .User h4 {
   font-size: 1.1rem;
-  color: #aaa; 
+  color: var(--sidebar-text);
   margin-top: 0; 
   margin-left: 0;
 }

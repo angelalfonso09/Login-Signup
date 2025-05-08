@@ -1,6 +1,6 @@
 /* Userdb.module.css */
 
-.userDb {
+.admindb {
   display: flex;
   flex-direction: column;
   height: 100vh;
@@ -8,24 +8,24 @@
   color: var(--text-color);
 }
 
-.userDbContainer {
+.admindbContainer {
   display: flex;
   flex: 1;
   overflow: hidden;
 }
 
-.userDbContents {
+.admindbContents {
   flex-grow: 1;
   display: flex;
-  flex-direction: column; 
+  flex-direction: column;
   gap: 20px;
   padding: 20px;
   overflow: auto;
   max-height: calc(100vh - 60px);
 }
 
-.dbContents::-webkit-scrollbar {
-  display: none; 
+.admindbContents::-webkit-scrollbar {
+  display: none;
 }
 
 .meterRowFlex {
@@ -40,14 +40,15 @@
   display: flex;
   flex-direction: column; /* Arrange elements within each widget vertically */
   align-items: center;
+  background: var(--card-bg);
   padding: 15px; /* Adjust padding as needed */
   border-radius: 12px;
   box-shadow: 0px 4px 10px var(--shadow-color);
   text-align: center;
   font-weight: bold;
   transition: transform 0.2s ease-in-out, box-shadow 0.3s ease-in-out;
-  width: 300px; /* Set a fixed width for each widget */
-  flex-shrink: 0; /* Prevent widgets from shrinking */
+  width: 300px; 
+  flex-shrink: 0; 
 }
 
 .meterWidget:hover {
@@ -60,9 +61,9 @@
   font-weight: bold;
   margin-bottom: 10px;
   color: var(--text-color);
-  width: 100%; /* Ensure label takes full width of the widget */
-  text-align: left; /* Align label to the left as in the image */
-  padding-left: 10px; /* Add some left padding */
+  width: 100%; 
+  text-align: left; 
+  padding-left: 10px; 
 }
 
 /* Media queries for responsiveness */
@@ -87,4 +88,19 @@
     width: 90%; /* Make widgets take more width on small screens */
     margin-bottom: 20px; /* Add vertical spacing when wrapped */
   }
+}
+
+.adminEstablishmentContainer {
+  display: flex;
+  flex-wrap: wrap; 
+  align-items: center;
+  justify-content: center;
+  gap: 20px; 
+  width: 100%; 
+}
+
+
+.adminEstablishmentContainer > div {
+  flex: 1 1 calc(33% - 20px); 
+  min-width: 300px; 
 }

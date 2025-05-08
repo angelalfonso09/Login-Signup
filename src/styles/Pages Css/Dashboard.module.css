@@ -18,7 +18,7 @@ overflow: hidden;
   display: flex;
   flex-direction: column; 
   gap: 20px;
-  padding: 20px;
+  padding: (20,20, 20, 0  );
   overflow: auto;
   max-height: calc(100vh - 60px);
 }
@@ -70,48 +70,85 @@ overflow: hidden;
   padding-left: 10px; 
 }
 
-@media (max-width: 768px) {
-  .meterRowFlex {
-    gap: 15px;
-  }
-  .meterWidget {
-    width: 280px;
-    padding: 10px;
-  }
+.establishmentContainer {
+  display: flex;
+  flex-wrap: wrap; 
+  align-items: center;
+  justify-content: center;
+  gap: 20px; 
+  width: 100%; 
 }
 
-@media (max-width: 600px) {
-  .meterRowFlex {
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-  .meterWidget {
-    width: 90%;
-    margin-bottom: 20px; 
-  }
+
+.establishmentContainer > div {
+  flex: 1 1 calc(33% - 20px); 
+  min-width: 300px; 
 }
 
-/* Media queries for responsiveness (as provided before) */
-@media (max-width: 1200px) {
-  .dbContainer {
-    /* Adjustments for smaller screens */
-  }
-}
 
-@media (max-width: 992px) {
-  .dbContainer {
-    /* Further adjustments for tablets */
+@media (max-width: 1024px) {
+  .establishmentContainer > div {
+    flex-basis: calc(50% - 20px); 
   }
 }
 
 @media (max-width: 768px) {
-  .dbContainer {
-    /* More aggressive adjustments for smaller screens */
+  .establishmentContainer {
+    flex-direction: column; 
+  }
+
+  .establishmentContainer > div {
+    flex-basis: 100%; 
+    min-width: auto;
   }
 }
 
-@media (max-width: 576px) {
+
+@media (max-width: 1024px) {
+  .meterWidget {
+    flex-basis: calc(50% - 20px);
+  }
+}
+
+@media (max-width: 768px) {
+  .meterWidget {
+    flex-basis: 100%;
+    min-width: auto;
+  }
+}
+
+/* Dark theme adjustments (if applicable) */
+.dark .meterWidget {
+  background-color: #333;
+  color: #eee;
+}
+
+.dark .meterLabel {
+  color: #ccc;
+}
+
+/* Responsive adjustments using media queries */
+@media (max-width: 1024px) {
+  .meterWidget {
+    flex-basis: calc(50% - 20px); /* Two widgets per row on medium screens */
+  }
+}
+
+@media (max-width: 768px) {
   .dbContainer {
-    /* Styles specifically for mobile phones */
+    flex-direction: column; /* Stack sidebar and content vertically */
+  }
+
+  .dbContents {
+    padding: 15px;
+  }
+
+  .meterRowFlex {
+    flex-direction: column; /* Stack meter widgets vertically on small screens */
+  }
+
+  .meterWidget {
+    flex-basis: 100%; /* Each widget takes full width on small screens */
+    min-width: auto; /* Reset minimum width */
   }
 }

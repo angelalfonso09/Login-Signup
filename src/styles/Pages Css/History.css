@@ -14,7 +14,24 @@
   flex-direction: column;
   padding: 20px;
 overflow: hidden; 
+}
 
+.history-title{
+  display: flex;
+  justify-content: end;
+  width: 12.8%;
+  font-size: 2rem;
+  font-weight: 700;
+  margin-top: 50px;
+}
+
+/* theme.css */
+.light-text {
+  color: #333; 
+}
+
+.dark-text {
+  color: #eee; 
 }
 
 .history-content-wrapper::-webkit-scrollbar {

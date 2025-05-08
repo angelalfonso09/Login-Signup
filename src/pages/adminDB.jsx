@@ -1,53 +1,28 @@
 import React, { useContext } from "react";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
-import styles from "../styles/Pages Css/Userdb.module.css"; // Import the CSS Module
+import styles from "../styles/Pages Css/adminDB.module.css"; // Import the CSS Module
 import { ThemeContext } from "../context/ThemeContext";
-import Ph from "../Dashboard Meters/Ph";
-import Tds from "../Dashboard Meters/Tds";
-import Conductivity from "../Dashboard Meters/Conductivity";
-import Salinity from "../Dashboard Meters/Salinity";
-import Temperature from "../Dashboard Meters/Temperature";
-import Turbidity from "../Dashboard Meters/Turbidity";
-import ElectricalCon from "../Dashboard Meters/ElectricalCon"; 
+import AdminDashboardPage from "../components/AdminDashboardPage";
+import EstablishmentSensors from "../components/DashboardEstablishment";
 
-const AdminDB = () => {
+
+const AdminDb = () => {
   const { theme, toggleTheme } = useContext(ThemeContext);
 
   return (
-    <div className={`${styles.db} ${theme}`}>
-      <Navbar theme={theme} toggleTheme={toggleTheme} />
-      <div className={styles.dbContainer}>
+    <div className={`${styles.admindb} ${theme}`}>
+      {/* <Navbar theme={theme} toggleTheme={toggleTheme} /> */}
+      <div className={styles.admindbContainer}>
         <Sidebar theme={theme} toggleTheme={toggleTheme} />
-        <div className={styles.dbContents}>
+        <div className={styles.admindbContents}>
           <div className={styles.meterRowFlex}>
-            <div className={styles.meterWidget}>
-              <div className={styles.meterLabel}>Turbidity</div>
-              <Turbidity />
-            </div>
-            <div className={styles.meterWidget}>
-              <div className={styles.meterLabel}>Temperature</div>
-              <Temperature />
-            </div>
-            <div className={styles.meterWidget}>
-              <div className={styles.meterLabel}>Salinity</div>
-              <Salinity />
-            </div>
-            <div className={styles.meterWidget}>
-              <div className={styles.meterLabel}>Conductivity</div>
-              <Conductivity />
-            </div>
-            <div className={styles.meterWidget}>
-              <div className={styles.meterLabel}>Total Dissolved Solids (TDS)</div>
-              <Tds />
-            </div>
-            <div className={styles.meterWidget}>
-              <div className={styles.meterLabel}>pH Level</div>
-              <Ph />
-            </div>
-            <div className={styles.meterWidget}>
-              <div className={styles.meterLabel}>Electrical Conductivity(Compensated)</div>
-              <ElectricalCon />
+
+            <AdminDashboardPage/>
+            <div className={styles.adminEstablishmentContainer}>
+              <EstablishmentSensors />
+              <EstablishmentSensors />
+              <EstablishmentSensors />
             </div>
           </div>
         </div>
@@ -56,4 +31,4 @@ const AdminDB = () => {
   );
 };
 
-export default AdminDB;
+export default AdminDb;

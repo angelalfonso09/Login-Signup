@@ -96,7 +96,9 @@ const History = () => {
   
         {/* New Container for Grids and Buttons */}
         <div className="history-content-wrapper">
+        <h1 className={`history-title ${theme}-text`}>Sensor History </h1>
           <div className="history-contents">
+
             {/* Filter Buttons */}
 {/* Filter Buttons */}
 <div className="filter-buttons">
