@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const db = require("./config/db");
 const express = require("express");
 const bodyParser = require("body-parser");
@@ -7,8 +9,10 @@ const bcrypt = require("bcrypt");
 const http = require("http");
 const { Server } = require("socket.io");
 const jwt = require("jsonwebtoken");
+const secretKey = process.env.JWT_SECRET;
 const router = express.Router();
 const nodemailer = require("nodemailer");
+const sendOtpEmail = require('./otpMailer');
 const crypto = require("crypto");
 const sendEmail = require("./mailer");
 const { User } = require("../backend/models/user");
@@ -21,15 +25,10 @@ const port = 5000;
 const saltRounds = 10;
 const users = [];
 
-const resetPasswordRoute = require('./routes/resetPassword');
-app.use('/api', resetPasswordRoute);
-
-
-require("dotenv").config();
 
 // Middleware
 app.use(cors({
-  origin: ["http://localhost:3000", "http://localhost:5173", "localhttp://localhost:5000host"], // React dev server
+  origin: ["http://localhost:3000", "http://localhost:5173", "http://localhost:5000"], // React dev server
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true
@@ -39,6 +38,28 @@ app.use(bodyParser.json());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.options('*', cors()); // This handles the preflight OPTIONS requests
+
+// Example middleware to verify the token
+const verifyToken = (req, res, next) => {
+  const token = req.headers['authorization']?.split(' ')[1]; // Get the token from the 'Authorization' header
+
+  if (!token) {
+    return res.status(403).json({ message: "Access denied. No token provided." });
+  }
+
+  console.log('🔐 Signing with JWT_SECRET:', process.env.JWT_SECRET);
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(401).json({ message: "Invalid token." });
+    }
+
+    // Attach the decoded user data to the request object
+    req.user = decoded;
+    next(); // Call next middleware or handler
+  });
+};
+
 // Create HTTP server for Socket.IO
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -46,7 +67,6 @@ const io = new Server(server, {
 });
 
 app.use(cookieParser());
-app.use("/api/auth", authRoutes);
 
 const query = (sql, values) =>
   new Promise((resolve, reject) => {
@@ -58,7 +78,7 @@ const query = (sql, values) =>
 
 module.exports = { query };
 
-require("dotenv").config();
+
 console.log(process.env.PORT);
 
 app.get("/", (req, res) => {
@@ -228,10 +248,11 @@ app.post("/login", (req, res) => {
     // Generate JWT token
     const token = jwt.sign(
       { id: user.id, role: user.role },
-      "your_secret_key",
+      process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
 
+    console.log('🔐 Signing with JWT_SECRET:', process.env.JWT_SECRET);
     console.log("Backend: Generated Auth Token for user:", token); // Log the generated token
 
     // Determine user role and redirect URL
@@ -430,7 +451,7 @@ app.get("/api/auth/user", async (req, res) => {
   try {
     let decoded;
     try {
-      decoded = jwt.verify(token, "your_secret_key"); // Use your actual secret key
+      decoded = jwt.verify(token, process.env.JWT_SECRET); // Use your actual secret key
       console.log("🔑 Token successfully verified. Decoded payload:", decoded);
     } catch (jwtErr) {
       console.error("❌ JWT Verification Error:", jwtErr.message);
@@ -469,6 +490,7 @@ app.get("/api/auth/user", async (req, res) => {
 });
 
 
+// Forgot password route (OTP generation and sending)
 app.post('/api/forgot-password', async (req, res) => {
   const { email } = req.body;
 
@@ -476,20 +498,127 @@ app.post('/api/forgot-password', async (req, res) => {
     return res.status(400).json({ message: 'Invalid email address.' });
   }
 
-  // Simulated reset link (replace with real token logic if needed)
-  const resetLink = `http://localhost:5173/reset-password?email=${encodeURIComponent(email)}`;
+  // Generate a 6-digit OTP
+  const otp = crypto.randomInt(100000, 999999).toString();
 
-  const subject = 'Password Reset Request';
-  const text = `You requested a password reset.\n\nClick the link below to reset your password:\n${resetLink}\n\nIf you didn't request this, please ignore this email.`;
+  // Store OTP in database or a temporary storage for validation
+  const sql = 'UPDATE users SET reset_otp = ?, otp_expires = ? WHERE email = ?';
+  const expiration = new Date(Date.now() + 10 * 60 * 1000); // OTP expires in 10 minutes
 
-  try {
-    await sendEmail(email, subject, text);
-    res.status(200).json({ message: 'Password reset link has been sent to your email!' });
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to send reset link. Please try again later.' });
-  }
+  db.query(sql, [otp, expiration, email], async (err, result) => {
+    if (err) {
+      console.error('Error updating OTP:', err);
+      return res.status(500).json({ message: 'Failed to store OTP in database.' });
+    }
+
+    // Send OTP email to the user
+    try {
+      await sendOtpEmail(email, otp, 'reset-password');
+      res.status(200).json({
+        message: 'OTP sent to your email. Please check your inbox.',
+      });
+    } catch (emailError) {
+      console.error('Error sending OTP email:', emailError);
+      res.status(500).json({ message: 'Failed to send OTP email. Please try again later.' });
+    }
+  });
 });
 
+// validtae itp
+app.post('/api/validate-otp', (req, res) => {
+  const { email, otp } = req.body;
+
+  if (!email || !otp) {
+    return res.status(400).json({ message: 'Email and OTP are required.' });
+  }
+
+  const query = `SELECT reset_otp, otp_expires FROM users WHERE email = ?`;
+  db.query(query, [email], (err, results) => {
+    if (err) {
+      console.error('Database error during OTP validation:', err);
+      return res.status(500).json({ message: 'Database error.' });
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    const user = results[0];
+    const currentTime = new Date();
+    const otpExpiration = new Date(user.otp_expires);
+
+    if (user.reset_otp !== otp) {
+      return res.status(400).json({ message: 'Invalid OTP.' });
+    }
+
+    if (currentTime > otpExpiration) {
+      return res.status(400).json({ message: 'OTP has expired.' });
+    }
+
+    return res.status(200).json({ message: 'OTP verified successfully.' });
+  });
+});
+
+// Route to reset the password after OTP verification
+app.post("/api/reset-password", async (req, res) => {
+  const { newPassword, confirmPassword } = req.body;
+
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  console.log("Received token:", token);
+  console.log("Using JWT_SECRET:", process.env.JWT_SECRET);
+
+  if (!token) {
+    console.log("No token provided.");
+    return res.status(401).json({ message: "Authorization token is required" });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decoded.id; 
+
+    console.log("Token decoded, userId:", userId);
+
+    if (!newPassword || !confirmPassword) {
+      console.log("Missing passwords.");
+      return res.status(400).json({ message: "Both new password and confirm password are required." });
+    }
+
+    if (newPassword !== confirmPassword) {
+      console.log("Passwords do not match.");
+      return res.status(400).json({ message: "Passwords do not match." });
+    }
+
+    if (newPassword.length < 6) {
+      console.log("Password is too short.");
+      return res.status(400).json({ message: "Password must be at least 6 characters long." });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    const updateQuery = 'UPDATE users SET password_hash = ? WHERE id = ?';
+
+    db.query(updateQuery, [hashedPassword, userId], (err, result) => {
+      if (err) {
+        console.error("Error updating password:", err);
+        return res.status(500).json({ message: "Failed to update the password." });
+      }
+
+      if (result.affectedRows === 0) {
+        console.log("User not found.");
+        return res.status(404).json({ message: "User not found." });
+      }
+
+      console.log("Password updated successfully.");
+      return res.status(200).json({ message: "Password reset successful!" });
+    });
+
+  } catch (err) {
+    console.error("JWT verification failed:", err);
+    return res.status(401).json({ message: "Unauthorized. Invalid or expired token." });
+  }
+});
 
 //ITO START NG ARDUINO GRRR RAWR RAWR HAHAHAHAHAH
 

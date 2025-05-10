@@ -32,7 +32,7 @@ transporter.verify((error) => {
 const sendEmail = async (to, subject, text) => {
     try {
         const mailOptions = {
-            from: `"Your App Name" <${process.env.EMAIL_USER}>`, // Set a sender name
+            from: `"Aquasense" <${process.env.EMAIL_USER}>`, // Set a sender name
             to,
             subject,
             text,
