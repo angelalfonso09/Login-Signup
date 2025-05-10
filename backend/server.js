@@ -19,11 +19,22 @@ const authRoutes = require("./models/route");
 const app = express();
 const port = 5000;
 const saltRounds = 10;
+const users = [];
+
+const resetPasswordRoute = require('./routes/resetPassword');
+app.use('/api', resetPasswordRoute);
+
 
 require("dotenv").config();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: ["http://localhost:3000", "http://localhost:5173", "localhttp://localhost:5000host"], // React dev server
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true
+}));
+
 app.use(bodyParser.json());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -36,12 +47,6 @@ const io = new Server(server, {
 
 app.use(cookieParser());
 app.use("/api/auth", authRoutes);
-app.use(
-  cors({
-    origin: ["http://localhost:3000", "http://localhost:5173"], // Allow both ports
-    credentials: true,
-  })
-);
 
 const query = (sql, values) =>
   new Promise((resolve, reject) => {
@@ -460,6 +465,28 @@ app.get("/api/auth/user", async (req, res) => {
   } catch (generalErr) {
     console.error("🔥 General error in /api/auth/user:", generalErr.message);
     return res.status(500).json({ error: "Internal server error", details: generalErr.message });
+  }
+});
+
+
+app.post('/api/forgot-password', async (req, res) => {
+  const { email } = req.body;
+
+  if (!email || !email.includes('@')) {
+    return res.status(400).json({ message: 'Invalid email address.' });
+  }
+
+  // Simulated reset link (replace with real token logic if needed)
+  const resetLink = `http://localhost:5173/reset-password?email=${encodeURIComponent(email)}`;
+
+  const subject = 'Password Reset Request';
+  const text = `You requested a password reset.\n\nClick the link below to reset your password:\n${resetLink}\n\nIf you didn't request this, please ignore this email.`;
+
+  try {
+    await sendEmail(email, subject, text);
+    res.status(200).json({ message: 'Password reset link has been sent to your email!' });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to send reset link. Please try again later.' });
   }
 });
 
