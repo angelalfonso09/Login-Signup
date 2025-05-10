@@ -99,27 +99,24 @@ const ForgotPassword = () => {
       return;
     }
   
-    console.log("Sending password reset data:", { newPassword, confirmPassword });
-  
     try {
-      const userToken = localStorage.getItem("token"); // Get the JWT token from localStorage
-  
       const response = await fetch('http://localhost:5000/api/reset-password', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,   // Send the token in the header
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },
         body: JSON.stringify({ newPassword, confirmPassword }),
       });
   
       const data = await response.json();
-      console.log('Response:', data);  // Log the response
   
       if (!response.ok) throw new Error(data.message);
   
       setStatus({ type: 'success', message: 'Password reset successful! You can now log in.' });
       setShowResetModal(false);
+      alert('Password reset successful! Redirecting to login...');
+      window.location.href = '/login'; // redirect to login page
     } catch (error) {
       setStatus({ type: 'error', message: 'Password reset failed. Please try again.' });
     } finally {
@@ -128,6 +125,7 @@ const ForgotPassword = () => {
       setConfirmPassword('');
     }
   };
+  
   
   return (
     <BackgroundLayout variant="pink">
