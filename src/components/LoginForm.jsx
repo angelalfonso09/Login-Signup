@@ -1,23 +1,34 @@
 import React, { useState } from "react";
-import { Form, Button } from "react-bootstrap";
+import { Form, Button, FormCheck } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";  
-import '../styles/Login/LoginForm.css';
+import axios from "axios";
+import '../styles/Login/LoginForm.css'; // Make sure this import is correct
+import '../styles/Login/LoginFormCustom.css'; // Import a new CSS file for custom styles
 
 const LoginForm = () => {
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({ username: "", password: "" });
   const [errorMessage, setErrorMessage] = useState("");
+  const [termsChecked, setTermsChecked] = useState(false);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handleTermsChange = (e) => {
+    setTermsChecked(e.target.checked);
+  };
+
   const handleLogin = async (e) => {
     e.preventDefault();
-    setErrorMessage(""); 
+    setErrorMessage("");
 
-    console.log("Form Data Before Sending:", formData); 
+    if (!termsChecked) {
+      setErrorMessage("Please accept the terms and conditions to log in.");
+      return;
+    }
+
+    console.log("Form Data Before Sending:", formData);
 
     if (!formData.username || !formData.password) {
       setErrorMessage("All fields are required");
@@ -31,12 +42,12 @@ const LoginForm = () => {
 
       const { user, token, role, redirectUrl } = response.data;
 
-      localStorage.setItem("user", JSON.stringify(user)); 
-      localStorage.setItem("token", token); 
-      localStorage.setItem("userRole", role); 
+      localStorage.setItem("user", JSON.stringify(user));
+      localStorage.setItem("token", token);
+      localStorage.setItem("userRole", role);
 
       alert(`✅ Login successful! Redirecting to ${redirectUrl}...`);
-      navigate(redirectUrl); 
+      navigate(redirectUrl);
 
     } catch (error) {
       console.error("Login error:", error.response?.data || error);
@@ -47,31 +58,42 @@ const LoginForm = () => {
   return (
     <Form onSubmit={handleLogin}>
       <Form.Group className="mb-3">
-        <Form.Control 
-          type="text" 
+        <Form.Control
+          type="text"
           name="username"
-          placeholder="Username" 
-          className="input-field transparent-input" 
-          value={formData.username} 
-          onChange={handleChange} 
-          required 
+          placeholder="Username"
+          className="input-field transparent-input"
+          value={formData.username}
+          onChange={handleChange}
+          required
         />
       </Form.Group>
 
       <Form.Group className="mb-3">
-        <Form.Control 
-          type="password" 
+        <Form.Control
+          type="password"
           name="password"
-          placeholder="Password" 
-          className="input-field transparent-input" 
-          value={formData.password} 
-          onChange={handleChange} 
-          required 
+          placeholder="Password"
+          className="input-field transparent-input"
+          value={formData.password}
+          onChange={handleChange}
+          required
         />
       </Form.Group>
 
+      <Form.Group className="mb-3">
+        <FormCheck
+          type="checkbox"
+          id="termsAndConditions"
+          label="I agree to the Terms and Conditions"
+          checked={termsChecked}
+          onChange={handleTermsChange}
+          required
+          className="custom-checkbox" 
+        />
+      </Form.Group>
 
-      <Button type="submit" variant="primary" className="w-100 gradient-btn">
+      <Button type="submit" variant="primary" className="w-100 gradient-btn" disabled={!termsChecked}>
         Login
       </Button>
 

@@ -10,7 +10,7 @@ const generateMockNotifications = () => {
   const tenMinutesAgo = new Date(now.getTime() - 10 * 60 * 1000).toISOString();
   const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000).toISOString();
   const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
-  const twoDaysAgo = new Date(now.getTime() - 48 * 60 * 1000).toISOString();
+  const twoDaysAgo = new Date(now.getTime() - 48 * 60 * 60 * 1000).toISOString();
 
   return [
     { id: '1', type: 'success', message: 'Your data was successfully updated!', read: false, createdAt: now.toISOString() },
@@ -22,32 +22,24 @@ const generateMockNotifications = () => {
   ];
 };
 
+// NotificationIcon component stays mostly the same
 const NotificationIcon = ({ type }) => {
-  // Icon colors can be adjusted based on the theme if needed by adding dynamic classes
   switch (type) {
     case 'success':
-      return <CheckCircle className="h-5 w-5 text-green-500" />;
+      return <CheckCircle className="icon-success" />;
     case 'warning':
-      return <AlertTriangle className="h-5 w-5 text-yellow-500" />;
+      return <AlertTriangle className="icon-warning" />;
     case 'error':
-      return <XCircle className="h-5 w-5 text-red-500" />;
+      return <XCircle className="icon-error" />;
     case 'info':
-      return <Bell className="h-5 w-5 text-blue-500" />;
+      return <Bell className="icon-info" />;
     default:
-      return <Bell className="h-5 w-5 text-gray-500" />;
+      return <Bell className="icon-default" />;
   }
 };
 
 const NotificationCard = ({ notification, onMarkAsRead, onDelete }) => {
   const { theme } = useContext(ThemeContext);
-
-  const getBackgroundColorClass = () =>
-    notification.read ? `notification-card-read-${theme}` : `notification-card-unread-${theme}`;
-  const getTextColorClass = () =>
-    notification.read ? `notification-type-read-${theme}` : `notification-type-unread-${theme}`;
-  const getDescriptionColorClass = () =>
-    notification.read ? `notification-message-read-${theme}` : `notification-message-unread-${theme}`;
-  const getBorderColorClass = () => `border-${theme}-700`;
 
   return (
     <motion.div
@@ -56,45 +48,46 @@ const NotificationCard = ({ notification, onMarkAsRead, onDelete }) => {
       exit={{ opacity: 0, y: -10 }}
       transition={{ duration: 0.3 }}
     >
-      <div className={`notification-card ${getBackgroundColorClass()} group ${getBorderColorClass()} transition-all`}>
+      <div className={`notification-card ${notification.read ? `read-${theme}` : `unread-${theme}`} border-${theme}`}>
         <div className="notification-content">
           <div className="notification-info">
             <div className="notification-icon-wrapper">
               <NotificationIcon type={notification.type} />
             </div>
             <div>
-              <h4 className={`notification-type ${getTextColorClass()}`}>
+              <h4 className={`notification-type ${notification.read ? 'read' : 'unread'}`}>
                 {notification.type.charAt(0).toUpperCase() + notification.type.slice(1)}
               </h4>
-              <p className={`notification-message ${getDescriptionColorClass()}`}>{notification.message}</p>
+              <p className={`notification-message ${notification.read ? 'read' : 'unread'}`}>
+                {notification.message}
+              </p>
             </div>
           </div>
           <div className="notification-actions">
             {!notification.read && (
               <button
                 onClick={() => onMarkAsRead(notification.id)}
-                className={`notification-actions button hover:text-blue-500 transition text-${theme}-text`}
-                title="Mark as Read"
+                className={`notification-action-button mark-read-button`}
               >
-                <CheckCircle className={`mark-read-icon text-${theme}-icon`} />
+                <CheckCircle className="mark-read-icon" />
               </button>
             )}
             <button
               onClick={() => onDelete(notification.id)}
-              className={`notification-actions button hover:text-red-500 transition text-${theme}-text`}
-              title="Delete"
+              className={`notification-action-button delete-button`}
             >
-              <Trash2 className={`delete-icon text-${theme}-icon`} />
+              <Trash2 className="delete-icon" />
             </button>
           </div>
         </div>
-        <p className={`notification-timestamp text-${theme}-secondary-text`}>
+        <p className="notification-timestamp">
           {new Date(notification.createdAt).toLocaleString()}
         </p>
       </div>
     </motion.div>
   );
 };
+
 
 const NotificationsPage = () => {
   const [notifications, setNotifications] = useState([]);
@@ -146,24 +139,25 @@ const NotificationsPage = () => {
           <h1 className={`notifications-title ${theme}-text`}>
             Notifications
           </h1>
-          <div className="notifications-actions">
-            <button
-              onClick={markAllAsRead}
-              disabled={unreadCount === 0}
-              className={`notifications-button mark-as-read-button border-${theme}-600 text-${theme}-text hover:bg-${theme}-hover disabled:opacity-40`}
-            >
-              <CheckCircle className="w-4 h-4" />
-              Mark all as read
-            </button>
-            <button
-              onClick={deleteAllNotifications}
-              disabled={notifications.length === 0}
-              className={`notifications-button delete-all-button border-red-500 text-red-400 hover:bg-red-500/20 disabled:opacity-40`}
-            >
-              <Trash2 className="w-4 h-4" />
-              Delete all
-            </button>
-          </div>
+<div className="notifications-actions">
+  <button
+    onClick={markAllAsRead}
+    disabled={unreadCount === 0}
+    className="notifications-button mark-all-read-button"
+  >
+    <CheckCircle className="action-icon" />
+    Mark all as read
+  </button>
+  <button
+    onClick={deleteAllNotifications}
+    disabled={notifications.length === 0}
+    className="notifications-button delete-all-button"
+  >
+    <Trash2 className="action-icon" />
+    Delete all
+  </button>
+</div>
+
         </div>
 
         {loading ? (
@@ -187,7 +181,7 @@ const NotificationsPage = () => {
   );
 };
 
-const Notifiactions = () => {
+const Notifications = () => {
   return (
     <div className="Notifpage">
       <Sidebar />
@@ -198,4 +192,4 @@ const Notifiactions = () => {
   );
 };
 
-export default Notifiactions;
+export default Notifications;

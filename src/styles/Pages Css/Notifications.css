@@ -3,11 +3,10 @@
     padding: 24px;
   }
   
-  .notifications-wrapper {
-    max-width: 768px;
-    margin-top: 3rem;
-    margin-left: 2rem;
-  }
+.notifications-wrapper {
+  max-width: 768px;
+  margin: 3rem 0 0 2rem;
+}
   
   .notifications-header {
     display: flex;
@@ -109,7 +108,6 @@
   
   .notification-icon-wrapper {
     padding: 8px; /* Equivalent to p-2 */
-    background-color: #4a5568; /* Equivalent to bg-gray-700 */
     border-radius: 50%; /* Equivalent to rounded-full */
   }
   
@@ -147,7 +145,7 @@
   .notification-actions button {
     transition: color 0.15s ease-in-out;
   }
-  
+
   .notification-actions button:hover {
     cursor: pointer;
   }
@@ -187,4 +185,5 @@
     display: none;
   }
 
+  
   
