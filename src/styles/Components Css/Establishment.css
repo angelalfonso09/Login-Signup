@@ -20,6 +20,13 @@
   --modal-close-hover: #c62828;
 }
 
+.estab-sensors-wrapper{
+  display: flex;
+  flex-direction: row;
+  padding: 1rem;
+  width: 100%;
+}
+
 .estab-sensors-container {
   display: flex;
   justify-content: space-between;
@@ -30,7 +37,6 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   margin-bottom: 1rem;
   width: 100%;
-  max-width: 576px;
   position: relative;
 }
 
@@ -76,6 +82,7 @@
   justify-content: center;
   align-items: center;
   z-index: 10;
+  overflow: hidden;
 }
 
 .estab-modal-content {
@@ -85,9 +92,15 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   width: 90%;
   max-height: 80vh;
-  overflow-y: auto;
+  overflow-y: scroll;
   display: flex;
   flex-direction: column;
+  scrollbar-width: none; 
+  -ms-overflow-style: none;  
+}
+
+estab-modal-content::-webkit-scrollbar {
+    display: none; 
 }
 
 .estab-modal-header {

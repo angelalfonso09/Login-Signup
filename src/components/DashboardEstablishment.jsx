@@ -13,9 +13,10 @@ const EstablishmentSensors = ({ establishmentName, sensors }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
+    <div className="estab-sensors-wrapper">
     <div className="estab-sensors-container">
       <div className="estab-info">
-        <h2 className="estab-name">{establishmentName} National University</h2>
+        <h2 className="estab-name">{establishmentName} </h2>
         <p className="estab-sensor-count">Total Sensors: {sensors ? sensors.length : 0}</p>
       </div>
       <button onClick={() => setIsOpen(true)} className="estab-details-button">
@@ -79,6 +80,7 @@ const EstablishmentSensors = ({ establishmentName, sensors }) => {
           </div>
         </div>
       )}
+    </div>
     </div>
   );
 };

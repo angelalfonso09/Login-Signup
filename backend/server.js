@@ -23,7 +23,7 @@ const authRoutes = require("./models/route");
 const app = express();
 const port = 5000;
 const saltRounds = 10;
-const users = [];
+// const users = [];
 
 
 // Middleware
@@ -619,6 +619,37 @@ app.post("/api/reset-password", async (req, res) => {
     return res.status(401).json({ message: "Unauthorized. Invalid or expired token." });
   }
 });
+
+// GET route to fetch establishments
+app.get('/api/establishments', (req, res) => {
+  const sql = 'SELECT estab_name FROM estab';
+  db.query(sql, (err, results) => {
+    if (err) {
+      console.error('Error querying database:', err);
+      res.status(500).json({ error: 'Failed to fetch establishments' });
+    } else {
+      // Extract the establishment names from the results
+      const estabNames = results.map(row => row.estab_name);
+      res.json(estabNames);
+    }
+  });
+});
+
+// POST route to add an establishment
+app.post('/api/establishments', (req, res) => {
+  const { name } = req.body;
+  const sql = 'INSERT INTO estab (estab_name) VALUES (?)';
+  db.query(sql, [name], (err, result) => {
+    if (err) {
+      console.error('Error inserting into database:', err);
+      res.status(500).json({ error: 'Failed to add establishment', details: err }); // Include the error details
+    } else {
+      console.log('Establishment added successfully', result); // Log the result
+      res.status(201).json({ message: 'Establishment added successfully' });
+    }
+  });
+});
+
 
 //ITO START NG ARDUINO GRRR RAWR RAWR HAHAHAHAHAH
 

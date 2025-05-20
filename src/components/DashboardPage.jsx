@@ -64,9 +64,9 @@ const DashboardSummary = ({ totalEstablishments, totalSensors, totalUsers }) => 
 
 const DashboardPage = () => {
   const dashboardSummaryData = {
-    totalEstablishments: 125,
-    totalSensors: 540,
-    totalUsers: 320,
+    totalEstablishments: 5,
+    totalSensors: 7,
+    totalUsers: 5,
   };
 
   return (

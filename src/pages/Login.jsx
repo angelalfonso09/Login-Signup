@@ -52,7 +52,8 @@ const Login = () => {
               </p>
             </div>
             <div className="login-footer text-center text-muted small">
-              <a href="#" className="login-footer-link" onClick={handleShowTermsModal}>Terms & Conditions</a> | <a href="#" className="login-footer-link">Support</a> | <a href="#" className="login-footer-link">Customer Care</a>
+              <a href="#" className="login-footer-link" onClick={handleShowTermsModal}>Terms & Conditions</a> 
+              {/* | <a href="#" className="login-footer-link">Support</a> | <a href="#" className="login-footer-link">Customer Care</a> */}
             </div>
           </Card.Body>
         </Container>

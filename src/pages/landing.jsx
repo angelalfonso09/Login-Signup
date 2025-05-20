@@ -161,7 +161,7 @@ const AquaSense = () => {
 
             <div className="contact-details">
               <div className="contact-item">
-                <img src="/icons/location.png" alt="Location" className="contact-icon" />
+                <img src="/src/assets/location.png" alt="Location" className="contact-icon" />
                 <div>
                   <h4>Office Address</h4>
                   <p>General Trias, Cavite</p>
@@ -169,7 +169,7 @@ const AquaSense = () => {
               </div>
 
               <div className="contact-item">
-                <img src="/icons/phone.png" alt="Phone" className="contact-icon" />
+                <img src="/src/assets/telephone.png" alt="Phone" className="contact-icon" />
                 <div>
                   <h4>Call Us</h4>
                   <p>123456789</p>
@@ -177,7 +177,7 @@ const AquaSense = () => {
               </div>
 
               <div className="contact-item">
-                <img src="/icons/mail.png" alt="Mail" className="contact-icon" />
+                <img src="/src/assets/gmail.png" alt="Mail" className="contact-icon" />
                 <div>
                   <h4>Mail Us</h4>
                   <p>your@email.com</p>
