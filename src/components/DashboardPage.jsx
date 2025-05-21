@@ -65,11 +65,13 @@ const DashboardSummary = ({ totalEstablishments, totalSensors, totalUsers }) => 
   );
 };
 
+
+
 const DashboardPage = () => {
   const [dashboardSummaryData, setDashboardSummaryData] = useState({
-    totalEstablishments: 0, // Initialize with 0 or null
-    totalSensors: 0,       // Initialize with 0 or null
-    totalUsers: null,      // Initialize with null to indicate loading state
+    totalEstablishments: 0, 
+    totalSensors: 0,      
+    totalUsers: null,    
   });
 
     useEffect(() => {
@@ -92,14 +94,12 @@ const DashboardPage = () => {
                 console.error("Error fetching total users:", error);
                 setDashboardSummaryData(prevData => ({
                     ...prevData,
-                    totalUsers: null, // Set to null or a default value on error
-                    userError: true, // Set error state to true
+                    totalUsers: null, 
+                    userError: true, 
                 }));
             }
         };
 
-    // You would also fetch totalEstablishments and totalSensors similarly
-    // For now, let's keep them as static or fetch them from other API endpoints
 const fetchOtherData = async () => {
   try {
     const estResponse = await fetch('http://localhost:5000/api/total-establishments');
@@ -121,18 +121,31 @@ const fetchOtherData = async () => {
     }));
   }
 
-  // For now, still use static value for sensors (or replace with API if available)
-  setDashboardSummaryData(prevData => ({
-    ...prevData,
-    totalSensors: 7,
-  }));
+ // ✅ Fetch total sensors
+  try {
+    const sensorResponse = await fetch('http://localhost:5000/api/total-sensors');
+    if (!sensorResponse.ok) {
+      const errorData = await sensorResponse.json().catch(() => ({ message: 'Unknown error' }));
+      throw new Error(`HTTP error! Status: ${sensorResponse.status}. Message: ${errorData.error || 'Failed to fetch'}`);
+    }
+
+    const sensorData = await sensorResponse.json();
+    setDashboardSummaryData(prevData => ({
+      ...prevData,
+      totalSensors: sensorData.totalSensors,
+    }));
+  } catch (error) {
+    console.error("Error fetching total sensors:", error);
+    setDashboardSummaryData(prevData => ({
+      ...prevData,
+      totalSensors: 0, 
+    }));
+  }
 };
 
-
-
     fetchTotalUsers();
-    fetchOtherData(); // Call this to set initial static values or fetch other data
-  }, []); // Empty dependency array means this useEffect runs once when the component mounts
+    fetchOtherData(); 
+  }, []); 
 
   return (
     <div className="dashboard-page">

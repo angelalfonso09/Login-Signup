@@ -711,6 +711,21 @@ app.get('/api/total-establishments', (req, res) => {
   });
 });
 
+// ✅ Direct endpoint for fetching total sensors
+app.get('/api/total-sensors', (req, res) => {
+  const query = 'SELECT COUNT(*) AS totalSensors FROM sensors'; // Adjust table name if needed
+
+  db.query(query, (err, results) => {
+    if (err) {
+      console.error('Error fetching total sensors:', err);
+      return res.status(500).json({ error: 'Failed to fetch total sensors' });
+    }
+
+    const total = results[0].totalSensors;
+    res.json({ totalSensors: total });
+  });
+});
+
 
 //ITO START NG ARDUINO GRRR RAWR RAWR HAHAHAHAHAH
 
