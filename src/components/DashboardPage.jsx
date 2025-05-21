@@ -100,32 +100,34 @@ const DashboardPage = () => {
 
     // You would also fetch totalEstablishments and totalSensors similarly
     // For now, let's keep them as static or fetch them from other API endpoints
-    const fetchOtherData = async () => {
-        // Example: Fetch establishments (you'll need a backend endpoint for this too)
-        // try {
-        //     const estResponse = await fetch('http://localhost:5000/api/total-establishments');
-        //     const estData = await estResponse.json();
-        //     setDashboardSummaryData(prevData => ({ ...prevData, totalEstablishments: estData.totalEstablishments }));
-        // } catch (error) {
-        //     console.error("Error fetching total establishments:", error);
-        // }
+const fetchOtherData = async () => {
+  try {
+    const estResponse = await fetch('http://localhost:5000/api/total-establishments');
+    if (!estResponse.ok) {
+      const errorData = await estResponse.json().catch(() => ({ message: 'Unknown error' }));
+      throw new Error(`HTTP error! Status: ${estResponse.status}. Message: ${errorData.error || 'Failed to fetch'}`);
+    }
 
-        // Example: Fetch sensors (you'll need a backend endpoint for this too)
-        // try {
-        //     const sensorResponse = await fetch('http://localhost:5000/api/total-sensors');
-        //     const sensorData = await sensorResponse.json();
-        //     setDashboardSummaryData(prevData => ({ ...prevData, totalSensors: sensorData.totalSensors }));
-        // } catch (error) {
-        //     console.error("Error fetching total sensors:", error);
-        // }
+    const estData = await estResponse.json();
+    setDashboardSummaryData(prevData => ({
+      ...prevData,
+      totalEstablishments: estData.totalEstablishments,
+    }));
+  } catch (error) {
+    console.error("Error fetching total establishments:", error);
+    setDashboardSummaryData(prevData => ({
+      ...prevData,
+      totalEstablishments: 0, // fallback value on error
+    }));
+  }
 
-        // For now, use static values for establishments and sensors
-        setDashboardSummaryData(prevData => ({
-          ...prevData,
-          totalEstablishments: 4, // Static for now, replace with API call
-          totalSensors: 7,        // Static for now, replace with API call
-        }));
-    };
+  // For now, still use static value for sensors (or replace with API if available)
+  setDashboardSummaryData(prevData => ({
+    ...prevData,
+    totalSensors: 7,
+  }));
+};
+
 
 
     fetchTotalUsers();
