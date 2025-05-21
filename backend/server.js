@@ -1,6 +1,7 @@
 require("dotenv").config();
 
 const db = require("./config/db");
+const pool = require ("./config/db");
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
@@ -646,6 +647,95 @@ app.post('/api/establishments', (req, res) => {
     } else {
       console.log('Establishment added successfully', result); // Log the result
       res.status(201).json({ message: 'Establishment added successfully' });
+    }
+  });
+});
+
+
+// API endpoint to get total users
+app.get('/api/total-users', (req, res) => {
+  const query = 'SELECT COUNT(*) AS totalUsers FROM users'; // Assuming your user table is named 'users'
+
+  console.log('Attempting to fetch total users from the database...');
+
+  pool.query(query, (error, results) => {
+    if (error) {
+      console.error('Database query error when fetching total users:', error.message);
+
+      // Log more specific details from the MySQL error object
+      if (error.code) {
+        console.error(`MySQL Error Code: ${error.code}`);
+      }
+      if (error.sqlMessage) {
+        console.error(`MySQL Error Message: ${error.sqlMessage}`);
+      }
+      if (error.sql) {
+        console.error(`Faulty SQL Query: ${error.sql}`);
+      }
+
+      // Send a 500 Internal Server Error response to the client
+      return res.status(500).json({
+        error: 'Failed to fetch total users due to a server-side database error.',
+        details: error.message // Include error message for debugging purposes (consider removing in production)
+      });
+    }
+
+    // Check if results are valid and contain the expected data
+    if (results && results.length > 0 && results[0].hasOwnProperty('totalUsers')) {
+      const totalUsers = results[0].totalUsers;
+      console.log(`Successfully fetched total users: ${totalUsers}`);
+      res.json({ totalUsers: totalUsers });
+    } else {
+      // This case handles unexpected query results (e.g., empty results, or missing 'totalUsers' column)
+      console.warn('Query for total users returned an unexpected or empty result set:', results);
+      return res.status(500).json({
+        error: 'Failed to retrieve total users count; unexpected database response format.',
+        details: 'The database query returned an invalid or empty result for total users.'
+      });
+    }
+  });
+});
+
+// fetxh estab
+app.get('/api/total-establishments', (req, res) => {
+  const query = 'SELECT COUNT(*) AS totalEstablishments FROM establishments'; // Assuming your establishments table is named 'establishments'
+
+  console.log('Attempting to fetch total establishments from the database...');
+
+  pool.query(query, (error, results) => {
+    if (error) {
+      console.error('Database query error when fetching total establishments:', error.message);
+
+      // Log more specific details from the MySQL error object
+      if (error.code) {
+        console.error(`MySQL Error Code: ${error.code}`);
+      }
+      if (error.sqlMessage) {
+        console.error(`MySQL Error Message: ${error.sqlMessage}`);
+      }
+      if (error.sql) {
+        console.error(`Faulty SQL Query: ${error.sql}`);
+      }
+
+      // Send a 500 Internal Server Error response to the client
+      return res.status(500).json({
+        error: 'Failed to fetch total establishments due to a server-side database error.',
+        details: error.message // Include error message for debugging purposes (consider removing in production)
+      });
+    }
+
+    // Check if results are valid and contain the expected data
+    if (results && results.length > 0 && results[0].hasOwnProperty('totalEstablishments')) {
+      const totalEstablishments = results[0].totalEstablishments;
+      console.log(`Successfully fetched total establishments: ${totalEstablishments}`);
+      res.json({ totalEstablishments: totalEstablishments });
+    } else {
+      // This case handles unexpected query results (e.g., empty results, or missing 'totalEstablishments' column)
+      console.warn('Query for total establishments returned an unexpected or empty result set:', results);
+      return res.status(500).json({
+        error: 'Failed to retrieve total establishments count; unexpected database response format.',
+        details: 'The database query returned an invalid or empty result for total establishments.'
+      });
     }
   });
 });
