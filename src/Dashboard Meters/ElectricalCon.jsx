@@ -23,7 +23,8 @@ const NewSensor = () => {
         const response = await fetch("http://localhost:3001/api/sensors/latest");
         if (!response.ok) throw new Error("No data found");
         const latestData = await response.json();
-        setEcValue(latestData.electrical_conductivity);
+        // Assuming your backend sends 'electrical_conductivity'
+        setEcValue(latestData.electrical_conductivity); 
         console.log("📂 Fetched latest EC value:", latestData.electrical_conductivity);
       } catch (err) {
         console.warn("⚠️ Could not fetch latest EC data:", err.message);
@@ -44,13 +45,26 @@ const NewSensor = () => {
   }, []);
 
   const getWaterQuality = () => {
-    if (ecValue <= 500) return "Excellent";     // Freshwater typical
-    if (ecValue <= 1000) return "Good";         // Acceptable
-    if (ecValue <= 2000) return "Fair";         // Elevated salts
-    return "Poor";                               // Very high salinity
+    if (ecValue >= 70 && ecValue <= 100) return "Safe";
+    if (ecValue >= 40 && ecValue < 70) return "Moderate";
+    if (ecValue > 0 && ecValue < 40) return "Not Safe";
+    if (ecValue === 0) return "Critical";
+    return "Unknown"; // Fallback for values outside defined ranges
   };
 
-  const percentage = (ecValue / 3000) * 100; // Assuming max EC = 3000 µS/cm for scale
+  // Calculate percentage out of 100
+  // This ensures the progress bar visually represents the 0-100 scale.
+  const percentage = Math.min(Math.max(ecValue, 0), 100); 
+
+  // Determine path color based on safety ranges
+  const getPathColor = () => {
+    if (!isConnected) return "#d9534f"; // Disconnected color
+    if (ecValue >= 70 && ecValue <= 100) return "#20a44c"; // Safe (Green)
+    if (ecValue >= 40 && ecValue < 70) return "#f0ad4e"; // Moderate (Orange)
+    if (ecValue > 0 && ecValue < 40) return "#d9534f"; // Not Safe (Red)
+    if (ecValue === 0) return "#777"; // Critical (Darker color)
+    return "#5bc0de"; // Default or unknown color (Light Blue)
+  };
 
   return (
     <div className={`widget-container ${theme}`}>
@@ -66,7 +80,7 @@ const NewSensor = () => {
         <CircularProgressbarWithChildren
           value={percentage}
           styles={buildStyles({
-            pathColor: isConnected ? "#20a44c" : "#d9534f",
+            pathColor: getPathColor(), // Dynamic path color based on quality
             trailColor: theme === "dark" ? "#333" : "#e5e7eb",
             strokeLinecap: "round",
           })}
@@ -74,7 +88,7 @@ const NewSensor = () => {
           <div className="temperature-text">
             <span className="label">Electrical Conductivity</span>
             <span className="value">{ecValue}</span>
-            <span className="unit">µS/cm</span>
+            <span className="unit">Safety Score</span> {/* Changed unit to reflect the 0-100 score */}
           </div>
         </CircularProgressbarWithChildren>
       </div>
@@ -82,13 +96,10 @@ const NewSensor = () => {
       <p className={`water-quality-text ${theme === "dark" ? "text-white" : "text-gray-600"}`}>
         Water Quality:{" "}
         <span className={`font-bold ${
-          getWaterQuality() === "Excellent"
-            ? "text-blue-600"
-            : getWaterQuality() === "Good"
-            ? "text-green-500"
-            : getWaterQuality() === "Fair"
-            ? "text-yellow-400"
-            : "text-red-500"
+            getWaterQuality() === "Safe" ? "text-green-500" : 
+            getWaterQuality() === "Moderate" ? "text-yellow-400" : 
+            getWaterQuality() === "Not Safe" ? "text-red-500" : 
+            "text-gray-500" // For critical or unknown
         }`}>
           {getWaterQuality()}
         </span>
@@ -98,4 +109,3 @@ const NewSensor = () => {
 };
 
 export default NewSensor;
-

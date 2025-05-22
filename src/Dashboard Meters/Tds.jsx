@@ -44,12 +44,26 @@ const Tds = () => {
   }, []);
 
   const getWaterQuality = () => {
-    if (tdsValue <= 300) return "Good";
-    if (tdsValue <= 600) return "Moderate";
-    return "Poor";
+    if (tdsValue >= 70 && tdsValue <= 100) return "Safe";
+    if (tdsValue >= 40 && tdsValue < 70) return "Moderate";
+    if (tdsValue > 0 && tdsValue < 40) return "Not Safe";
+    if (tdsValue === 0) return "Critical";
+    return "Unknown"; // Fallback for values outside defined ranges
   };
 
-  const percentage = (tdsValue / 1000) * 100; // assuming max TDS scale is 1000 ppm
+  // Calculate percentage out of 100
+  // This assumes a maximum relevant TDS value of 100 for the visual representation.
+  const percentage = Math.min(Math.max(tdsValue, 0), 100); 
+
+  // Determine path color based on safety ranges
+  const getPathColor = () => {
+    if (!isConnected) return "#d9534f"; // Disconnected color
+    if (tdsValue >= 70 && tdsValue <= 100) return "#20a44c"; // Safe (Green)
+    if (tdsValue >= 40 && tdsValue < 70) return "#f0ad4e"; // Moderate (Orange)
+    if (tdsValue > 0 && tdsValue < 40) return "#d9534f"; // Not Safe (Red)
+    if (tdsValue === 0) return "#777"; // Critical (Darker color for critical)
+    return "#5bc0de"; // Default or unknown color (Light Blue)
+  };
 
   return (
     <div className={`widget-container ${theme}`}>
@@ -65,7 +79,7 @@ const Tds = () => {
         <CircularProgressbarWithChildren
           value={percentage}
           styles={buildStyles({
-            pathColor: isConnected ? "#20a44c" : "#d9534f",
+            pathColor: getPathColor(), // Dynamic path color
             trailColor: theme === "dark" ? "#333" : "#e5e7eb",
             strokeLinecap: "round",
           })}
@@ -73,14 +87,19 @@ const Tds = () => {
           <div className="temperature-text">
             <span className="label">TDS</span>
             <span className="value">{tdsValue}</span>
-            <span className="unit">ppm</span>
+            <span className="unit">Safety Score</span>
           </div>
         </CircularProgressbarWithChildren>
       </div>
 
       <p className={`water-quality-text ${theme === "dark" ? "text-white" : "text-gray-600"}`}>
         Water Quality:{" "}
-        <span className={`font-bold ${getWaterQuality() === "Good" ? "text-green-500" : getWaterQuality() === "Moderate" ? "text-yellow-400" : "text-red-500"}`}>
+        <span className={`font-bold ${
+            getWaterQuality() === "Safe" ? "text-green-500" : 
+            getWaterQuality() === "Moderate" ? "text-yellow-400" : 
+            getWaterQuality() === "Not Safe" ? "text-red-500" : 
+            "text-gray-500" // For critical or unknown
+        }`}>
           {getWaterQuality()}
         </span>
       </p>

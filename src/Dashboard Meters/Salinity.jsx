@@ -23,7 +23,8 @@ const Dissolved = () => {
         const response = await fetch("http://localhost:3001/api/sensors/latest");
         if (!response.ok) throw new Error("No data found");
         const latestData = await response.json();
-        setSalinity(latestData.salinity_value);
+        // Assuming your backend sends 'salinity_value' for dissolved content
+        setSalinity(latestData.salinity_value); 
         console.log("📂 Fetched latest salinity value:", latestData.salinity_value);
       } catch (err) {
         console.warn("⚠️ Could not fetch latest salinity data:", err.message);
@@ -44,12 +45,26 @@ const Dissolved = () => {
   }, []);
 
   const getWaterQuality = () => {
-    if (salinity <= 35) return "Excellent";
-    if (salinity <= 50) return "Moderate";
-    return "Poor";
+    if (salinity >= 70 && salinity <= 100) return "Safe";
+    if (salinity >= 40 && salinity < 70) return "Moderate";
+    if (salinity > 0 && salinity < 40) return "Not Safe";
+    if (salinity === 0) return "Critical";
+    return "Unknown"; // Fallback for values outside defined ranges
   };
 
-  const percentage = (salinity / 100) * 100; // Assuming max salinity is 100 PSU
+  // Calculate percentage out of 100
+  // This ensures the progress bar visually represents the 0-100 scale.
+  const percentage = Math.min(Math.max(salinity, 0), 100); 
+
+  // Determine path color based on safety ranges
+  const getPathColor = () => {
+    if (!isConnected) return "#d9534f"; // Disconnected color
+    if (salinity >= 70 && salinity <= 100) return "#20a44c"; // Safe (Green)
+    if (salinity >= 40 && salinity < 70) return "#f0ad4e"; // Moderate (Orange)
+    if (salinity > 0 && salinity < 40) return "#d9534f"; // Not Safe (Red)
+    if (salinity === 0) return "#777"; // Critical (Darker color)
+    return "#5bc0de"; // Default or unknown color (Light Blue)
+  };
 
   return (
     <div className={`widget-container ${theme}`}>
@@ -65,7 +80,7 @@ const Dissolved = () => {
         <CircularProgressbarWithChildren
           value={percentage}
           styles={buildStyles({
-            pathColor: isConnected ? "#20a44c" : "#d9534f",
+            pathColor: getPathColor(), // Dynamic path color based on quality
             trailColor: theme === "dark" ? "#333" : "#e5e7eb",
             strokeLinecap: "round",
           })}
@@ -73,7 +88,7 @@ const Dissolved = () => {
           <div className="temperature-text">
             <span className="label">Salinity</span>
             <span className="value">{salinity}</span>
-            <span className="unit">PSU</span>
+            <span className="unit">Safety Score</span>
           </div>
         </CircularProgressbarWithChildren>
       </div>
@@ -81,8 +96,10 @@ const Dissolved = () => {
       <p className={`water-quality-text ${theme === "dark" ? "text-white" : "text-gray-600"}`}>
         Water Quality:{" "}
         <span className={`font-bold ${
-          getWaterQuality() === "Excellent" ? "text-blue-600" :
-          getWaterQuality() === "Moderate" ? "text-yellow-400" : "text-red-500"
+            getWaterQuality() === "Safe" ? "text-green-500" : 
+            getWaterQuality() === "Moderate" ? "text-yellow-400" : 
+            getWaterQuality() === "Not Safe" ? "text-red-500" : 
+            "text-gray-500" // For critical or unknown
         }`}>
           {getWaterQuality()}
         </span>

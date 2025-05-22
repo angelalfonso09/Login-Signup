@@ -23,7 +23,8 @@ const Conductivity = () => {
         const response = await fetch("http://localhost:3001/api/sensors/latest");
         if (!response.ok) throw new Error("No data found");
         const latestData = await response.json();
-        setConductivityValue(latestData.conductivity_value);
+        // Assuming your backend sends 'conductivity_value' for conductivity
+        setConductivityValue(latestData.conductivity_value); 
         console.log("📂 Fetched latest conductivity value:", latestData.conductivity_value);
       } catch (err) {
         console.warn("⚠️ Could not fetch latest conductivity data:", err.message);
@@ -34,7 +35,7 @@ const Conductivity = () => {
 
     socket.on("connect", handleConnect);
     socket.on("disconnect", handleDisconnect);
-    socket.on("updateECData", handleConductivityData); // Make sure your backend emits "updateConductivity"!
+    socket.on("updateECData", handleConductivityData); // Make sure your backend emits "updateECData"!
 
     return () => {
       socket.off("connect", handleConnect);
@@ -44,12 +45,26 @@ const Conductivity = () => {
   }, []);
 
   const getWaterQuality = () => {
-    if (conductivityValue >= 700) return "Good";
-    if (conductivityValue >= 300) return "Moderate";
-    return "Poor";
+    if (conductivityValue >= 70 && conductivityValue <= 100) return "Safe";
+    if (conductivityValue >= 40 && conductivityValue < 70) return "Moderate";
+    if (conductivityValue > 0 && conductivityValue < 40) return "Not Safe";
+    if (conductivityValue === 0) return "Critical";
+    return "Unknown"; // Fallback for values outside defined ranges
   };
 
-  const percentage = (conductivityValue / 1000) * 100;
+  // Calculate percentage out of 100
+  // This ensures the progress bar visually represents the 0-100 scale.
+  const percentage = Math.min(Math.max(conductivityValue, 0), 100); 
+
+  // Determine path color based on safety ranges
+  const getPathColor = () => {
+    if (!isConnected) return "#d9534f"; // Disconnected color
+    if (conductivityValue >= 70 && conductivityValue <= 100) return "#20a44c"; // Safe (Green)
+    if (conductivityValue >= 40 && conductivityValue < 70) return "#f0ad4e"; // Moderate (Orange)
+    if (conductivityValue > 0 && conductivityValue < 40) return "#d9534f"; // Not Safe (Red)
+    if (conductivityValue === 0) return "#777"; // Critical (Darker color)
+    return "#5bc0de"; // Default or unknown color (Light Blue)
+  };
 
   return (
     <div className={`widget-container ${theme}`}>
@@ -65,7 +80,7 @@ const Conductivity = () => {
         <CircularProgressbarWithChildren
           value={percentage}
           styles={buildStyles({
-            pathColor: isConnected ? "#20a44c" : "#d9534f",
+            pathColor: getPathColor(), // Dynamic path color based on quality
             trailColor: theme === "dark" ? "#333" : "#e5e7eb",
             strokeLinecap: "round",
           })}
@@ -73,14 +88,19 @@ const Conductivity = () => {
           <div className="temperature-text">
             <span className="label">Conductivity</span>
             <span className="value">{conductivityValue}</span>
-            <span className="unit">µS/cm</span>
+            <span className="unit">Safety Score</span>
           </div>
         </CircularProgressbarWithChildren>
       </div>
 
       <p className={`water-quality-text ${theme === "dark" ? "text-white" : "text-gray-600"}`}>
         Water Quality:{" "}
-        <span className={`font-bold ${getWaterQuality() === "Good" ? "text-green-500" : getWaterQuality() === "Moderate" ? "text-yellow-400" : "text-red-500"}`}>
+        <span className={`font-bold ${
+            getWaterQuality() === "Safe" ? "text-green-500" : 
+            getWaterQuality() === "Moderate" ? "text-yellow-400" : 
+            getWaterQuality() === "Not Safe" ? "text-red-500" : 
+            "text-gray-500" // For critical or unknown
+        }`}>
           {getWaterQuality()}
         </span>
       </p>
