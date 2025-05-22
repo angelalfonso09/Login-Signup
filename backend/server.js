@@ -959,21 +959,6 @@ app.get('/api/total-sensors', (req, res) => {
 //   }
 // });
 
-// Save user to the database
-app.post('/save-user', (req, res) => {
-  const { email, name } = req.body;
-
-  // Insert user data into the 'users' table
-  const query = 'INSERT INTO users (email, username) VALUES (?, ?)';
-  db.query(query, [email, name], (err, result) => {
-    if (err) {
-      console.error('Error saving user:', err);
-      return res.status(500).send('Error saving user');
-    }
-    res.status(200).send('User saved successfully');
-  });
-});
-
 // let sensorConnected = false;  // To keep track of sensor connection status
 
 // // Function to show the connection status
@@ -1022,7 +1007,7 @@ app.post('/save-user', (req, res) => {
 //     showSensorConnectionStatus(false);  // Show disconnected status
 //   }
 // });
-
+// __________________________________________
 // const pool = mysql.createPool({
 //   host: process.env.DB_HOST,
 //   user: process.env.DB_USER,
@@ -1091,3 +1076,209 @@ app.post('/save-user', (req, res) => {
 //     res.json({ message: "Notifications marked as read" });
 //   });
 // });
+
+// Save user to the database
+app.post('/save-user', (req, res) => {
+  const { email, name } = req.body;
+
+  // Insert user data into the 'users' table
+  const query = 'INSERT INTO users (email, username) VALUES (?, ?)';
+  db.query(query, [email, name], (err, result) => {
+    if (err) {
+      console.error('Error saving user:', err);
+      return res.status(500).send('Error saving user');
+    }
+    res.status(200).send('User saved successfully');
+  });
+});
+
+ // CLEAN VERSION NG BACKEND FOR GAUGE METER AND HISTORICAL DATA RAWR RAWR RAWR RAWR RAWR
+ // CLEAN VERSION NG BACKEND FOR GAUGE METER AND HISTORICAL DATA RAWR RAWR RAWR RAWR RAWR
+ // CLEAN VERSION NG BACKEND FOR GAUGE METER AND HISTORICAL DATA RAWR RAWR RAWR RAWR RAWR
+ // CLEAN VERSION NG BACKEND FOR GAUGE METER AND HISTORICAL DATA RAWR RAWR RAWR RAWR RAWR
+
+// Serial Port Configuration
+const serialPort = new SerialPort({ path: "COM5", baudRate: 9600 });
+const parser = serialPort.pipe(new ReadlineParser({ delimiter: "\n" }));
+
+let sensorConnected = false;
+
+serialPort.on("open", () => {
+    if (!sensorConnected) {
+        sensorConnected = true;
+        console.log("Sensor is connected on COM5 RAWR.");
+    }
+});
+
+serialPort.on("close", () => {
+    if (sensorConnected) {
+        sensorConnected = false;
+        console.log("Sensor is disconnected from COM3.");
+    }
+});
+
+serialPort.on("error", (err) => {
+    console.error("Serial Port Error:", err.message);
+});
+
+// --- Consolidated Data Handling from Arduino (This is where your parser.on('data') block goes) ---
+parser.on("data", (data) => {
+    try {
+        const jsonData = JSON.parse(data.trim());
+
+        const {
+            turbidity_value,
+            ph_value,
+            tds_value,
+            salinity_value,
+            ec_value_mS,
+            ec_compensated_mS,
+            temperature_celsius
+        } = jsonData;
+
+        const currentTime = new Date(); // Get current server time for timestamp
+
+        // Function to insert data into a table and emit via Socket.IO
+        const insertAndEmit = (tableName, valueColumn, value, socketEventName, threshold = null, notificationType = 'turbidity') => {
+            if (value !== undefined) {
+                console.log(`📡 Received ${valueColumn} Data:`, value);
+                const query = `INSERT INTO ${tableName} (${valueColumn}, timestamp) VALUES (?, ?)`;
+                db.query(query, [value, currentTime], (err, result) => {
+                    if (err) {
+                        console.error(`❌ ${tableName} Database Insert Error:`, err.sqlMessage);
+                        return;
+                    }
+                    console.log(`✅ ${tableName} Data Inserted Successfully: ID`, result.insertId);
+
+                    io.emit(socketEventName, { value: value, timestamp: currentTime.toISOString() });
+
+                    // Handle notifications for turbidity (can extend for others)
+                    if (notificationType === 'turbidity' && threshold !== null && value < threshold) {
+                        insertNotification(result.insertId, value);
+                    }
+                });
+            }
+        };
+
+        // Handle each sensor type
+        insertAndEmit('turbidity_readings', 'turbidity_value', turbidity_value, 'updateTurbidityData', 40, 'turbidity');
+        insertAndEmit('phlevel_readings', 'ph_value', ph_value, 'updatePHData');
+        insertAndEmit('tds_readings', 'tds_value', tds_value, 'updateTDSData');
+        insertAndEmit('salinity_readings', 'salinity_value', salinity_value, 'updateSalinityData');
+        insertAndEmit('ec_readings', 'ec_value_mS', ec_value_mS, 'updateECData');
+        insertAndEmit('ec_compensated_readings', 'ec_compensated_mS', ec_compensated_mS, 'updateECCompensatedData');
+        insertAndEmit('temperature_readings', 'temperature_celsius', temperature_celsius, 'updateTemperatureData');
+
+    } catch (err) {
+        console.error("JSON Parse Error:", err);
+    }
+});
+
+function insertNotification(water_quality_id, turbidityValue) {
+    const threshold = 40;
+    const status = 'Unread';
+    const message = `⚠️ Alert: Turbidity level dropped below threshold (${threshold}). Current value: ${turbidityValue}`;
+
+    const notifQuery = `
+        INSERT INTO notifications (water_quality_id, message, status, created_at)
+        VALUES (?, ?, ?, NOW())
+    `;
+
+    db.query(notifQuery, [water_quality_id, message, status], (notifErr, notifResult) => {
+        if (notifErr) {
+            console.error("❌ Notification Insert Error:", notifErr.sqlMessage);
+        } else {
+            console.log("⚠️ Notification Inserted Successfully: ID", notifResult.insertId);
+            io.emit("newNotification", { message: message, status: status });
+        }
+    });
+}
+
+// Helper function to fetch data for a given sensor table and value column
+const getHistoricalData = (tableName, valueColumn, timePeriod, res) => {
+    let query;
+    let params = [];
+
+    switch (timePeriod) {
+        case 'realtime': // For initial real-time load (e.g., last 20 minutes)
+            query = `SELECT ${valueColumn} AS value, timestamp FROM ${tableName} WHERE timestamp >= NOW() - INTERVAL 20 MINUTE ORDER BY timestamp ASC`;
+            break;
+        case '24h':
+            query = `SELECT ${valueColumn} AS value, timestamp FROM ${tableName} WHERE timestamp >= NOW() - INTERVAL 24 HOUR ORDER BY timestamp ASC`;
+            break;
+        case '7d-avg':
+            query = `
+                SELECT
+                    DATE(timestamp) AS timestamp,
+                    AVG(${valueColumn}) AS value
+                FROM ${tableName}
+                WHERE timestamp >= NOW() - INTERVAL 7 DAY
+                GROUP BY DATE(timestamp)
+                ORDER BY timestamp ASC
+            `;
+            break;
+        case '30d-avg':
+            query = `
+                SELECT
+                    DATE(timestamp) AS timestamp,
+                    AVG(${valueColumn}) AS value
+                FROM ${tableName}
+                WHERE timestamp >= NOW() - INTERVAL 30 DAY
+                GROUP BY DATE(timestamp)
+                ORDER BY timestamp ASC
+            `;
+            break;
+        default:
+            return res.status(400).json({ error: "Invalid time period specified." });
+    }
+
+    db.query(query, params, (err, results) => {
+        if (err) {
+            console.error(`Database Query Error for ${tableName} (${timePeriod}):`, err);
+            return res.status(500).json({ error: "Database Query Error" });
+        }
+        res.json(results);
+    });
+};
+
+// --- Turbidity Endpoints ---
+app.get("/data/turbidity/realtime", (req, res) => getHistoricalData('turbidity_readings', 'turbidity_value', 'realtime', res));
+app.get("/data/turbidity/24h", (req, res) => getHistoricalData('turbidity_readings', 'turbidity_value', '24h', res));
+app.get("/data/turbidity/7d-avg", (req, res) => getHistoricalData('turbidity_readings', 'turbidity_value', '7d-avg', res));
+app.get("/data/turbidity/30d-avg", (req, res) => getHistoricalData('turbidity_readings', 'turbidity_value', '30d-avg', res));
+
+// --- pH Level Endpoints ---
+app.get("/data/phlevel/realtime", (req, res) => getHistoricalData('phlevel_readings', 'ph_value', 'realtime', res));
+app.get("/data/phlevel/24h", (req, res) => getHistoricalData('phlevel_readings', 'ph_value', '24h', res));
+app.get("/data/phlevel/7d-avg", (req, res) => getHistoricalData('phlevel_readings', 'ph_value', '7d-avg', res));
+app.get("/data/phlevel/30d-avg", (req, res) => getHistoricalData('phlevel_readings', 'ph_value', '30d-avg', res));
+
+// --- TDS Endpoints ---
+app.get("/data/tds/realtime", (req, res) => getHistoricalData('tds_readings', 'tds_value', 'realtime', res));
+app.get("/data/tds/24h", (req, res) => getHistoricalData('tds_readings', 'tds_value', '24h', res));
+app.get("/data/tds/7d-avg", (req, res) => getHistoricalData('tds_readings', 'tds_value', '7d-avg', res));
+app.get("/data/tds/30d-avg", (req, res) => getHistoricalData('tds_readings', 'tds_value', '30d-avg', res));
+
+// --- Salinity Endpoints ---
+app.get("/data/salinity/realtime", (req, res) => getHistoricalData('salinity_readings', 'salinity_value', 'realtime', res));
+app.get("/data/salinity/24h", (req, res) => getHistoricalData('salinity_readings', 'salinity_value', '24h', res));
+app.get("/data/salinity/7d-avg", (req, res) => getHistoricalData('salinity_readings', 'salinity_value', '7d-avg', res));
+app.get("/data/salinity/30d-avg", (req, res) => getHistoricalData('salinity_readings', 'salinity_value', '30d-avg', res));
+
+// --- EC Endpoints ---
+app.get("/data/ec/realtime", (req, res) => getHistoricalData('ec_readings', 'ec_value_mS', 'realtime', res));
+app.get("/data/ec/24h", (req, res) => getHistoricalData('ec_readings', 'ec_value_mS', '24h', res));
+app.get("/data/ec/7d-avg", (req, res) => getHistoricalData('ec_readings', 'ec_value_mS', '7d-avg', res));
+app.get("/data/ec/30d-avg", (req, res) => getHistoricalData('ec_readings', 'ec_value_mS', '30d-avg', res));
+
+// --- Compensated EC Endpoints ---
+app.get("/data/ec-compensated/realtime", (req, res) => getHistoricalData('ec_compensated_readings', 'ec_compensated_mS', 'realtime', res));
+app.get("/data/ec-compensated/24h", (req, res) => getHistoricalData('ec_compensated_readings', 'ec_compensated_mS', '24h', res));
+app.get("/data/ec-compensated/7d-avg", (req, res) => getHistoricalData('ec_compensated_readings', 'ec_compensated_mS', '7d-avg', res));
+app.get("/data/ec-compensated/30d-avg", (req, res) => getHistoricalData('ec_compensated_readings', 'ec_compensated_mS', '30d-avg', res));
+
+// --- Temperature Endpoints ---
+app.get("/data/temperature/realtime", (req, res) => getHistoricalData('temperature_readings', 'temperature_celsius', 'realtime', res));
+app.get("/data/temperature/24h", (req, res) => getHistoricalData('temperature_readings', 'temperature_celsius', '24h', res));
+app.get("/data/temperature/7d-avg", (req, res) => getHistoricalData('temperature_readings', 'temperature_celsius', '7d-avg', res));
+app.get("/data/temperature/30d-avg", (req, res) => getHistoricalData('temperature_readings', 'temperature_celsius', '30d-avg', res));

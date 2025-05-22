@@ -48,12 +48,12 @@ const Turbidity = () => {
 
     socket.on("connect", handleConnect);
     socket.on("disconnect", handleDisconnect);
-    socket.on("updateData", handleTurbidityData);
+    socket.on("updateTurbidityData", handleTurbidityData);
 
     return () => {
       socket.off("connect", handleConnect);
       socket.off("disconnect", handleDisconnect);
-      socket.off("updateData", handleTurbidityData);
+      socket.off("updateTurbidityData", handleTurbidityData);
     };
   }, []);
 
