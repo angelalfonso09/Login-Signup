@@ -5,6 +5,7 @@
   overflow: hidden;
   background: var(--bg-color);
   color: white;
+    transition: background-color 0.3s ease;
 }
 
 /* New Wrapper to Contain Buttons & Grids */
@@ -12,14 +13,14 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 20px;
 overflow: hidden; 
+margin-left: 3rem;
 }
 
 .history-title{
   display: flex;
   justify-content: end;
-  width: 12.8%;
+  width: 15%;
   font-size: 2rem;
   font-weight: 700;
   margin-top: 50px;
@@ -130,14 +131,20 @@ overflow: hidden;
   padding: 10px 15px;
   font-size: 14px;
   border: 1px solid #ccc;
-  background-color: #f0f0f0;
+  background-color: #222;
   cursor: pointer;
   transition: background 0.3s ease-in-out, color 0.3s;
+  color: white;
 }
 
 .filter-buttons button.active {
-  background-color: #007bff;
+  background-color: #5a6268;
   color: white;
   font-weight: bold;
-  border-color: #0056b3;
+  border-color: #5a6268;
+}
+
+.export-btn{
+    background-color: #222;
+    color: white;
 }

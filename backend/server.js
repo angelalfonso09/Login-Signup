@@ -726,6 +726,20 @@ app.get('/api/total-sensors', (req, res) => {
   });
 });
 
+// fetch for the modal
+app.get('/api/total-sensors', (req, res) => {
+  const query = 'SELECT COUNT(*) AS totalSensors FROM sensors'; // Replace 'sensors' with your actual table name
+
+  db.query(query, (err, results) => {
+    if (err) {
+      console.error('Error fetching total sensors:', err);
+      return res.status(500).json({ error: 'Failed to fetch total sensors' });
+    }
+
+    const total = results[0].totalSensors;
+    res.json({ totalSensors: total });
+  });
+});
 
 //ITO START NG ARDUINO GRRR RAWR RAWR HAHAHAHAHAH
 
@@ -945,20 +959,20 @@ app.get('/api/total-sensors', (req, res) => {
 //   }
 // });
 
-// // Save user to the database
-// app.post('/save-user', (req, res) => {
-//   const { email, name } = req.body;
+// Save user to the database
+app.post('/save-user', (req, res) => {
+  const { email, name } = req.body;
 
-//   // Insert user data into the 'users' table
-//   const query = 'INSERT INTO users (email, username) VALUES (?, ?)';
-//   db.query(query, [email, name], (err, result) => {
-//     if (err) {
-//       console.error('Error saving user:', err);
-//       return res.status(500).send('Error saving user');
-//     }
-//     res.status(200).send('User saved successfully');
-//   });
-// });
+  // Insert user data into the 'users' table
+  const query = 'INSERT INTO users (email, username) VALUES (?, ?)';
+  db.query(query, [email, name], (err, result) => {
+    if (err) {
+      console.error('Error saving user:', err);
+      return res.status(500).send('Error saving user');
+    }
+    res.status(200).send('User saved successfully');
+  });
+});
 
 // let sensorConnected = false;  // To keep track of sensor connection status
 

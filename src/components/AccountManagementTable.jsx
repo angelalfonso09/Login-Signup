@@ -1,5 +1,13 @@
 import React, { useState, useEffect, useContext } from "react";
-import { Table, Container, Form, Button, Modal, Alert, Spinner } from "react-bootstrap";
+import {
+  Table,
+  Container,
+  Form,
+  Button,
+  Modal,
+  Alert,
+  Spinner,
+} from "react-bootstrap";
 import { Pencil, Trash2, Plus } from "lucide-react";
 import AdminCreationForm from "./AddAdminAccountForm";
 import axios from "axios";
@@ -19,6 +27,22 @@ const UserAdminTable = () => {
   const [editingUser, setEditingUser] = useState(null);
   const [editFormData, setEditFormData] = useState({ username: "", email: "" });
 
+  // --- NEW useEffect to apply theme to body ---
+  useEffect(() => {
+    if (theme === "dark") {
+      document.body.classList.add("dark");
+      document.body.classList.remove("light"); // Ensure 'light' is removed if present
+    } else {
+      document.body.classList.add("light");
+      document.body.classList.remove("dark"); // Ensure 'dark' is removed if present
+    }
+    // Cleanup function: remove classes when component unmounts or theme changes
+    return () => {
+      document.body.classList.remove("dark", "light");
+    };
+  }, [theme]); // Re-run this effect whenever the 'theme' changes
+
+  // ... (rest of your existing useEffect for fetching accounts)
   useEffect(() => {
     const fetchAccounts = async () => {
       try {
@@ -36,7 +60,10 @@ const UserAdminTable = () => {
 
   const handleAddAdmin = async (newAdmin) => {
     try {
-      const response = await axios.post("http://localhost:5000/api/users", newAdmin);
+      const response = await axios.post(
+        "http://localhost:5000/api/users",
+        newAdmin
+      );
       if (response.status === 201) {
         setAccounts((prev) => [...prev, response.data]);
       }
@@ -67,8 +94,15 @@ const UserAdminTable = () => {
     e.preventDefault();
     try {
       setEditError(null);
-      await axios.put(`http://localhost:5000/api/users/${editingUser.id}`, editFormData);
-      setAccounts((prev) => prev.map((acc) => (acc.id === editingUser.id ? { ...acc, ...editFormData } : acc)));
+      await axios.put(
+        `http://localhost:5000/api/users/${editingUser.id}`,
+        editFormData
+      );
+      setAccounts((prev) =>
+        prev.map((acc) =>
+          acc.id === editingUser.id ? { ...acc, ...editFormData } : acc
+        )
+      );
       setShowEditModal(false);
     } catch (err) {
       setEditError("Failed to update user details.");
@@ -79,17 +113,17 @@ const UserAdminTable = () => {
     setEditFormData({ ...editFormData, [e.target.name]: e.target.value });
   };
 
-  const filteredAccounts = accounts.filter((account) =>
-    (filterRole === "All" || account.role === filterRole) &&
-    (account.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      account.email.toLowerCase().includes(searchTerm.toLowerCase()))
+  const filteredAccounts = accounts.filter(
+    (account) =>
+      (filterRole === "All" || account.role === filterRole) &&
+      (account.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        account.email.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   return (
     <Container className={`acctbl-container ${theme}`}>
-
       <header>
-      <h1 className="Table-title">Account Management</h1>
+        <h1 className="Table-title">Account Management</h1>
       </header>
 
       <div className="acctbl-controls">
@@ -109,12 +143,15 @@ const UserAdminTable = () => {
           <option value="User">User</option>
           <option value="Admin">Admin</option>
         </Form.Select>
-        <Button onClick={() => setShowAdminModal(true)} className="acctbl-create-btn">
+        <Button
+          onClick={() => setShowAdminModal(true)}
+          className="acctbl-create-btn"
+        >
           <Plus size={16} />
         </Button>
       </div>
 
-      {loading && <Spinner animation="border" />} 
+      {loading && <Spinner animation="border" />}
       {error && <Alert variant="danger">{error}</Alert>}
 
       <Table className="acctbl-table">
@@ -136,10 +173,16 @@ const UserAdminTable = () => {
                 <td>{account.email}</td>
                 <td>{account.role}</td>
                 <td>
-                  <button className="acctbl-create-btn" onClick={() => handleEdit(account)}>
+                  <button
+                    className="acctbl-create-btn"
+                    onClick={() => handleEdit(account)}
+                  >
                     <Pencil size={16} />
                   </button>
-                  <button className="acctbl-create-btn" onClick={() => handleDelete(account.id)}>
+                  <button
+                    className="acctbl-create-btn"
+                    onClick={() => handleDelete(account.id)}
+                  >
                     <Trash2 size={16} />
                   </button>
                 </td>
@@ -153,31 +196,61 @@ const UserAdminTable = () => {
         </tbody>
       </Table>
 
+      {/* Admin Creation Modal */}
       <Modal show={showAdminModal} onHide={() => setShowAdminModal(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Create Admin</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <AdminCreationForm onClose={() => setShowAdminModal(false)} onAddAdmin={handleAddAdmin} />
+          <AdminCreationForm
+            onClose={() => setShowAdminModal(false)}
+            onAddAdmin={handleAddAdmin}
+          />
         </Modal.Body>
       </Modal>
 
+      {/* Edit User Modal */}
       <Modal show={showEditModal} onHide={() => setShowEditModal(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Edit User</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form onSubmit={handleEditSubmit}>
-            <Form.Group>
+            <Form.Group className="mb-3">
+              {" "}
+              {/* Added Bootstrap margin-bottom class */}
               <Form.Label>Username</Form.Label>
-              <Form.Control name="username" value={editFormData.username} onChange={handleInputChange} />
+              <Form.Control
+                name="username"
+                value={editFormData.username}
+                onChange={handleInputChange}
+              />
             </Form.Group>
-            <Form.Group>
+            <Form.Group className="mb-3">
+              {" "}
+              {/* Added Bootstrap margin-bottom class */}
               <Form.Label>Email</Form.Label>
-              <Form.Control name="email" value={editFormData.email} onChange={handleInputChange} />
+              <Form.Control
+                name="email"
+                value={editFormData.email}
+                onChange={handleInputChange}
+              />
             </Form.Group>
             {editError && <Alert variant="danger">{editError}</Alert>}
-            <Button type="submit" className="acctbl-create-btn">Save Changes</Button>
+            <Modal.Footer>
+              {" "}
+              {/* Moved buttons into Modal.Footer for proper styling */}
+              <Button type="submit" className="acctbl-create-btn">
+                Save Changes
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => setShowEditModal(false)}
+                className="acctbl-cancel-btn"
+              >
+                Cancel
+              </Button>
+            </Modal.Footer>
           </Form>
         </Modal.Body>
       </Modal>

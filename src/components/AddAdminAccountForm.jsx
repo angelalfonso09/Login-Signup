@@ -63,11 +63,10 @@ const AdminCreationForm = ({ onClose, onAddAdmin }) => {
 
   return (
     <Container>
-      <Card className="admin-form-card">
         <Card.Body>
           <Form onSubmit={handleSubmit}>
             <Form.Group className="admin-form-group">
-              <Form.Label>Admin Username</Form.Label>
+              <Form.Label className="admin-form-label">Admin Username</Form.Label>
               <Form.Control
                 type="text"
                 name="username"
@@ -79,7 +78,7 @@ const AdminCreationForm = ({ onClose, onAddAdmin }) => {
             </Form.Group>
 
             <Form.Group className="admin-form-group">
-              <Form.Label>Email</Form.Label>
+              <Form.Label className="admin-form-label">Email</Form.Label>
               <Form.Control
                 type="email"
                 name="email"
@@ -91,7 +90,7 @@ const AdminCreationForm = ({ onClose, onAddAdmin }) => {
             </Form.Group>
 
             <Form.Group className="admin-form-group">
-              <Form.Label>Password</Form.Label>
+              <Form.Label className="admin-form-label">Password</Form.Label>
               <Form.Control
                 type="password"
                 name="password"
@@ -103,7 +102,7 @@ const AdminCreationForm = ({ onClose, onAddAdmin }) => {
             </Form.Group>
 
             <Form.Group className="admin-form-group">
-              <Form.Label>Confirm Password</Form.Label>
+              <Form.Label className="admin-form-label">Confirm Password</Form.Label>
               <Form.Control
                 type="password"
                 name="confirmPassword"
@@ -116,7 +115,7 @@ const AdminCreationForm = ({ onClose, onAddAdmin }) => {
 
             {/* Dropdown for Role Selection */}
             <Form.Group className="admin-form-group">
-              <Form.Label>Role</Form.Label>
+              <Form.Label className="admin-form-label">Role</Form.Label>
               <Form.Control
                 as="select"
                 name="role"
@@ -138,7 +137,6 @@ const AdminCreationForm = ({ onClose, onAddAdmin }) => {
             </div>
           </Form>
         </Card.Body>
-      </Card>
     </Container>
   );
 };

@@ -1,8 +1,8 @@
 :root[data-theme='light'] {
-  --background-main: #f9f9f9;
+  --background-main: #98bad5;
   --background-modal: #ffffff;
-  --text-primary: #333333;
-  --text-secondary: #555555;
+  --text-primary: white;
+  --text-secondary: white;
   --button-bg: #4caf50;
   --button-hover: #45a049;
   --modal-close-bg: #f44336;
@@ -10,14 +10,14 @@
 }
 
 :root[data-theme='dark'] {
-  --background-main: #1e1e1e;
+  --background-main: #2f2f31;
   --background-modal:  #0a0a1a;
   --text-primary: #ffffff;
   --text-secondary: #cccccc;
-  --button-bg: #4caf50;
-  --button-hover: #388e3c;
-  --modal-close-bg: #f44336;
-  --modal-close-hover: #c62828;
+  --button-bg: #222;
+  --button-hover: #5a6268;
+  --modal-close-bg: #6c757d;
+  --modal-close-hover: #dc3545;
 }
 
 .estab-sensors-wrapper{
@@ -82,7 +82,11 @@
   justify-content: center;
   align-items: center;
   z-index: 10;
-  overflow: hidden;
+  overflow-y: scroll;
+}
+
+estab-modal::-webkit-scrollbar {
+    display: none; 
 }
 
 .estab-modal-content {
@@ -110,27 +114,31 @@ estab-modal-content::-webkit-scrollbar {
 }
 
 .estab-modal-title {
-  font-size: 1.2rem;
+  font-size: 1.4rem;
   font-weight: bold;
   margin-bottom: 0.5rem;
   color: var(--text-primary);
 }
 
 .estab-modal-description {
-  font-size: 1rem;
+  font-size: 1.1rem;
   color: var(--text-secondary);
 }
 
 .estab-sensor-list {
   margin-top: 1rem;
   flex-grow: 1;
-  overflow-y: auto;
+  overflow-y: scroll;
   display: flex;
   justify-content: center;
   align-items: center;
   margin: 2rem;
   flex-wrap: wrap;
   gap: 1.5rem;
+}
+
+.estab-sensor-list::-webkit-scrollbar {
+    display: none; 
 }
 
 .estab-sensor-item {

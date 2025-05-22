@@ -5,6 +5,7 @@
   height: 100vh;
   background: var(--bg-color);
   color: var(--text-color);
+  transition: background-color 0.3s ease;
 }
 
 .dbContainer {
@@ -161,18 +162,18 @@ overflow: hidden;
 }
 
 .addEstablishmentContainer button {
-  background-color: #007bff; /* Primary blue color */
+  background-color: #222; /* Primary blue color */
   color: white;
   border: none;
   padding: 10px 20px;
   border-radius: 8px;
   cursor: pointer;
   font-size: 16px;
-  transition: background-color 0.3s ease;
 }
 
+
 .addEstablishmentContainer button:hover {
-  background-color: #0056b3;
+  background-color: #5a6268;
 }
 
 /* Add Establishment Form */
@@ -233,16 +234,16 @@ overflow: hidden;
 }
 
 .addEstablishmentForm .formButtons button:first-child:hover {
-  background-color: #1e7e34;
+  background-color: #2e7d32;
 }
 
 .addEstablishmentForm .formButtons button:last-child {
-  background-color: #dc3545; /* Danger red */
+  background-color: #6c757d; /* Danger red */
   color: white;
 }
 
 .addEstablishmentForm .formButtons button:last-child:hover {
-  background-color: #c82333;
+  background-color: #dc3545;
 }
 
 /* Establishment Sensors Container */

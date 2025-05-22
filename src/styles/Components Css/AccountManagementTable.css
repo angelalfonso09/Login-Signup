@@ -2,69 +2,108 @@
     --acctbl-title-font-size: 22px;
     --acctbl-title-font-weight: 600;
     --acctbl-title-margin-bottom: 15px;
+
     --acctbl-title-color-light: #000;
     --acctbl-title-color-dark: #f8f9fa;
+    --acctbl-border-light: #ddd;
+    --acctbl-border-dark: #555;
 
     --acctbl-controls-gap: 10px;
     --acctbl-controls-margin-bottom: 15px;
     --acctbl-controls-height: 40px;
-    --acctbl-controls-bg-light: #f8f9fa;
-    --acctbl-controls-bg-dark: #2d2d44;
+    --acctbl-controls-bg-light: transparent;
+    --acctbl-controls-bg-dark: transparent;
 
     --acctbl-input-padding: 8px;
     --acctbl-input-radius: 5px;
+    --acctbl-input-padding-new: 8px 12px;
+    --acctbl-input-radius-new: 8px;
 
     --acctbl-table-border: 1px solid;
     --acctbl-table-padding: 10px;
     --acctbl-table-text-align: center;
+    --acctbl-table-bg-light: #ffffff;
+    --acctbl-th-bg-light: #f1f1f1;
+    --acctbl-td-bg-light: #ffffff;
+    --acctbl-table-bg-dark-new: #20202e;
+    --acctbl-th-bg-dark-new: #2d2d44;
+    --acctbl-td-bg-dark-new: #20202e;
+    --acctbl-border-dark-new: #404055;
+
 
     --acctbl-btn-padding: 8px 12px;
     --acctbl-btn-radius: 5px;
     --acctbl-btn-cursor: pointer;
+    --acctbl-btn-padding-new: 8px 16px;
+    --acctbl-btn-radius-new: 8px;
+    --acctbl-btn-font-size-new: 0.9rem;
+    --acctbl-btn-transition-new: all 0.2s ease-in-out;
 
-    --acctbl-table-bg-light: #ffffff;
 
-    --acctbl-th-bg-light: #f1f1f1;
+    --acctbl-container-radius: 10px;
+    --acctbl-shadow-dark: 0 4px 8px rgba(0, 0, 0, 0.2);
+    --acctbl-shadow-light: 0 2px 4px rgba(0, 0, 0, 0.1);
 
-    --acctbl-td-bg-light: #ffffff;
 
-    --acctbl-border-light: #ddd;
-    --acctbl-border-dark: #555;
+    --acctbl-button-hover-dark: #3a3a50;
+    --acctbl-button-bg-dark: #4a4a60;
+    --acctbl-edit-btn-dark: #2e7d32;
+    --acctbl-edit-btn-hover-dark: #388e3c;
+    --acctbl-delete-btn-dark: #dc3545;
+    --acctbl-delete-btn-hover-dark: #e53935;
+
+
+    --modal-bg-light: #ffffff;
+    --modal-bg-dark: #2d2d44;
+    --modal-header-border-light: #dee2e6;
+    --modal-header-border-dark: #4a4a60;
+    --modal-close-color-light: #000;
+    --modal-close-color-dark: #f8f9fa;
+    --modal-create-btn-bg: #2e7d32;
+    --modal-create-btn-hover: #218838;
+    --modal-cancel-btn-bg: #6c757d;
+    --modal-cancel-btn-hover: #dc3545;
 }
 
-/* Apply Variables */
+/* ------------------------------------------- */
+/* GLOBAL & CONTAINER            */
+/* ------------------------------------------- */
 .acctbl-container {
-    background: var(--acctbl-container-bg-light);
-    flex-direction: column;
+    padding: 30px;
+    box-sizing: border-box;
+    border-radius: var(--acctbl-container-radius);
+    transition: background-color 0.3s ease, color 0.3s ease;
     height: fit-content;
-    width: 100%;
-    display: flex; 
+    margin-top: 50px;
+    height: fit-content;
 }
 
-header{
+
+.acctbl-container.light {
+    background-color: #ffffff;
+    color: #000;
+    box-shadow: var(--acctbl-shadow-light);
+}
+
+.acctbl-container.dark {
+    background: #2f2f31;
+    color: var(--acctbl-title-color-dark);
+    box-shadow: var(--acctbl-shadow-dark);
+}
+
+/* ------------------------------------------- */
+/* HEADER                     */
+/* ------------------------------------------- */
+header {
     width: 100%;
     margin-bottom: 30px;
 }
 
-.Table-title{
+.Table-title {
     font-size: 2rem;
     font-weight: 700;
-}
-
-.acctbl-container{
-    width: 100%;
-    margin-top: 50px;
-    display: flex;
-    justify-content: start;
-
-}
-.acctbl-container.light {
-    background-color: #ffffff;
-    color: #000;
-  }
-
-.acctbl-container.dark {
-    background: transparent;
+    color: inherit;
+    margin-left: 10px;
 }
 
 .acctbl-title {
@@ -79,56 +118,116 @@ header{
     color: var(--acctbl-title-color-dark);
 }
 
+/* ------------------------------------------- */
+/* CONTROLS (SEARCH & FILTER)         */
+/* ------------------------------------------- */
 .acctbl-controls {
     display: flex;
     justify-content: space-between;
     gap: var(--acctbl-controls-gap);
-    margin-bottom: var(--acctbl-controls-margin-bottom);
+    margin-bottom: 20px;
     height: var(--acctbl-controls-height);
     background: var(--acctbl-controls-bg-light);
-    border-radius: var(--acctbl-container-radius);
+    border-radius: var(--acctbl-input-radius-new);
+    align-items: center;
+    padding: 0 10px;
+    box-shadow: var(--acctbl-shadow-light);
 }
 
 .acctbl-container.dark .acctbl-controls {
-    background: transparent;
+    background: var(--acctbl-controls-bg-dark);
+    box-shadow: var(--acctbl-shadow-dark);
 }
 
 .acctbl-search,
 .acctbl-filter {
     flex: 1;
-    padding: var(--acctbl-input-padding);
-    border-radius: var(--acctbl-input-radius);
+    padding: var(--acctbl-input-padding-new);
+    border-radius: var(--acctbl-input-radius-new);
     background: var(--acctbl-table-bg-light);
     color: var(--acctbl-title-color-light);
-    border: 1px solid var(--acctbl-table-border-light);
+    border: 1px solid var(--acctbl-border-light);
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
+.acctbl-container.dark .acctbl-search,
 .acctbl-container.dark .acctbl-filter {
-    background: var(--acctbl-table-bg-dark);
+    background: #2a2a2a;
     color: var(--acctbl-title-color-dark);
-    border: 1px solid var(--acctbl-table-border-dark);
+    border: 1px solid var(--acctbl-border-dark-new);
 }
 
+.acctbl-search:focus,
+.acctbl-filter:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.acctbl-container.dark .acctbl-search:focus,
+.acctbl-container.dark .acctbl-filter:focus {
+    border-color: #6a92ed;
+    box-shadow: 0 0 0 0.2rem rgba(106, 146, 237, 0.25);
+}
+
+.acctbl-search::placeholder,
+.acctbl-filter::placeholder {
+    color: #6c757d;
+    opacity: 1;
+}
+
+.acctbl-container.dark .acctbl-search::placeholder,
+.acctbl-container.dark .acctbl-filter::placeholder {
+    color: #b0b3b8;
+    opacity: 1;
+}
+
+
+/* ------------------------------------------- */
+/* TABLE                     */
+/* ------------------------------------------- */
 .acctbl-table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: var(--acctbl-container-radius);
+    overflow-y: scroll;
+    box-shadow: var(--acctbl-shadow-light);
     background: var(--acctbl-table-bg-light);
     color: var(--acctbl-title-color-light);
+    height: fit-content;
+}
+
+.acctbl-table::-webkit-scrollbar {
+    display: none;
 }
 
 .acctbl-container.dark .acctbl-table {
-    background: var(--acctbl-table-bg-dark);
+    background: var(--acctbl-table-bg-dark-new);
     color: var(--acctbl-title-color-dark);
+    box-shadow: var(--acctbl-shadow-dark);
+}
+
+.acctbl-table th,
+.acctbl-table td {
+    padding: var(--acctbl-table-padding);
+    text-align: left;
+    border-bottom: var(--acctbl-table-border) var(--acctbl-border-light);
+    transition: background-color 0.2s ease;
 }
 
 .acctbl-table th {
     background: var(--acctbl-th-bg-light);
     color: var(--acctbl-title-color-light);
-    border: 1px solid var(--acctbl-border-light);
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+    z-index: 1;
 }
 
 .acctbl-container.dark .acctbl-table th {
-    background: var(--acctbl-th-bg-dark);
+    background: var(--acctbl-th-bg-dark-new);
     color: var(--acctbl-title-color-dark);
     border: 1px solid var(--acctbl-border-dark);
 }
@@ -136,31 +235,45 @@ header{
 .acctbl-table td {
     background: var(--acctbl-td-bg-light);
     color: var(--acctbl-title-color-light);
-    border: 1px solid var(--acctbl-border-light);
     text-align: center;
 }
 
-.acctbl-table td button {
-    display: inline-flex; 
-    justify-content: center;
-    margin: 0 5px; 
-}
-
 .acctbl-container.dark .acctbl-table td {
-    background: var(--acctbl-td-bg-dark);
+    background: var(--acctbl-td-bg-dark-new);
     color: var(--acctbl-title-color-dark);
-    border: 1px solid var(--acctbl-border-dark);
+    border: 1px solid var(--acctbl-border-dark-new);
 }
 
+.acctbl-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.acctbl-table tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.03);
+}
+
+.acctbl-container.dark .acctbl-table tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+
+/* ------------------------------------------- */
+/* BUTTONS                     */
+/* ------------------------------------------- */
 .acctbl-create-btn {
     border: none;
-    padding: var(--acctbl-btn-padding);
-    border-radius: var(--acctbl-btn-radius);
+    padding: var(--acctbl-btn-padding-new);
+    border-radius: var(--acctbl-btn-radius-new);
     cursor: var(--acctbl-btn-cursor);
+    font-size: var(--acctbl-btn-font-size-new);
+    transition: var(--acctbl-btn-transition-new);
+    display: flex;
+    align-items: center;
+    gap: 5px;
 }
 
 .acctbl-container.light .acctbl-create-btn {
-    background: var(--acctbl-button-bg-light,#007bff);
+    background: var(--acctbl-button-bg-light, #007bff);
     color: white;
 }
 
@@ -169,35 +282,252 @@ header{
 }
 
 .acctbl-container.dark .acctbl-create-btn {
-    background: #E0E0E0;
+    background: var(--acctbl-button-bg-dark);
     color: white;
+    box-shadow: var(--acctbl-shadow-dark);
 }
 
 .acctbl-container.dark .acctbl-create-btn:hover {
-    background: #d6d6d6;
+    background: var(--acctbl-button-hover-dark);
 }
 
 .acctbl-create-btn i,
 .acctbl-create-btn svg {
-    color: white; 
+    color: inherit;
+    vertical-align: middle;
 }
 
-.acctbl-container.dark .acctbl-create-btn i,
-.acctbl-container.dark .acctbl-create-btn svg {
-    color: black;
+.acctbl-table td button {
+    display: inline-flex;
+    justify-content: center;
+    margin: 0 5px;
+    padding: 6px 10px;
+    border-radius: var(--acctbl-btn-radius-new);
+    border: none;
+    font-size: var(--acctbl-btn-font-size-new);
+    align-items: center;
 }
 
-.acctbl-search::placeholder,
-.acctbl-filter::placeholder {
-    color: #6c757d; 
-    opacity: 1; 
+.acctbl-container.dark .acctbl-table td .acctbl-create-btn:nth-of-type(1) {
+    background: var(--acctbl-edit-btn-dark);
+    color: white;
 }
 
-.acctbl-container.dark .acctbl-search::placeholder,
-.acctbl-container.dark .acctbl-filter::placeholder {
-    color: #b0b3b8; 
+.acctbl-container.dark .acctbl-table td .acctbl-create-btn:nth-of-type(1):hover {
+    background: var(--acctbl-edit-btn-hover-dark);
+}
+
+.acctbl-container.dark .acctbl-table td .acctbl-create-btn:nth-of-type(2) {
+    background: var(--acctbl-delete-btn-dark);
+    color: white;
+}
+
+.acctbl-container.dark .acctbl-table td .acctbl-create-btn:nth-of-type(2):hover {
+    background: var(--acctbl-delete-btn-hover-dark);
+}
+
+/* ------------------------------------------- */
+/* SPINNER & ALERT             */
+/* ------------------------------------------- */
+.spinner-border {
+    color: #007bff;
+    margin: 20px auto;
+    display: block;
+}
+
+.acctbl-container.dark .spinner-border {
+    color: #6a92ed;
+}
+
+.alert {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: var(--acctbl-input-radius-new);
+    font-weight: 500;
+}
+
+.alert-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.acctbl-container.dark .alert-danger {
+    background-color: #4e2b30;
+    color: #f7a7ab;
+    border: 1px solid #7c3f46;
+}
+
+
+/* ------------------------------------------- */
+/* MODALS                    */
+/* ------------------------------------------- */
+/* Base Modal Container - applies to Bootstrap's .modal-content */
+.modal-content {
+    border-radius: var(--acctbl-container-radius);
+    background-color: var(--modal-bg-light);
+    color: var(--acctbl-title-color-light);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body.dark .modal-content {
+    background-color: var(--modal-bg-dark);
+    color: var(--acctbl-title-color-dark);
+    box-shadow: var(--acctbl-shadow-dark);
+}
+
+.modal-header {
+    border-bottom: 1px solid var(--modal-header-border-light);
+    padding: 15px 20px;
+}
+
+body.dark .modal-header {
+    border-bottom: 1px solid var(--modal-header-border-dark);
+}
+
+.modal-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: inherit;
+}
+
+.modal-header .btn-close {
+    background: transparent url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23000'%3e%3cpath d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414z'/%3e%3c/svg%3e") center / 1em auto no-repeat;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+    border: 0;
+    border-radius: .25rem;
+    padding: .5rem;
+    margin: -.5rem -.5rem -.5rem auto;
+}
+
+.modal-header .btn-close:hover {
     opacity: 1;
 }
 
+body.dark .modal-header .btn-close {
+    background: transparent url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23f8f9fa'%3e%3cpath d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414z'/%3e%3c/svg%3e") center / 1em auto no-repeat;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.modal-body .form-group {
+    margin-bottom: 15px;
+}
+
+.modal-body .form-label {
+    font-weight: 500;
+    margin-bottom: 8px;
+    display: block;
+    color: inherit;
+}
+
+.modal-body .form-control {
+    width: 100%;
+    padding: var(--acctbl-input-padding-new);
+    border-radius: var(--acctbl-input-radius-new);
+    border: 1px solid var(--acctbl-border-light);
+    background-color: #f8f9fa;
+    color: var(--acctbl-title-color-light);
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+body.dark .modal-body .form-control {
+    background-color: #20202e;
+    color: var(--acctbl-title-color-dark);
+    border: 1px solid var(--acctbl-border-dark-new);
+}
+
+body.dark .modal-body .form-control::placeholder {
+    color: #b0b3b8;
+    opacity: 1;
+}
+
+.modal-body .form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+body.dark .modal-body .form-control:focus {
+    border-color: #6a92ed;
+    box-shadow: 0 0 0 0.2rem rgba(106, 146, 237, 0.25);
+}
+
+.modal-footer {
+    border-top: 1px solid var(--modal-header-border-light);
+    padding: 15px 20px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
 
 
+body.dark .modal-footer {
+    border-top: 1px solid var(--modal-header-border-dark);
+}
+
+/* Buttons within Modal Footer (assuming they are standard Bootstrap Buttons) */
+.modal-footer .btn {
+    padding: var(--acctbl-btn-padding-new);
+    border-radius: var(--acctbl-btn-radius-new);
+    font-size: var(--acctbl-btn-font-size-new);
+    cursor: pointer;
+    transition: var(--acctbl-btn-transition-new);
+    border: none;
+}
+
+/* Specific styling for the Create Admin / Save Changes button */
+/* Ensure this class is applied to your submit button in AdminCreationForm as well */
+.modal-footer .acctbl-create-btn[type="submit"] {
+    background-color: var(--modal-create-btn-bg);
+    color: white;
+    box-shadow: var(--acctbl-shadow-light);
+}
+
+.modal-footer .acctbl-create-btn[type="submit"]:hover {
+    background-color: var(--modal-create-btn-hover);
+}
+
+/* Dark Theme for Create/Save Button */
+body.dark .modal-footer .acctbl-create-btn[type="submit"] {
+    background-color: var(--modal-create-btn-bg);
+    /* Still green for dark theme */
+    color: white;
+    box-shadow: var(--acctbl-shadow-dark);
+}
+
+body.dark .modal-footer .acctbl-create-btn[type="submit"]:hover {
+    background-color: var(--modal-create-btn-hover);
+}
+
+/* Styling for the Cancel button */
+/* Add `acctbl-cancel-btn` class to your cancel button in AdminCreationForm's footer */
+.modal-footer .btn-secondary,
+.modal-footer .acctbl-cancel-btn {
+    background-color: var(--modal-cancel-btn-bg);
+    /* Gray background */
+    color: white;
+    box-shadow: var(--acctbl-shadow-light);
+}
+
+.modal-footer .btn-secondary:hover,
+.modal-footer .acctbl-cancel-btn:hover {
+    background-color: var(--modal-cancel-btn-hover);
+}
+
+/* Dark Theme for Cancel Button */
+body.dark .modal-footer .btn-secondary,
+body.dark .modal-footer .acctbl-cancel-btn {
+    background-color: var(--modal-cancel-btn-bg);
+    /* Still gray for dark theme */
+    color: white;
+    box-shadow: var(--acctbl-shadow-dark);
+}
+
+body.dark .modal-footer .btn-secondary:hover,
+body.dark .modal-footer .acctbl-cancel-btn:hover {
+    background-color: var(--modal-cancel-btn-hover);
+}

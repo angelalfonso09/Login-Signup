@@ -7,6 +7,7 @@
   flex-direction: column;
   justify-content: space-between;
   padding: 20px;
+    transition: background-color 0.3s ease;
 }
 
 .User {
@@ -96,4 +97,73 @@ padding-bottom: 1rem;
   background-color: var(--sidebar-indicator);
   position: absolute;
   left: 0;
+}
+
+
+
+
+
+/* In your CSS file (e.g., Sidebar.css or a new Modal.css) */
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000; /* Ensure it's above other content */
+}
+
+.modal-content {
+    background-color: var(--background-color-light); /* Use theme variables for background */
+    color: var(--text-color); /* Use theme variables for text color */
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+}
+
+.modal-content h3 {
+    margin-top: 0;
+    color: var(--primary-color); /* Optional: use a primary color for heading */
+}
+
+.modal-actions {
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-around;
+    gap: 10px; /* Space between buttons */
+}
+
+.modal-actions button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+}
+
+.modal-actions button:first-child { /* Send Request button */
+    background-color: #007bff; /* Example blue */
+    color: white;
+}
+
+.modal-actions button:first-child:hover {
+    background-color: #0056b3;
+}
+
+.modal-actions button:last-child { /* Cancel button */
+    background-color: #6c757d; /* Example gray */
+    color: white;
+}
+
+.modal-actions button:last-child:hover {
+    background-color: #5a6268;
 }

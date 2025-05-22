@@ -1,95 +1,128 @@
+/* Light Mode */
+.admin-form-container.light {
+  --admin-bg-color: #f5f5f5;
+  --admin-card-bg: #fff;
+  --admin-text-color: #000;
+  --admin-input-bg: #fff;
+  --admin-input-border: #ccc;
+  --admin-button-bg: #007bff;
+  --admin-button-hover: #0056b3;
+}
+
+/* Dark Mode */
+.admin-form-container.dark {
+  --admin-bg-color: #121212;
+  --admin-card-bg: white;
+  --admin-text-color: #fff;
+
+  --admin-input-border: rgba(255, 255, 255, 0.2);
+  --admin-button-bg: #444;
+  --admin-button-hover: #666;
+}
+
 /* Base styles */
 .admin-form-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
   width: 100%;
-  background-color: var(--bg-color);
+  background-color: var(--admin-bg-color);
   transition: background 0.3s ease;
 }
 
-/* Card */
+/* Styling for the card container that wraps the form */
 .admin-form-card {
-  background: var(--card-bg);
-  padding: 20px; /* Reduced padding */
+  background-color: var(--admin-card-bg);
+  color: var(--admin-text-color);
   border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-  color: var(--text-color);
-  transition: background 0.3s ease, color 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px; /* Increased padding for better appearance */
   width: 100%;
+  max-width: 450px; /* Max width for the card */
 }
 
-/* Form Title */
+.admin-form-body {
+  /* No specific styles needed here, just a wrapper for the form content */
+}
+
 .admin-form-title {
   text-align: center;
-  font-size: 20px; /* Reduced font size */
+  font-size: 20px;
   font-weight: bold;
-  margin-bottom: 15px; /* Reduced margin */
+  margin-bottom: 15px;
 }
 
-/* Labels */
 .admin-form-label {
   font-weight: bold;
-  font-size: 14px; /* Reduced font size */
+  font-size: 14px;
   display: block;
-  margin-bottom: 3px;
+  font-size: 1rem;
+  padding-top: 10px;
 }
 
-/* Input Fields */
 .admin-form-input {
   width: 100%;
-  padding: 8px; /* Reduced padding */
+  padding: 8px;
   margin-top: 3px;
-  background: var(--input-bg);
-  border: 1px solid var(--input-border);
+  background: var(--admin-input-bg);
+  border: 1px solid var(--admin-input-border);
   border-radius: 5px;
-  color: var(--text-color);
-  font-size: 14px; /* Reduced font size */
+  color: var(--admin-text-color);
+  font-size: 14px;
   transition: border-color 0.3s ease;
 }
 
 .admin-form-input::placeholder {
-  color: rgba(255, 255, 255, 0.5);
+  color: #b0b3b8;
 }
 
 .admin-form-input:focus {
-  border-color: var(--button-bg);
+  border-color: var(--admin-button-bg);
   outline: none;
+}
+
+/* Messages (error and success) */
+.text-danger {
+  color: #dc3545; /* Bootstrap's danger color */
+  margin-top: 1rem;
+}
+
+.text-success {
+  color: #28a745; /* Bootstrap's success color */
+  margin-top: 1rem;
 }
 
 /* Buttons */
 .admin-form-buttons {
   display: flex;
-  justify-content: space-between;
-  margin-top: 15px; /* Reduced margin */
+  justify-content: flex-end; /* Changed to flex-end to align buttons to the right */
+  margin-top: 15px;
+  gap: 10px;
 }
 
 .admin-form-submit {
-  width: 48%;
-  padding: 8px; /* Reduced padding */
-  background: var(--button-bg);
+  padding: 8px 15px; /* Added horizontal padding */
+  background: var(--admin-button-bg);
   color: white;
   border: none;
   border-radius: 5px;
-  font-size: 14px; /* Reduced font size */
+  font-size: 14px;
   cursor: pointer;
   transition: background 0.3s, transform 0.2s;
 }
 
 .admin-form-submit:hover {
-  background: var(--button-hover);
+  background: var(--admin-button-hover);
   transform: scale(1.05);
 }
 
 .admin-form-reset {
-  width: 48%;
-  padding: 8px; /* Reduced padding */
+  padding: 8px 15px; /* Added horizontal padding */
   background: #6c757d;
   color: white;
   border: none;
   border-radius: 5px;
-  font-size: 14px; /* Reduced font size */
+  font-size: 14px;
   cursor: pointer;
   transition: background 0.3s, transform 0.2s;
 }
@@ -102,11 +135,12 @@
 /* Responsive Design */
 @media (max-width: 500px) {
   .admin-form-card {
-    padding: 15px; /* Further reduced padding for small screens */
+    padding: 15px;
   }
 
   .admin-form-buttons {
     flex-direction: column;
+    align-items: stretch; /* Stretch buttons to full width */
   }
 
   .admin-form-submit,
@@ -115,4 +149,3 @@
     margin-top: 8px;
   }
 }
-

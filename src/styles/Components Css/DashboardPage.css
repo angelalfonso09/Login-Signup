@@ -1,9 +1,9 @@
 :root[data-theme='light'] {
     --bg-color: #ffffff;
     --text-color: #000000;
-    --card-bg: #ffffff;
-    --card-text: #4a5568;
-    --input-bg: #ffffff;
+    --card-bg: #98bad5;
+    --card-text: white;
+    --input-bg: #F6F5F5;
     --input-text: #4a5568;
     --input-border: #e0e0e0;
   }
@@ -11,7 +11,7 @@
   :root[data-theme='dark'] {
     --bg-color: #121212;
     --text-color: #ffffff;
-    --card-bg: #1f1f1f;
+    --card-bg: #2f2f31;
     --card-text: #e2e8f0;
     --input-bg: #2a2a2a;
     --input-text: #e2e8f0;
@@ -19,7 +19,7 @@
   }
   
   .dashboard-page {
-    background-color: var(--bg-color);
+    background-color: transparent;
     color: var(--text-color);
   }
   
@@ -116,5 +116,6 @@
     margin-bottom: 20px;
     display: flex;
     align-items: center;
+
   }
   

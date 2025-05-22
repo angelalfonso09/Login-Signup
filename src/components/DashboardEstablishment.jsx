@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../styles/Components Css/Establishment.css';
 
 import Turbidity from "../Dashboard Meters/Turbidity";
@@ -11,13 +11,33 @@ import ElectricalCon from "../Dashboard Meters/ElectricalCon";
 
 const EstablishmentSensors = ({ establishmentName, sensors }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [totalSensors, setTotalSensors] = useState(0);
+
+  useEffect(() => {
+    const fetchTotalSensors = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/api/total-sensors');
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
+          throw new Error(`HTTP error! Status: ${response.status}. Message: ${errorData.error || 'Failed to fetch'}`);
+        }
+        const data = await response.json();
+        setTotalSensors(data.totalSensors);
+      } catch (error) {
+        console.error("Error fetching total sensors:", error);
+        setTotalSensors(0); // fallback on error
+      }
+    };
+
+    fetchTotalSensors();
+  }, []);
 
   return (
     <div className="estab-sensors-wrapper">
       <div className="estab-sensors-container">
         <div className="estab-info">
-          <h2 className="estab-name">{establishmentName} </h2>
-          <p className="estab-sensor-count">Total Sensors: {sensors ? sensors.length : 7}</p>
+          <h2 className="estab-name">{establishmentName}</h2>
+          <p className="estab-sensor-count">Total Sensors: {sensors ? sensors.length : totalSensors}</p>
         </div>
         <button onClick={() => setIsOpen(true)} className="estab-details-button">
           Details
@@ -31,45 +51,18 @@ const EstablishmentSensors = ({ establishmentName, sensors }) => {
                 <p className="estab-modal-description">
                   List of sensors for {establishmentName}
                   <br />
-                  Total Sensors: {sensors ? sensors.length : 7}
+                  Total Sensors: {sensors ? sensors.length : totalSensors}
                 </p>
               </div>
 
               <div className="estab-sensor-list">
-                <div className="meterWidget">
-                  <div className="meterLabel">Turbidity</div>
-                  <Turbidity />
-                </div>
-
-                <div className="meterWidget">
-                  <div className="meterLabel">Temperature</div>
-                  <Temperature />
-                </div>
-
-                <div className="meterWidget">
-                  <div className="meterLabel">Salinity</div>
-                  <Salinity />
-                </div>
-
-                <div className="meterWidget">
-                  <div className="meterLabel">Conductivity</div>
-                  <Conductivity />
-                </div>
-
-                <div className="meterWidget">
-                  <div className="meterLabel">Total Dissolved Solids (TDS)</div>
-                  <Tds />
-                </div>
-
-                <div className="meterWidget">
-                  <div className="meterLabel">pH Level</div>
-                  <Ph />
-                </div>
-
-                <div className="meterWidget">
-                  <div className="meterLabel">Electrical Conductivity (Compensated)</div>
-                  <ElectricalCon />
-                </div>
+                <div className="meterWidget"><div className="meterLabel">Turbidity</div><Turbidity /></div>
+                <div className="meterWidget"><div className="meterLabel">Temperature</div><Temperature /></div>
+                <div className="meterWidget"><div className="meterLabel">Salinity</div><Salinity /></div>
+                <div className="meterWidget"><div className="meterLabel">Conductivity</div><Conductivity /></div>
+                <div className="meterWidget"><div className="meterLabel">Total Dissolved Solids (TDS)</div><Tds /></div>
+                <div className="meterWidget"><div className="meterLabel">pH Level</div><Ph /></div>
+                <div className="meterWidget"><div className="meterLabel">Electrical Conductivity (Compensated)</div><ElectricalCon /></div>
               </div>
 
               <div className="estab-modal-footer">

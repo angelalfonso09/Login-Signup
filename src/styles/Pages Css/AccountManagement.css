@@ -4,6 +4,7 @@
     height: 100vh;
     background: var(--bg-color);
     color: white;
+    transition: background-color 0.3s ease;
   }
   
 
@@ -19,7 +20,7 @@
     display: flex;
     justify-content: start;
     height: 100vh;
-    overflow-y: auto;
+    overflow-y: hidden;
     padding: 20px;
   }
 
