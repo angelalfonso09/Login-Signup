@@ -58,6 +58,47 @@ const Sidebar = () => {
         };
     }, [token]);
 
+    // --- Logout Function ---
+    const handleLogout = async () => {
+        try {
+            // 1. Clear token from local storage
+            localStorage.removeItem("authToken");
+            localStorage.removeItem("userRole"); // Clear user role as well
+            localStorage.removeItem("user"); // <-- ADD THIS LINE
+        localStorage.removeItem("showAccessModalOnLoad"); // <-- ADD THIS LINE
+
+            // 2. Optionally, notify the backend to invalidate the session (if applicable)
+            // This depends on how your backend handles sessions/tokens.
+            // If your backend uses JWTs and validates them on each request,
+            // simply removing the token client-side is often sufficient.
+            // If your backend maintains session state, you might need an API call:
+            /*
+            await fetch("/api/auth/logout", {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${token}`, // Send token for server-side invalidation if needed
+                },
+            });
+            */
+
+            // 3. Reset component state
+            setToken(null);
+            setUsername("");
+
+            // 4. Navigate to login page or home page
+            navigate("/");
+            console.log("User logged out successfully.");
+        } catch (error) {
+            console.error("Error during logout:", error);
+            // Even if logout fails on the server, we should still clear client-side token
+            localStorage.removeItem("authToken");
+            localStorage.removeItem("userRole");
+            setToken(null);
+            setUsername("");
+            navigate("/");
+        }
+    };
+
     return (
         <div className={`sidebar ${theme}`}>
             <div className="menu">
@@ -119,7 +160,8 @@ const Sidebar = () => {
                     <span>Settings</span>
                 </div>
 
-                <div className="menu-item" onClick={() => navigate("/")}>
+                {/* Modified Logout Button to call handleLogout */}
+                <div className="menu-item" onClick={handleLogout}>
                     <FaPowerOff className="icon" />
                     <span>Log out</span>
                 </div>

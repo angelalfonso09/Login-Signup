@@ -1,30 +1,60 @@
 import React, { useState } from "react";
 import { Container, Card, Modal, Form, Button } from "react-bootstrap";
-import LoginForm from "../components/LoginForm";
+import LoginForm from "../components/LoginForm"; // Assuming LoginForm handles the actual authentication
 import SocialLogin from "../components/SocialLogin";
 import "../styles/Login/Login.css";
 import BackgroundLayout from '../components/BackgroundLayout';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate for programmatic navigation
 
 const Login = () => {
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [termsChecked, setTermsChecked] = useState(false);
   const [loginError, setLoginError] = useState("");
+  const navigate = useNavigate(); // Initialize useNavigate hook
 
   const handleCloseTermsModal = () => setShowTermsModal(false);
   const handleShowTermsModal = () => setShowTermsModal(true);
   const handleTermsCheckboxChange = (e) => setTermsChecked(e.target.checked);
 
-  const handleLoginSubmit = (event) => {
-    event.preventDefault();
-    if (!termsChecked) {
-      setLoginError("Please accept the terms and conditions.");
-      return;
+  /**
+   * This function is called by the LoginForm component upon successful authentication.
+   * It receives the authenticated user's role and handles navigation and modal flag setting.
+   * @param {string} userRole - The role of the successfully logged-in user (e.g., "User", "Admin", "Super Admin").
+   */
+  const handleLoginSuccess = (userRole) => {
+    setLoginError(""); // Clear any previous login errors
+
+    // *** CRITICAL: Set a flag in localStorage if the user role is 'User' ***
+    // This flag will be checked by the UserDB component to immediately show the access restricted modal.
+    if (userRole === "User") {
+      localStorage.setItem("showAccessModalOnLoad", "true");
     }
-    // Proceed with login logic here (you might need to pass this down to LoginForm)
-    // For now, let's just log a message
-    console.log("Login submitted with terms accepted!");
-    setLoginError(""); // Clear any previous error
-    // You would typically call your authentication function here
+    // **********************************************************************
+
+    // Navigate the user to their respective dashboard based on their role
+    switch (userRole) {
+      case "Super Admin":
+        navigate("/dashboard", { replace: true }); // Redirect Super Admin to Dashboard
+        break;
+      case "Admin":
+        navigate("/adminDB", { replace: true }); // Redirect Admin to AdminDB
+        break;
+      case "User":
+        navigate("/userDB", { replace: true }); // Redirect User to UserDB
+        break;
+      default:
+        navigate("/", { replace: true }); // Fallback for undefined roles
+        break;
+    }
+  };
+
+  /**
+   * This function is called by the LoginForm component upon authentication failure.
+   * It updates the login error state to display a message to the user.
+   * @param {string} errorMessage - The error message to display.
+   */
+  const handleLoginFailure = (errorMessage) => {
+    setLoginError(errorMessage);
   };
 
   return (
@@ -35,8 +65,18 @@ const Login = () => {
             <h2 className="login-title text-white text-left">Login</h2>
             <p className="login-subtitle text-white text-left">Glad you're back!</p>
 
-            {/* Pass the handleLoginSubmit and termsChecked state down to LoginForm */}
-            <LoginForm onSubmit={handleLoginSubmit} termsChecked={termsChecked} setTermsChecked={setTermsChecked} loginError={loginError} />
+            {/*
+              LoginForm is responsible for handling the email/password inputs and the actual authentication call.
+              It should call onLoginSuccess with the user's role or onLoginFailure with an error message.
+              The termsChecked and setTermsChecked are passed down if LoginForm also handles the checkbox.
+            */}
+            <LoginForm
+              onLoginSuccess={handleLoginSuccess}
+              onLoginFailure={handleLoginFailure}
+              termsChecked={termsChecked}
+              setTermsChecked={setTermsChecked}
+              loginError={loginError} // Pass the error state from Login.jsx
+            />
 
             <div className="login-divider d-flex align-items-center my-3">
               <hr className="login-hr flex-grow-1 text-white" />
@@ -52,18 +92,18 @@ const Login = () => {
               </p>
             </div>
             <div className="login-footer text-center text-muted small">
-              <a href="#" className="login-footer-link" onClick={handleShowTermsModal}>Terms & Conditions</a> 
-              {/* | <a href="#" className="login-footer-link">Support</a> | <a href="#" className="login-footer-link">Customer Care</a> */}
+              <a href="#" className="login-footer-link" onClick={handleShowTermsModal}>Terms & Conditions</a>
             </div>
           </Card.Body>
         </Container>
       </div>
 
+      {/* Terms and Conditions Modal */}
       <Modal show={showTermsModal} onHide={handleCloseTermsModal} centered>
         <Modal.Header closeButton>
           <Modal.Title>Terms and Conditions</Modal.Title>
         </Modal.Header>
-<Modal.Body style={{ maxHeight: '800px', overflowY: 'scroll', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}>
+        <Modal.Body style={{ maxHeight: '800px', overflowY: 'scroll', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}>
           <p>These terms and conditions ("Terms") govern your use of [Your Website/Application Name]. By accessing or using our services, you agree to be bound by these Terms. Please read them carefully.</p>
           <p><strong>1. Acceptance of Terms</strong></p>
           <p>By creating an account or using our services, you acknowledge that you have read, understood, and agree to be bound by these Terms.</p>
@@ -85,7 +125,6 @@ const Login = () => {
           <p>We reserve the right to modify or revise these Terms at any time. Your continued use of our services after any such changes constitutes your acceptance of the new Terms.</p>
           <p><strong>10. Contact Us</strong></p>
           <p>If you have any questions about these Terms, please contact us at [Your Contact Information].</p>
-          {/* Add more terms and conditions content here */}
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleCloseTermsModal}>
