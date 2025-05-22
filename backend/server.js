@@ -114,9 +114,9 @@ app.post("/send-email", async (req, res) => {
   res.json(response);
 });
 
-// verify code function
-app.post("/verify-code", (req, res) => {
-  console.log("Received request:", req.body); // Log request data
+// verify code function (for email verification)
+app.post("/verify-code", async (req, res) => {
+  console.log("Received request:", req.body);
 
   const { email, code } = req.body;
   if (!email || !code) {
@@ -125,95 +125,83 @@ app.post("/verify-code", (req, res) => {
       .json({ error: "Email and verification code are required." });
   }
 
-  // Query the database to find the user
-  const sql = "SELECT * FROM users WHERE email = ?";
-  db.query(sql, [email], (err, results) => {
-    if (err) {
-      console.error("Database error:", err);
-      return res.status(500).json({ error: "Database error." });
-    }
+  try {
+    // Query the database to find the user
+    const [results] = await db.query("SELECT * FROM users WHERE email = ?", [email]);
 
     if (results.length === 0) {
       return res.status(404).json({ error: "User not found." });
     }
 
-    const user = results[0]; // Get user data
+    const user = results[0];
 
     // Check verification code
     if (user.verification_code !== code) {
       return res.status(400).json({ error: "Invalid verification code." });
     }
 
-    // Update user to set them as verified
-    const updateSql = "UPDATE users SET is_verified = 1 WHERE email = ?";
-    db.query(updateSql, [email], (updateErr) => {
-      if (updateErr) {
-        console.error("Error updating user:", updateErr);
-        return res.status(500).json({ error: "Failed to verify user." });
-      }
+    // Update user to set them as email_verified
+    const [updateResult] = await db.query("UPDATE users SET email_verified = 1, verification_code = NULL WHERE email = ?", [email]); // Set verification_code to NULL after use
 
-      res.json({ success: true, message: "Verification successful!" });
-    });
-  });
+    res.json({ success: true, message: "Email verification successful!" });
+  } catch (err) {
+    console.error("Database error during email verification:", err);
+    res.status(500).json({ error: "Database error during email verification." });
+  }
 });
 
 // Signup function
-app.post("/users", async (req, res) => { // <--- Ensure this outer function is 'async'
-  const {
-    username,
-    email,
-    phone,
-    password,
-    confirmPassword,
-    role = "User",
-  } = req.body;
+app.post("/users", async (req, res) => {
+  const {
+    username,
+    email,
+    phone,
+    password,
+    confirmPassword,
+    role = "User",
+  } = req.body;
 
-  if (!username || !email || !phone || !password || !confirmPassword) {
-    return res.status(400).json({ error: "All fields are required" });
-  }
+  if (!username || !email || !phone || !password || !confirmPassword) {
+    return res.status(400).json({ error: "All fields are required" });
+  }
 
-  if (password !== confirmPassword) {
-    return res.status(400).json({ error: "Passwords do not match" });
-  }
+  if (password !== confirmPassword) {
+    return res.status(400).json({ error: "Passwords do not match" });
+  }
 
-  try {
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
-    const verificationCode = crypto.randomInt(100000, 999999).toString(); // Generate 6-digit code
+  try {
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    const verificationCode = crypto.randomInt(100000, 999999).toString(); // Generate 6-digit code
 
-    const sql =
-      "INSERT INTO users (username, email, phone, password_hash, role, verification_code, is_verified) VALUES ( ?, ?, ?, ?, ?, ?, ?)";
+    const sql =
+      "INSERT INTO users (username, email, phone, password_hash, role, verification_code, is_verified, email_verified) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?)"; // Added email_verified
 
-    // --- MODIFIED: Await db.query directly, no callback needed ---
-    const [result] = await db.query( // <--- Await the promise returned by db.query()
-      sql,
-      [username, email, phone, hashedPassword, role, verificationCode, 0]
-    );
-    // --- END MODIFIED ---
+    const [result] = await db.query(
+      sql,
+      [username, email, phone, hashedPassword, role, verificationCode, 0, 0] // Set email_verified to 0 (false) initially
+    );
 
-    // If db.query was successful, proceed to send email and respond
-    try {
-      await sendVerificationEmail(email, verificationCode);
-      res.json({
-        message:
-          "User registered successfully. Check your email for verification.",
-        userId: result.insertId, // result.insertId is available from the promise result
-      });
-    } catch (emailError) {
-      console.error("Error sending email:", emailError);
-      res.status(500).json({ error: "Failed to send verification email" });
-    }
-  } catch (error) { // This catch block will now handle errors from db.query() and bcrypt.hash()
-    console.error("Error during signup process:", error); // More generic error log
-    // Check if the error is a database error (e.g., duplicate entry)
-    if (error.code && error.code.startsWith('ER_')) { // MySQL error codes start with ER_
+    try {
+      await sendVerificationEmail(email, verificationCode);
+      res.json({
+        message:
+          "User registered successfully. Check your email for verification.",
+        userId: result.insertId,
+      });
+    } catch (emailError) {
+      console.error("Error sending email:", emailError);
+      res.status(500).json({ error: "Failed to send verification email, but user registered. Please contact support." });
+    }
+  } catch (error) {
+    console.error("Error during signup process:", error);
+    if (error.code && error.code.startsWith('ER_')) {
         if (error.code === 'ER_DUP_ENTRY') {
             return res.status(409).json({ error: "User with this username or email already exists." });
         }
         return res.status(500).json({ error: "Database error during signup." });
     }
-    // For other errors (like hashing password)
-    res.status(500).json({ error: "Server error during signup." });
-  }
+    res.status(500).json({ error: "Server error during signup." });
+  }
 });
 
 // Function to send verification email
@@ -237,76 +225,76 @@ async function sendVerificationEmail(to, code) {
 }
 
 // Login function
-app.post("/login", async (req, res) => { // <--- Make the outer function 'async'
-    console.log("Received Data:", req.body);
+// Login function
+app.post("/login", async (req, res) => {
+  console.log("Received Data:", req.body);
 
-    const { username, password } = req.body;
+  const { username, password } = req.body;
 
-    if (!username || !password) {
-        return res.status(400).json({ error: "All fields are required" });
+  if (!username || !password) {
+    return res.status(400).json({ error: "All fields are required" });
+  }
+
+  // Fetch email_verified along with other user data
+  const sql = "SELECT id, username, role, password_hash, is_verified, email_verified FROM users WHERE username = ?";
+
+  try {
+    const [results] = await db.query(sql, [username]);
+
+    if (results.length === 0) {
+      console.log("Login attempt: User not found.");
+      return res.status(400).json({ error: "User not found" });
     }
 
-    const sql = "SELECT id, username, role, password_hash, is_verified FROM users WHERE username = ?";
+    const user = results[0];
+    const isMatch = await bcrypt.compare(password, user.password_hash);
 
-    let connection; // Declare connection for optional pool usage (good practice)
-    try {
-        // Use await with db.query directly, no callback needed for promise-based API
-        const [results] = await db.query(sql, [username]); // <--- Await db.query, destructure results
-
-        if (results.length === 0) {
-            console.log("Login attempt: User not found.");
-            return res.status(400).json({ error: "User not found" });
-        }
-
-        const user = results[0];
-        const isMatch = await bcrypt.compare(password, user.password_hash); // This 'await' is fine now
-
-        if (!isMatch) {
-            console.log("Login attempt: Incorrect password for user:", username);
-            return res.status(400).json({ error: "Incorrect password" });
-        }
-
-        const token = jwt.sign(
-            { id: user.id, role: user.role, isVerified: user.is_verified },
-            process.env.JWT_SECRET,
-            { expiresIn: "1h" }
-        );
-
-        console.log('🔐 Signing with JWT_SECRET:', process.env.JWT_SECRET);
-        console.log("Backend: Generated Auth Token for user:", token);
-
-        let redirectUrl = "/dashboard";
-        if (user.role === "Admin") {
-            redirectUrl = "/adminDB";
-        } else if (user.role === "User") {
-            redirectUrl = "/userDB";
-        }
-
-        const userForFrontend = {
-            id: user.id,
-            username: user.username,
-            role: user.role,
-            isVerified: user.is_verified === 1 // Convert TINYINT(1) to boolean
-        };
-
-        res.json({
-            message: "Login successful",
-            user: userForFrontend,
-            token: token,
-            role: user.role,
-            redirectUrl: redirectUrl,
-        });
-
-    } catch (err) {
-        console.error("Error during login:", err); // Log the actual error
-        res.status(500).json({ error: "Server error during login." });
-    } finally {
-        // If you specifically obtained a connection from the pool for this query, release it.
-        // For a single db.query, you often don't explicitly get/release a connection unless
-        // you're wrapping it in a transaction or complex sequence.
-        // If 'db' is already a pool, it manages connections for db.query calls automatically.
-        // So, 'connection.release()' is likely not needed here unless you explicitly use db.getConnection()
+    if (!isMatch) {
+      console.log("Login attempt: Incorrect password for user:", username);
+      return res.status(400).json({ error: "Incorrect password" });
     }
+
+    // Add a check for email verification status
+    if (user.email_verified === 0) {
+      return res.status(403).json({ error: "Please verify your email address first." });
+    }
+
+    const token = jwt.sign(
+      { id: user.id, role: user.role, isVerified: user.is_verified, emailVerified: user.email_verified }, // Include emailVerified in JWT
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    console.log('🔐 Signing with JWT_SECRET:', process.env.JWT_SECRET);
+    console.log("Backend: Generated Auth Token for user:", token);
+
+    let redirectUrl = "/dashboard";
+    if (user.role === "Admin") {
+      redirectUrl = "/adminDB";
+    } else if (user.role === "User") {
+      redirectUrl = "/userDB";
+    }
+
+    const userForFrontend = {
+      id: user.id,
+      username: user.username,
+      role: user.role,
+      isVerified: user.is_verified === 1, // Convert TINYINT(1) to boolean
+      emailVerified: user.email_verified === 1 // Convert TINYINT(1) to boolean
+    };
+
+    res.json({
+      message: "Login successful",
+      user: userForFrontend,
+      token: token,
+      role: user.role,
+      redirectUrl: redirectUrl,
+    });
+
+  } catch (err) {
+    console.error("Error during login:", err);
+    res.status(500).json({ error: "Server error during login." });
+  }
 });
 
 // Create admin
@@ -372,8 +360,8 @@ app.post("/admin", async (req, res) => {
 // fetch users
 app.get("/api/users", async (req, res) => {
   try {
-    // Corrected: Use await db.query directly and destructure the results
-    const [users] = await db.query("SELECT id, username, email, role, is_verified FROM users");
+    // Fetch email_verified along with other user data
+    const [users] = await db.query("SELECT id, username, email, role, is_verified, email_verified FROM users");
     res.json(users);
   } catch (err) {
     console.error("❌ Error fetching users:", err);
