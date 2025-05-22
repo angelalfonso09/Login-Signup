@@ -1,0 +1,268 @@
+
+.db {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s ease;
+}
+
+.dbContainer {
+  display: flex;
+  flex: 1;
+overflow: hidden;
+}
+
+.dbContents {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column; 
+  gap: 20px;
+  padding: (20,20, 20, 0  );
+  overflow: auto;
+  max-height: calc(100vh - 60px);
+}
+
+.dbContents::-webkit-scrollbar {
+  display: none; 
+}
+
+.meterRowFlex {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+  padding-bottom: 20px; 
+  padding: 2rem;
+}
+
+.meterRowFlex::-webkit-scrollbar {
+  display: none; 
+}
+
+.meterWidget {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--card-bg);
+  padding: 15px; 
+  border-radius: 12px;
+  box-shadow: 0px 4px 10px var(--shadow-color);
+  text-align: center;
+  font-weight: bold;
+  transition: transform 0.2s ease-in-out, box-shadow 0.3s ease-in-out;
+  width: 300px;
+  flex-shrink: 0; 
+}
+
+.meterWidget:hover {
+  transform: scale(1.05);
+  box-shadow: 0px 6px 15px var(--shadow-color);
+}
+
+.meterLabel {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: var(--text-color);
+  width: 100%;
+  text-align: left;
+  padding-left: 10px; 
+}
+
+.establishmentContainer {
+  display: flex;
+  flex-wrap: wrap; 
+  align-items: center;
+  justify-content: center;
+  gap: 20px; 
+  width: 100%; 
+}
+
+
+.establishmentContainer > div {
+  flex: 1 1 calc(33% - 20px); 
+  min-width: 300px; 
+}
+
+
+@media (max-width: 1024px) {
+  .establishmentContainer > div {
+    flex-basis: calc(50% - 20px); 
+  }
+}
+
+@media (max-width: 768px) {
+  .establishmentContainer {
+    flex-direction: column; 
+  }
+
+  .establishmentContainer > div {
+    flex-basis: 100%; 
+    min-width: auto;
+  }
+}
+
+
+@media (max-width: 1024px) {
+  .meterWidget {
+    flex-basis: calc(50% - 20px);
+  }
+}
+
+@media (max-width: 768px) {
+  .meterWidget {
+    flex-basis: 100%;
+    min-width: auto;
+  }
+}
+
+/* Dark theme adjustments (if applicable) */
+.dark .meterWidget {
+  background-color: #333;
+  color: #eee;
+}
+
+.dark .meterLabel {
+  color: #ccc;
+}
+
+/* Responsive adjustments using media queries */
+@media (max-width: 1024px) {
+  .meterWidget {
+    flex-basis: calc(50% - 20px); /* Two widgets per row on medium screens */
+  }
+}
+
+@media (max-width: 768px) {
+  .dbContainer {
+    flex-direction: column; /* Stack sidebar and content vertically */
+  }
+
+  .dbContents {
+    padding: 15px;
+  }
+
+  .meterRowFlex {
+    flex-direction: column; /* Stack meter widgets vertically on small screens */
+  }
+
+  .meterWidget {
+    flex-basis: 100%; /* Each widget takes full width on small screens */
+    min-width: auto; /* Reset minimum width */
+  }
+}
+
+/* Add Establishment button */
+.addEstablishmentContainer {
+  display: flex;
+  justify-content: center; /* Center the button */
+  margin-bottom: 20px; /* Add some space below the button */
+}
+
+.addEstablishmentContainer button {
+  background-color: #222; /* Primary blue color */
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+
+.addEstablishmentContainer button:hover {
+  background-color: #5a6268;
+}
+
+/* Add Establishment Form */
+
+.establishmentsList{
+  display: flex;
+  width: 100%;
+}
+.establishmentSection{
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+}
+
+.addEstablishmentContainer {
+  display: flex;
+  justify-content: start; 
+  align-items: start;
+  margin-bottom: 20px; 
+  margin-left: 1.5%;
+}
+
+.addEstablishmentForm {
+  border-radius: 8px;
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.addEstablishmentForm input {
+  background-color: #343a40;
+  border: none;
+  color: #e0e0e0;
+  padding: 10px;
+  border-radius: 4px;
+  outline: none;
+}
+
+.addEstablishmentForm .formButtons {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.addEstablishmentForm .formButtons button {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+}
+
+.addEstablishmentForm .formButtons button:first-child {
+  color: white;
+}
+
+.addEstablishmentForm .formButtons button:first-child:hover {
+  background-color: #2e7d32;
+}
+
+.addEstablishmentForm .formButtons button:last-child {
+  background-color: #6c757d; /* Danger red */
+  color: white;
+}
+
+.addEstablishmentForm .formButtons button:last-child:hover {
+  background-color: #dc3545;
+}
+
+/* Establishment Sensors Container */
+.establishmentContainer {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Responsive grid */
+  gap: 20px;
+}
+
+/* Styles for the EstablishmentSensors component (assuming it has this class) */
+.establishmentSensors {
+  background-color: #212529;
+  border-radius: 8px;
+  padding: 20px;
+  border: 1px solid #343a40;
+}
+
+.establishmentSensors h4 {
+  font-size: 18px;
+  margin-top: 0;
+  margin-bottom: 10px;
+}

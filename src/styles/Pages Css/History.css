@@ -1,0 +1,150 @@
+.history {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--bg-color);
+  color: white;
+    transition: background-color 0.3s ease;
+}
+
+/* New Wrapper to Contain Buttons & Grids */
+.history-content-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+overflow: hidden; 
+margin-left: 3rem;
+}
+
+.history-title{
+  display: flex;
+  justify-content: end;
+  width: 15%;
+  font-size: 2rem;
+  font-weight: 700;
+  margin-top: 50px;
+}
+
+/* theme.css */
+.light-text {
+  color: #333; 
+}
+
+.dark-text {
+  color: #eee; 
+}
+
+.history-content-wrapper::-webkit-scrollbar {
+  display: none;          
+}
+  
+.history-container {
+  display: flex;
+  flex: 1;
+  overflow: hidden; 
+}
+
+.history-contents {
+  flex: 1;
+  height: 100vh;
+  overflow-y: auto; 
+  padding: 20px;
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;     /* Firefox */
+  /* 3x3 Grid Layout for Graphs */
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, auto);
+  gap: 20px;
+  grid-template-areas: 
+    "filters filters export"
+    "temp ph turbudity"
+    "tds do conductivity";
+}
+
+/* Assign Grid Areas */
+.filter-buttons { grid-area: filters; display: flex; gap: 10px; height: 40px; }
+.export-buttons { grid-area: export; display: flex; justify-content: flex-end; height: 40px; }
+.water-temperature-container { grid-area: temp; }
+.ph-level-container { grid-area: ph; }
+.turbudity-container { grid-area: turbudity; }
+.tds-container { grid-area: tds; }
+.do-container { grid-area: do; }
+.conductivity-container { grid-area: conductivity; }
+
+/* Sensor Chart Styling */
+.history-contents .water-temperature-container,
+.history-contents .ph-level-container,
+.history-contents .turbudity-container,
+.history-contents .tds-container,
+.history-contents .do-container,
+.history-contents .conductivity-container {
+  background-color: #1e1e2f;
+  color: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease-in-out;
+}
+
+/* Hover Effect */
+.history-contents > *:hover {
+  transform: translateY(-5px);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .history-contents {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-areas: 
+      "filters export"
+      "temp ph"
+      "turbudity tds"
+      "do conductivity";
+  }
+}
+
+@media (max-width: 768px) {
+  .history-contents {
+    grid-template-columns: 1fr;
+    grid-template-areas: 
+      "filters"
+      "export"
+      "temp"
+      "ph"
+      "turbudity"
+      "tds"
+      "do"
+      "conductivity";
+  }
+  .export-buttons { justify-content: flex-start; }
+}
+
+.filter-buttons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.filter-buttons button {
+  padding: 10px 15px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  background-color: #222;
+  cursor: pointer;
+  transition: background 0.3s ease-in-out, color 0.3s;
+  color: white;
+}
+
+.filter-buttons button.active {
+  background-color: #5a6268;
+  color: white;
+  font-weight: bold;
+  border-color: #5a6268;
+}
+
+.export-btn{
+    background-color: #222;
+    color: white;
+}

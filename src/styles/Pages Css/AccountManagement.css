@@ -1,0 +1,30 @@
+.account {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background: var(--bg-color);
+    color: white;
+    transition: background-color 0.3s ease;
+  }
+  
+
+  .account-container {
+    display: flex;
+    flex: 1;
+    overflow: hidden; 
+  }
+
+
+  .account-contents {
+    width: 100%;
+    display: flex;
+    justify-content: start;
+    height: 100vh;
+    overflow-y: hidden;
+    padding: 20px;
+  }
+
+.account-contents::-webkit-scrollbar {
+    display: none; 
+}
+

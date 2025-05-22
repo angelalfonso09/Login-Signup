@@ -1,0 +1,135 @@
+:root {
+  --dark-mode-bg: #1e1e2f;
+  --dark-mode-bg-rgba: rgba(30, 30, 47, 1);
+  --light-mode-bg: #f9f9f9;
+  --toggle-slider-light: white;
+  --toggle-slider-dark: #d3d3d3;
+  --toggle-text-light: white;
+  --toggle-text-dark: #f9f9f9;
+  --widget-text-light: #333;
+  --widget-text-dark: #f9f9f9;
+  --toggle-label-light:black;
+  --slider-bg-light: #87CEEB;
+}
+
+[data-theme="dark"] {
+  --custom-toggle-bg-dark: #444444; 
+  --toggle-label-dark:white;
+  --slider-bg-dark: white;
+}
+
+.widget-container {
+  width: 100%;
+  max-width: 300px;
+  padding: 1rem;
+  background-color: var(--dark-mode-bg); 
+  border-radius: 20px;
+  text-align: center;
+  height: 350px;
+}
+
+.widget-container.light {
+  background-color: var(--light-mode-bg);
+}
+
+.toggle-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.custom-toggle {
+  position: relative;
+  width: 200px;
+  height: 42px;
+  background-color: var(--custom-toggle-bg-light);
+  border-radius: 9999px;
+  cursor: pointer;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 15px;
+  margin-top: 3px;
+}
+
+.custom-toggle.dark {
+  background-color: var(--custom-toggle-bg-dark);
+}
+
+.toggle-label {
+  flex: 1;
+  text-align: center;
+  z-index: 2;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: color 0.3s ease;
+  color: var(--toggle-label-light);
+}
+
+.toggle-label.dark{
+  color: var(--toggle-label-dark);
+}
+
+.slider {
+  position: absolute;
+  width: 50%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  border-radius: 9999px;
+  z-index: 1;
+  transition: transform 0.3s ease;
+  background-color: var(--slider-bg-light);
+}
+
+.slider.dark {
+  background-color: var(--slider-bg-dark);
+}
+
+.custom-toggle.connected .slider {
+  transform: translateX(0);
+}
+
+.custom-toggle.disconnected .slider {
+  transform: translateX(100%);
+}
+
+.custom-toggle.connected .connected-label {
+  color: #1e1e2f;
+}
+
+.custom-toggle.disconnected .disconnected-label {
+  color: #1e1e2f;
+}
+
+/* Meter Styling */
+.meter-container {
+  width: 180px;
+  height: 180px;
+  margin: 0 auto 1rem auto;
+}
+
+.temperature-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-weight: bold;
+  color: #2563eb;
+}
+
+.temperature-text .label {
+  font-size: 0.9rem;
+}
+
+.temperature-text .value {
+  font-size: 2.5rem;
+}
+
+.temperature-text .unit {
+  font-size: 1rem;
+}
+
+.water-quality-text {
+  font-size: 0.95rem;
+}

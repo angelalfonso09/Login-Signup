@@ -1,0 +1,169 @@
+/* Sidebar Styles */
+.sidebar {
+  height: 100%;
+  background: var(--sidebar-bg);
+  color: var(--sidebar-text);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 20px;
+    transition: background-color 0.3s ease;
+}
+
+.User {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+margin-bottom: 1.5rem; 
+border-bottom: 1px solid #444; 
+width: 100%;
+padding-top: 1rem;
+padding-right: 1rem;
+padding-bottom: 1rem;
+}
+
+.User h2 {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #eee; 
+  margin-bottom: 0.2rem; 
+  margin-left: 0;
+}
+
+.User h4 {
+  font-size: 1.1rem;
+  color: var(--sidebar-text);
+  margin-top: 0; 
+  margin-left: 0;
+}
+
+/* Optional: Style for the username if you decide to re-introduce it */
+/* .User h1 {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #fff;
+  margin-bottom: 0.1rem;
+} */
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  cursor: pointer;
+  color: var(--sidebar-text-light);
+  font-size: 14px;
+  position: relative;
+  width: 100%;
+}
+
+.menu-item.active {
+  color: var(--sidebar-active);
+  font-weight: bold;
+}
+
+.menu-item.active .active-indicator {
+  position: absolute;
+  right: 0;
+  height: 100%;
+  width: 3px;
+  background: var(--sidebar-active);
+}
+
+.icon {
+  font-size: 16px;
+  color: var(--sidebar-text-light);
+}
+
+.section-title {
+  font-size: 12px;
+  color: var(--sidebar-text-muted);
+  margin-top: 20px;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+}
+
+.logout {
+  margin-top: auto;
+}
+
+.logout .menu-item {
+  color: var(--sidebar-text-light);
+}
+
+.active-indicator {
+  width: 5px;
+  height: 100%;
+  background-color: var(--sidebar-indicator);
+  position: absolute;
+  left: 0;
+}
+
+
+
+
+
+/* In your CSS file (e.g., Sidebar.css or a new Modal.css) */
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000; /* Ensure it's above other content */
+}
+
+.modal-content {
+    background-color: var(--background-color-light); /* Use theme variables for background */
+    color: var(--text-color); /* Use theme variables for text color */
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+}
+
+.modal-content h3 {
+    margin-top: 0;
+    color: var(--primary-color); /* Optional: use a primary color for heading */
+}
+
+.modal-actions {
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-around;
+    gap: 10px; /* Space between buttons */
+}
+
+.modal-actions button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+}
+
+.modal-actions button:first-child { /* Send Request button */
+    background-color: #007bff; /* Example blue */
+    color: white;
+}
+
+.modal-actions button:first-child:hover {
+    background-color: #0056b3;
+}
+
+.modal-actions button:last-child { /* Cancel button */
+    background-color: #6c757d; /* Example gray */
+    color: white;
+}
+
+.modal-actions button:last-child:hover {
+    background-color: #5a6268;
+}

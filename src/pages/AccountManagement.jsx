@@ -1,19 +1,21 @@
 import React from "react";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
-import "../styles/AccountManagement.css"
-import AdminAccountForm from "../components/AdminAccountForm";
+import "../styles/Pages Css/AccountManagement.css";
+import AccountTable from "../components/AccountManagementTable";
+import "../styles/theme.css";
 
-const AccountManagement = () => {
+const AccountManagement = ({ theme, toggleTheme }) => {
   return (
-    <div className="db-container">
-        <Navbar />
-    <div className="main-container">
-        <Sidebar />
-      <div className="contents">
-        <AdminAccountForm/>
+    <div className={`account ${theme}`}>
+      {/* <Navbar /> */}
+      <div className="account-container">
+        <Sidebar theme={theme} toggleTheme={toggleTheme} />
+        <div className="account-contents">
+          {/* <AdminAccountForm /> */}
+          <AccountTable/>
+        </div>
       </div>
-    </div>
     </div>
   );
 };
