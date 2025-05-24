@@ -26,8 +26,8 @@
     --acctbl-th-bg-light: #f1f1f1;
     --acctbl-td-bg-light: #ffffff;
     --acctbl-table-bg-dark-new: #20202e;
-    --acctbl-th-bg-dark-new: #2d2d44;
-    --acctbl-td-bg-dark-new: #20202e;
+    --acctbl-th-bg-dark-new: #2f2f31;
+    --acctbl-td-bg-dark-new: #2f2f31;
     --acctbl-border-dark-new: #404055;
 
 
@@ -46,22 +46,22 @@
 
 
     --acctbl-button-hover-dark: #3a3a50;
-    --acctbl-button-bg-dark: #4a4a60;
-    --acctbl-edit-btn-dark: #2e7d32;
+    --acctbl-button-bg-dark: #2f2f31;
+    --acctbl-edit-btn-dark: #2f2f31;
     --acctbl-edit-btn-hover-dark: #388e3c;
-    --acctbl-delete-btn-dark: #dc3545;
+    --acctbl-delete-btn-dark: #2f2f31;
     --acctbl-delete-btn-hover-dark: #e53935;
 
 
     --modal-bg-light: #ffffff;
-    --modal-bg-dark: #2d2d44;
+    --modal-bg-dark: #2f2f31;
     --modal-header-border-light: #dee2e6;
     --modal-header-border-dark: #4a4a60;
     --modal-close-color-light: #000;
     --modal-close-color-dark: #f8f9fa;
-    --modal-create-btn-bg: #2e7d32;
+    --modal-create-btn-bg: #2f2f31;
     --modal-create-btn-hover: #218838;
-    --modal-cancel-btn-bg: #6c757d;
+    --modal-cancel-btn-bg: #2f2f31;
     --modal-cancel-btn-hover: #dc3545;
 }
 

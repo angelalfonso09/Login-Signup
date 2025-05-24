@@ -1,8 +1,8 @@
 :root[data-theme='light'] {
-  --background-main: #98bad5;
+  --background-main: #FFFDF6;
   --background-modal: #ffffff;
-  --text-primary: white;
-  --text-secondary: white;
+  --text-primary: #222;
+  --text-secondary: #222;
   --button-bg: #4caf50;
   --button-hover: #45a049;
   --modal-close-bg: #f44336;
@@ -11,12 +11,12 @@
 
 :root[data-theme='dark'] {
   --background-main: #2f2f31;
-  --background-modal:  #0a0a1a;
+  --background-modal:  #1e1f21;
   --text-primary: #ffffff;
   --text-secondary: #cccccc;
   --button-bg: #222;
   --button-hover: #5a6268;
-  --modal-close-bg: #6c757d;
+  --modal-close-bg: #2f2f31;
   --modal-close-hover: #dc3545;
 }
 

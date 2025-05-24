@@ -2,7 +2,7 @@
   --background-color: #ffffff;
   --text-color: #000000;
   --button-bg: #e0e0e0;
-  --sidebar-bg: #9abddc;
+  --sidebar-bg: #FFFDF6;
   --navbar-bg: #0a782f; 
   --sidebar-text: #333;
   --hover-bg: #dcdcdc;
@@ -30,7 +30,7 @@
 /* another universal cs */
 
 .light {
-  --bg-color: #edfbff;
+  --bg-color: #DDDDDD;
   --text-color: #333;
 }
 
