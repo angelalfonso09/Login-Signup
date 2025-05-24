@@ -29,7 +29,7 @@ const saltRounds = 10;
 
 // Middleware
 app.use(cors({
-  origin: ["http://localhost:3000", "http://localhost:5173", "http://localhost:5000"], // React dev server
+  origin: ["http://localhost:3000", "http://localhost:5173", "http://localhost:5000"], 
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true
@@ -150,6 +150,25 @@ app.post("/verify-code", async (req, res) => {
   }
 });
 
+
+// Function to validate password (added)
+const validatePassword = (password) => {
+  // Password must be at least 8 characters long
+  if (password.length < 8) {
+    return "Password must be at least 8 characters long.";
+  }
+  // Password must contain at least one number
+  if (!/\d/.test(password)) {
+    return "Password must contain at least one number.";
+  }
+  // Password must contain at least one special character
+  // This regex matches common special characters.
+  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/.test(password)) {
+    return "Password must contain at least one special character.";
+  }
+  return null; // Password is valid
+};
+
 // Signup function
 app.post("/users", async (req, res) => {
   const {
@@ -225,7 +244,6 @@ async function sendVerificationEmail(to, code) {
 }
 
 // Login function
-// Login function
 app.post("/login", async (req, res) => {
   console.log("Received Data:", req.body);
 
@@ -279,8 +297,8 @@ app.post("/login", async (req, res) => {
       id: user.id,
       username: user.username,
       role: user.role,
-      isVerified: user.is_verified === 1, // Convert TINYINT(1) to boolean
-      emailVerified: user.email_verified === 1 // Convert TINYINT(1) to boolean
+      isVerified: user.is_verified === 1, 
+      emailVerified: user.email_verified === 1 
     };
 
     res.json({
@@ -761,6 +779,49 @@ app.post("/api/admin/approve-user-access", verifyToken, authorizeSuperAdmin, asy
     }
 });
 
+// Save user to the database google login
+app.post('/save-user', async (req, res) => {
+  const { email, name } = req.body;
+
+  try {
+    let userId;
+
+    const [existingUsers] = await db.query('SELECT id FROM users WHERE email = ?', [email]);
+
+    if (existingUsers.length > 0) {
+      userId = existingUsers[0].id;
+      console.log('User with email', email, 'already exists. Logging in.');
+    } else {
+      const insertQuery = `INSERT INTO users (email, username) VALUES (?, ?)`;
+      const [result] = await db.query(insertQuery, [email, name]);
+      userId = result.insertId;
+      console.log('New user created with email:', email);
+    }
+
+    // Generate JWT Token
+    // *** CHANGE JWT_SECRET TO secretKey HERE! ***
+    const token = jwt.sign(
+      { userId: userId, email: email, username: name }, // Payload
+      secretKey, // <--- THIS IS THE CHANGE: Use 'secretKey' here
+      { expiresIn: '1h' } // Token expiration
+    );
+
+    res.status(200).json({
+      message: 'User processed and logged in successfully',
+      token: token, // Send the token back!
+      userId: userId,
+      email: email,
+      username: name // Include username in response
+    });
+
+  } catch (err) {
+    console.error('Error in /save-user:', err);
+    // You might want to add a more specific message if the error is due to the secret
+    // e.g., if (err.name === 'JsonWebTokenError') { ... }
+    res.status(500).json({ error: 'Server error during social login process.' });
+  }
+});
+
 // // --- NEW API ENDPOINT FOR DECLINING USER ACCESS ---
 // app.post("/api/admin/decline-user-access", verifyToken, authorizeSuperAdmin, (req, res) => {
 //     const { userId, notificationId } = req.body; // Expect userId and notificationId
@@ -996,21 +1057,6 @@ app.post("/api/admin/approve-user-access", verifyToken, authorizeSuperAdmin, asy
 //   } catch (err) {
 //     console.error("JSON Parse Error:", err);
 //   }
-// });
-
-// Save user to the database
-// app.post('/save-user', (req, res) => {
-//   const { email, name } = req.body;
-
-//   // Insert user data into the 'users' table
-//   const query = 'INSERT INTO users (email, username) VALUES (?, ?)';
-//   db.query(query, [email, name], (err, result) => {
-//     if (err) {
-//       console.error('Error saving user:', err);
-//       return res.status(500).send('Error saving user');
-//     }
-//     res.status(200).send('User saved successfully');
-//   });
 // });
 
 // let sensorConnected = false;  // To keep track of sensor connection status
