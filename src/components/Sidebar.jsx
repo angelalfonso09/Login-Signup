@@ -64,28 +64,14 @@ const Sidebar = () => {
             // 1. Clear token from local storage
             localStorage.removeItem("authToken");
             localStorage.removeItem("userRole"); // Clear user role as well
-            localStorage.removeItem("user"); // <-- ADD THIS LINE
-        localStorage.removeItem("showAccessModalOnLoad"); // <-- ADD THIS LINE
+            localStorage.removeItem("user");
+            localStorage.removeItem("showAccessModalOnLoad");
 
-            // 2. Optionally, notify the backend to invalidate the session (if applicable)
-            // This depends on how your backend handles sessions/tokens.
-            // If your backend uses JWTs and validates them on each request,
-            // simply removing the token client-side is often sufficient.
-            // If your backend maintains session state, you might need an API call:
-            /*
-            await fetch("/api/auth/logout", {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${token}`, // Send token for server-side invalidation if needed
-                },
-            });
-            */
-
-            // 3. Reset component state
+            // 2. Reset component state
             setToken(null);
             setUsername("");
 
-            // 4. Navigate to login page or home page
+            // 3. Navigate to login page or home page
             navigate("/");
             console.log("User logged out successfully.");
         } catch (error) {
@@ -99,20 +85,47 @@ const Sidebar = () => {
         }
     };
 
+    // --- Helper function to get the correct dashboard path ---
+    const getDashboardPath = () => {
+        if (userRole === "User") {
+            return "/userDB";
+        } else if (userRole === "Admin") {
+            return "/adminDB";
+        } else if (userRole === "Super Admin") {
+            return "/dashboard";
+        }
+        return "/"; // Default or fallback
+    };
+
+    // --- Helper function to get the correct notifications path ---
+    const getNotificationsPath = () => {
+        if (userRole === "User") {
+            return "/usernotif";
+        } else if (userRole === "Admin") {
+            return "/adminnotif";
+        } else if (userRole === "Super Admin") {
+            return "/notifications";
+        }
+        return "/"; // Default or fallback
+    };
+
+    const currentDashboardPath = getDashboardPath();
+    const currentNotificationsPath = getNotificationsPath();
+
+
     return (
         <div className={`sidebar ${theme}`}>
             <div className="menu">
 
-                {/* Dashboard (Visible to all roles) */}
                 <div className="User">
                     <h2>Welcome! </h2>
-                    <h4>{userRole}</h4>
+                    <h4>{userRole}</h4> {/* Displaying the user's role */}
                 </div>
 
-                {/* Dashboard (Visible to all roles) */}
+                {/* Dashboard (Dynamic based on role) */}
                 <div
-                    className={`menu-item ${location.pathname === "/dashboard" ? "active" : ""}`}
-                    onClick={() => navigate("/dashboard")} // Always navigate
+                    className={`menu-item ${location.pathname === currentDashboardPath ? "active" : ""}`}
+                    onClick={() => navigate(currentDashboardPath)}
                 >
                     <FaHome className="icon" />
                     <span>Dashboard</span>
@@ -132,15 +145,16 @@ const Sidebar = () => {
                 {/* History (Visible to all roles) */}
                 <div
                     className={`menu-item ${location.pathname === "/history" ? "active" : ""}`}
-                    onClick={() => navigate("/history")} // Always navigate
+                    onClick={() => navigate("/history")}
                 >
                     <FaHistory className="icon" />
                     <span>History</span>
                 </div>
 
+                {/* Notifications (Dynamic based on role) */}
                 <div
-                    className={`menu-item ${location.pathname === "/notifications" ? "active" : ""}`}
-                    onClick={() => navigate("/notifications")}
+                    className={`menu-item ${location.pathname === currentNotificationsPath ? "active" : ""}`}
+                    onClick={() => navigate(currentNotificationsPath)}
                 >
                     <FaBell className="icon" />
                     <span>Notifications</span>
@@ -155,12 +169,11 @@ const Sidebar = () => {
 
             {/* Logout */}
             <div className="logout">
-                <div className="menu-item" onClick={() => navigate("/")}>
+                <div className="menu-item" onClick={() => navigate("/")}> {/* You might want to make this dynamic too, or remove if not a general setting page */}
                     <FaGears className="icon" />
                     <span>Settings</span>
                 </div>
 
-                {/* Modified Logout Button to call handleLogout */}
                 <div className="menu-item" onClick={handleLogout}>
                     <FaPowerOff className="icon" />
                     <span>Log out</span>

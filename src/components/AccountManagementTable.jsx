@@ -11,7 +11,7 @@ import {
 import { Pencil, Trash2, Plus } from "lucide-react";
 import AdminCreationForm from "./AddAdminAccountForm";
 import axios from "axios";
-import "../styles/Components Css/AccountManagementTable.css";
+import "../styles/Components Css/AccountManagementTable.css"; // Ensure this CSS file exists
 import { ThemeContext } from "../context/ThemeContext";
 
 const UserAdminTable = () => {
@@ -154,47 +154,54 @@ const UserAdminTable = () => {
       {loading && <Spinner animation="border" />}
       {error && <Alert variant="danger">{error}</Alert>}
 
-      <Table className="acctbl-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Username</th>
-            <th>Email</th>
-            <th>Role</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredAccounts.length > 0 ? (
-            filteredAccounts.map((account) => (
-              <tr key={account.id}>
-                <td>{account.id}</td>
-                <td>{account.username}</td>
-                <td>{account.email}</td>
-                <td>{account.role}</td>
-                <td>
-                  <button
-                    className="acctbl-create-btn"
-                    onClick={() => handleEdit(account)}
-                  >
-                    <Pencil size={16} />
-                  </button>
-                  <button
-                    className="acctbl-create-btn"
-                    onClick={() => handleDelete(account.id)}
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </td>
-              </tr>
-            ))
-          ) : (
+      {/* NEW: Wrapper div for scrollability */}
+      <div className="acctbl-table-scroll-wrapper">
+        <Table className="acctbl-table">
+          <thead>
             <tr>
-              <td colSpan="6">No users found</td>
+              <th>ID</th>
+              <th>Username</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Verified</th>
+              <th>Email Verified</th>
+              <th>Actions</th>
             </tr>
-          )}
-        </tbody>
-      </Table>
+          </thead>
+          <tbody>
+            {filteredAccounts.length > 0 ? (
+              filteredAccounts.map((account) => (
+                <tr key={account.id}>
+                  <td>{account.id}</td>
+                  <td>{account.username}</td>
+                  <td>{account.email}</td>
+                  <td>{account.role}</td>
+                  <td>{account.is_verified ? "Yes" : "No"}</td>
+                  <td>{account.email_verified ? "Yes" : "No"}</td>
+                  <td>
+                    <button
+                      className="acctbl-create-btn"
+                      onClick={() => handleEdit(account)}
+                    >
+                      <Pencil size={16} />
+                    </button>
+                    <button
+                      className="acctbl-create-btn"
+                      onClick={() => handleDelete(account.id)}
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="7">No users found</td> {/* Corrected colspan */}
+              </tr>
+            )}
+          </tbody>
+        </Table>
+      </div> {/* END: Wrapper div for scrollability */}
 
       {/* Admin Creation Modal */}
       <Modal show={showAdminModal} onHide={() => setShowAdminModal(false)}>
@@ -217,8 +224,6 @@ const UserAdminTable = () => {
         <Modal.Body>
           <Form onSubmit={handleEditSubmit}>
             <Form.Group className="mb-3">
-              {" "}
-              {/* Added Bootstrap margin-bottom class */}
               <Form.Label>Username</Form.Label>
               <Form.Control
                 name="username"
@@ -227,8 +232,6 @@ const UserAdminTable = () => {
               />
             </Form.Group>
             <Form.Group className="mb-3">
-              {" "}
-              {/* Added Bootstrap margin-bottom class */}
               <Form.Label>Email</Form.Label>
               <Form.Control
                 name="email"
@@ -238,8 +241,6 @@ const UserAdminTable = () => {
             </Form.Group>
             {editError && <Alert variant="danger">{editError}</Alert>}
             <Modal.Footer>
-              {" "}
-              {/* Moved buttons into Modal.Footer for proper styling */}
               <Button type="submit" className="acctbl-create-btn">
                 Save Changes
               </Button>

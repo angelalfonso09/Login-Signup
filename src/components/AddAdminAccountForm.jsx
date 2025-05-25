@@ -132,8 +132,9 @@ const AdminCreationForm = ({ onClose, onAddAdmin }) => {
             {successMessage && <p className="text-success mt-3">{successMessage}</p>}
 
             <div className="admin-form-buttons">
-              <Button variant="success" type="submit">Create Admin</Button>
-              <Button variant="secondary" onClick={onClose}>Cancel</Button>
+              {/* Removed variant prop from Button components */}
+              <Button type="submit">Create Admin</Button>
+              <Button onClick={onClose}>Cancel</Button>
             </div>
           </Form>
         </Card.Body>

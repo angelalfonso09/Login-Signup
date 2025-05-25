@@ -36,9 +36,11 @@
   color: var(--admin-text-color);
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  padding: 20px; /* Increased padding for better appearance */
+  padding: 20px;
+  /* Increased padding for better appearance */
   width: 100%;
-  max-width: 450px; /* Max width for the card */
+  max-width: 450px;
+  /* Max width for the card */
 }
 
 .admin-form-body {
@@ -55,7 +57,9 @@
 .admin-form-label {
   font-weight: bold;
   font-size: 14px;
-  display: block;
+  display: flex;
+  justify-content: start;
+  align-items: start;
   font-size: 1rem;
   padding-top: 10px;
 }
@@ -83,25 +87,29 @@
 
 /* Messages (error and success) */
 .text-danger {
-  color: #dc3545; /* Bootstrap's danger color */
+  color: #dc3545;
+  /* Bootstrap's danger color */
   margin-top: 1rem;
 }
 
 .text-success {
-  color: #28a745; /* Bootstrap's success color */
+  color: #28a745;
+  /* Bootstrap's success color */
   margin-top: 1rem;
 }
 
 /* Buttons */
 .admin-form-buttons {
   display: flex;
-  justify-content: flex-end; /* Changed to flex-end to align buttons to the right */
+  justify-content: flex-end;
+  /* Changed to flex-end to align buttons to the right */
   margin-top: 15px;
   gap: 10px;
 }
 
 .admin-form-submit {
-  padding: 8px 15px; /* Added horizontal padding */
+  padding: 8px 15px;
+  /* Added horizontal padding */
   background: var(--admin-button-bg);
   color: white;
   border: none;
@@ -117,7 +125,8 @@
 }
 
 .admin-form-reset {
-  padding: 8px 15px; /* Added horizontal padding */
+  padding: 8px 15px;
+  /* Added horizontal padding */
   background: #6c757d;
   color: white;
   border: none;
@@ -132,6 +141,8 @@
   transform: scale(1.05);
 }
 
+
+
 /* Responsive Design */
 @media (max-width: 500px) {
   .admin-form-card {
@@ -140,7 +151,7 @@
 
   .admin-form-buttons {
     flex-direction: column;
-    align-items: stretch; /* Stretch buttons to full width */
+    align-items: stretch;
   }
 
   .admin-form-submit,
@@ -149,3 +160,67 @@
     margin-top: 8px;
   }
 }
+
+/* AdminAccountForm.css */
+
+/* Styles for the container of the buttons */
+.admin-form-buttons {
+  display: flex;
+  /* Arranges buttons in a row */
+  justify-content: flex-end;
+  /* Aligns buttons to the right */
+  gap: 10px;
+  /* Adds space between buttons */
+  margin-top: 20px;
+  /* Adds some space above the buttons */
+}
+
+/* Base style for all buttons within admin-form-buttons */
+.admin-form-buttons button {
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  border: 1px solid;
+  /* Default border */
+}
+
+/* Style for the "Create Admin" button */
+.admin-form-buttons button[type="submit"] {
+  background-color: #2f2f31;
+  color: white;
+  border: none;
+  margin: 0 5px;
+  padding: 6px 10px;
+  display: inline-flex;
+  justify-content: center;
+  box-shadow: var(--acctbl-shadow-dark);
+}
+
+.admin-form-buttons button[type="submit"]:hover {
+  background-color: #218838;
+  border-color: #1e7e34;
+}
+
+/* Style for the "Cancel" button */
+.admin-form-buttons button:not([type="submit"]) {
+  /* Targets buttons that are not submit type */
+  background-color: #2f2f31;
+  /* Bootstrap secondary gray */
+  color: white;
+  border-color: #2f2f31;
+    box-shadow: var(--acctbl-shadow-dark);
+      border: none;
+  margin: 0 5px;
+  padding: 6px 10px;
+  display: inline-flex;
+  justify-content: center;
+}
+
+.admin-form-buttons button:not([type="submit"]):hover {
+  background-color: #5a6268;
+  /* Darker gray on hover */
+  border-color: #545b62;
+}
+
+/* You can add more specific styles or adjust these values as needed */
+/* For example, if you want a specific font, shadow, or different colors */

@@ -9,16 +9,18 @@ import AccountManagement from "./pages/AccountManagement";
 import History from "./pages/History";
 import AdminDB from "./pages/adminDB";
 import UserDB from "./pages/userDB";
-import Notifications from "./pages/Notifications";
-import StandbyPage from "./components/StandbPage";
+import Notifications from "./pages/Notifications"; // <-- KEEP THIS LINE for Super Admin
+import UserNotif from "./pages/UserNotif";     // <-- New User Notifications component
+import AdminNotif from "./pages/AdminNotif";     // <-- New Admin Notifications component
 
 import { ThemeProvider, ThemeContext } from "./context/ThemeContext";
 import "./styles/common/App.css";
 import "./styles/theme.css";
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 // Protected Route Wrapper
 const ProtectedRoute = ({ element, allowedRoles }) => {
-    const navigate = useNavigate(); // This hook gives you access to the navigate function
+    const navigate = useNavigate();
 
     const userRole = localStorage.getItem("userRole");
     let currentUser = null;
@@ -33,9 +35,6 @@ const ProtectedRoute = ({ element, allowedRoles }) => {
     }
     const isUserVerified = currentUser ? currentUser.isVerified === true : false;
 
-    // Use a separate useEffect for the localStorage side effect
-    // This effect runs only once when the component mounts, and when userRole or isUserVerified changes.
-    // It should NOT contain Navigate calls, as those cause re-renders.
     useEffect(() => {
         if (window.location.pathname === "/userDB" && userRole === "User" && !isUserVerified) {
             localStorage.setItem('showAccessModalOnLoad', 'true');
@@ -44,20 +43,13 @@ const ProtectedRoute = ({ element, allowedRoles }) => {
             localStorage.removeItem('showAccessModalOnLoad');
             console.log("ProtectedRoute: Cleared showAccessModalOnLoad.");
         }
-        // This effect's dependencies are important.
-        // navigate is not needed here as it doesn't cause a direct side effect.
-        // window.location.pathname is an external mutable object, better to avoid if possible,
-        // but here it's used for specific logic.
-    }, [userRole, isUserVerified, window.location.pathname]); // Added window.location.pathname to dependencies
+    }, [userRole, isUserVerified, window.location.pathname]);
 
-    // Main authorization logic
-    // 1. If no user role, redirect to login
     if (!userRole) {
         console.log("ProtectedRoute: No userRole found, redirecting to /login");
         return <Navigate to="/login" replace />;
     }
 
-    // 2. Check if the current user role is NOT in the allowed roles for the given route
     if (!allowedRoles.includes(userRole)) {
         console.log(`ProtectedRoute: User role '${userRole}' not allowed for this route. Allowed: ${allowedRoles.join(', ')}`);
 
@@ -68,20 +60,16 @@ const ProtectedRoute = ({ element, allowedRoles }) => {
             console.log("ProtectedRoute: Admin role trying to access restricted page, redirecting to /adminDB.");
             return <Navigate to="/adminDB" replace />;
         }
-        // FIX for "Unexpected token": Ensure there's always a valid 'else' or no standalone comment.
-        // This 'else' block will catch any other unrecognized roles.
-        else { // This 'else' likely fixes the syntax error
+        else {
             console.log("ProtectedRoute: Unrecognized role trying to access a restricted page, redirecting to /login.");
             return <Navigate to="/login" replace />;
         }
     }
 
-    // 3. If all checks pass and the user is allowed to view the element
     console.log(`ProtectedRoute: User role '${userRole}' is allowed for this route. Rendering element.`);
     return element;
 };
 
-// App Wrapper to Use ThemeContext
 const ThemedApp = () => {
     const { theme } = useContext(ThemeContext);
 
@@ -100,7 +88,14 @@ const ThemedApp = () => {
                     <Route path="/adminDB" element={<ProtectedRoute element={<AdminDB />} allowedRoles={["Admin"]} />} />
                     <Route path="/accountmanagement" element={<ProtectedRoute element={<AccountManagement />} allowedRoles={["Super Admin"]} />} />
                     <Route path="/history" element={<ProtectedRoute element={<History />} allowedRoles={["Super Admin", "User", "Admin"]} />} />
+
+                    {/* Notification Routes for each role */}
+                    {/* Super Admin Notifications */}
                     <Route path="/notifications" element={<ProtectedRoute element={<Notifications />} allowedRoles={["Super Admin"]} />} />
+                    {/* User Notifications */}
+                    <Route path="/usernotif" element={<ProtectedRoute element={<UserNotif />} allowedRoles={["User"]} />} />
+                    {/* Admin Notifications */}
+                    <Route path="/adminnotif" element={<ProtectedRoute element={<AdminNotif />} allowedRoles={["Admin"]} />} />
 
                     {/* Redirect any unmatched routes to login */}
                     <Route path="*" element={<Navigate to="/login" replace />} />

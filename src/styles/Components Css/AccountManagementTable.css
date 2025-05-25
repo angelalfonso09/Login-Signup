@@ -6,7 +6,7 @@
     --acctbl-title-color-light: #000;
     --acctbl-title-color-dark: #f8f9fa;
     --acctbl-border-light: #ddd;
-    --acctbl-border-dark: #555;
+    --acctbl-border-dark: #1e1f21;
 
     --acctbl-controls-gap: 10px;
     --acctbl-controls-margin-bottom: 15px;
@@ -28,7 +28,7 @@
     --acctbl-table-bg-dark-new: #20202e;
     --acctbl-th-bg-dark-new: #2f2f31;
     --acctbl-td-bg-dark-new: #2f2f31;
-    --acctbl-border-dark-new: #404055;
+    --acctbl-border-dark-new: #1e1f21;
 
 
     --acctbl-btn-padding: 8px 12px;
@@ -46,7 +46,7 @@
 
 
     --acctbl-button-hover-dark: #3a3a50;
-    --acctbl-button-bg-dark: #2f2f31;
+    --acctbl-button-bg-dark: #2f2f31 ;
     --acctbl-edit-btn-dark: #2f2f31;
     --acctbl-edit-btn-hover-dark: #388e3c;
     --acctbl-delete-btn-dark: #2f2f31;
@@ -187,6 +187,50 @@ header {
 /* ------------------------------------------- */
 /* TABLE                     */
 /* ------------------------------------------- */
+/* Add this to your existing CSS file */
+.acctbl-table-scroll-wrapper {
+    max-height: 500px; /* Adjust this value as needed for your layout */
+    overflow-y: auto; /* Enable vertical scrolling */
+    border-radius: 0.25rem; /* Optional: Matches Bootstrap's table border-radius */
+    margin-bottom: 1rem; /* Optional: Adds some space below the table */
+}
+
+.acctbl-table-scroll-wrapper::-webkit-scrollbar {
+    width: 8px;
+}
+
+
+
+.acctbl-table-scroll-wrapper::-webkit-scrollbar-thumb:hover {
+    background-color: #555;
+}
+
+/* Optional: You might want to remove default table borders if the wrapper has one */
+.acctbl-table {
+    width: 100%;
+    margin-bottom: 0; /* Remove default margin-bottom if wrapper has one */
+    /* Add any other table specific styles here */
+}
+
+/* Ensure table headers remain visible when scrolling */
+.acctbl-table thead {
+    position: sticky;
+    top: 0;
+    background-color: inherit; /* Inherit background to match theme */
+    z-index: 1; /* Keep headers above scrolling content */
+}
+
+/* Adjust header background for dark/light themes if necessary */
+.dark .acctbl-table thead {
+    background-color: #343a40; /* Dark background for dark theme headers */
+    color: #f8f9fa; /* Light text for dark theme headers */
+}
+
+.light .acctbl-table thead {
+    background-color: #f8f9fa; /* Light background for light theme headers */
+    color: #212529; /* Dark text for light theme headers */
+}
+
 .acctbl-table {
     width: 100%;
     border-collapse: separate;
@@ -197,10 +241,6 @@ header {
     background: var(--acctbl-table-bg-light);
     color: var(--acctbl-title-color-light);
     height: fit-content;
-}
-
-.acctbl-table::-webkit-scrollbar {
-    display: none;
 }
 
 .acctbl-container.dark .acctbl-table {
@@ -273,7 +313,6 @@ header {
 }
 
 .acctbl-container.light .acctbl-create-btn {
-    background: var(--acctbl-button-bg-light, #007bff);
     color: white;
 }
 
@@ -420,7 +459,8 @@ body.dark .modal-header .btn-close {
 .modal-body .form-label {
     font-weight: 500;
     margin-bottom: 8px;
-    display: block;
+    display: flex;
+    justify-content: start;
     color: inherit;
 }
 
@@ -436,7 +476,7 @@ body.dark .modal-header .btn-close {
 }
 
 body.dark .modal-body .form-control {
-    background-color: #20202e;
+    background-color: #2a2a2a;
     color: var(--acctbl-title-color-dark);
     border: 1px solid var(--acctbl-border-dark-new);
 }
@@ -531,3 +571,4 @@ body.dark .modal-footer .btn-secondary:hover,
 body.dark .modal-footer .acctbl-cancel-btn:hover {
     background-color: var(--modal-cancel-btn-hover);
 }
+
