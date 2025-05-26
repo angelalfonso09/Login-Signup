@@ -204,7 +204,7 @@ const UserAdminTable = () => {
       </div> {/* END: Wrapper div for scrollability */}
 
       {/* Admin Creation Modal */}
-      <Modal show={showAdminModal} onHide={() => setShowAdminModal(false)}>
+      <Modal show={showAdminModal} onHide={() => setShowAdminModal(false)} className="acctbl-modal">
         <Modal.Header closeButton>
           <Modal.Title>Create Admin</Modal.Title>
         </Modal.Header>
@@ -217,7 +217,7 @@ const UserAdminTable = () => {
       </Modal>
 
       {/* Edit User Modal */}
-      <Modal show={showEditModal} onHide={() => setShowEditModal(false)}>
+      <Modal show={showEditModal} onHide={() => setShowEditModal(false)} className="acctbl-modal">
         <Modal.Header closeButton>
           <Modal.Title>Edit User</Modal.Title>
         </Modal.Header>

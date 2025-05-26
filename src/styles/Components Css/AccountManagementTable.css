@@ -46,7 +46,7 @@
 
 
     --acctbl-button-hover-dark: #3a3a50;
-    --acctbl-button-bg-dark: #2f2f31 ;
+    --acctbl-button-bg-dark: #2f2f31;
     --acctbl-edit-btn-dark: #2f2f31;
     --acctbl-edit-btn-hover-dark: #388e3c;
     --acctbl-delete-btn-dark: #2f2f31;
@@ -60,13 +60,17 @@
     --modal-close-color-light: #000;
     --modal-close-color-dark: #f8f9fa;
     --modal-create-btn-bg: #2f2f31;
+    /* Reusing for Save Changes */
     --modal-create-btn-hover: #218838;
+    /* Reusing for Save Changes Hover */
     --modal-cancel-btn-bg: #2f2f31;
+    /* Reusing for Cancel */
     --modal-cancel-btn-hover: #dc3545;
+    /* Reusing for Cancel Hover */
 }
 
 /* ------------------------------------------- */
-/* GLOBAL & CONTAINER            */
+/* GLOBAL & CONTAINER            */
 /* ------------------------------------------- */
 .acctbl-container {
     padding: 30px;
@@ -92,7 +96,7 @@
 }
 
 /* ------------------------------------------- */
-/* HEADER                     */
+/* HEADER                     */
 /* ------------------------------------------- */
 header {
     width: 100%;
@@ -119,7 +123,7 @@ header {
 }
 
 /* ------------------------------------------- */
-/* CONTROLS (SEARCH & FILTER)         */
+/* CONTROLS (SEARCH & FILTER)         */
 /* ------------------------------------------- */
 .acctbl-controls {
     display: flex;
@@ -185,14 +189,18 @@ header {
 
 
 /* ------------------------------------------- */
-/* TABLE                     */
+/* TABLE                     */
 /* ------------------------------------------- */
 /* Add this to your existing CSS file */
 .acctbl-table-scroll-wrapper {
-    max-height: 500px; /* Adjust this value as needed for your layout */
-    overflow-y: auto; /* Enable vertical scrolling */
-    border-radius: 0.25rem; /* Optional: Matches Bootstrap's table border-radius */
-    margin-bottom: 1rem; /* Optional: Adds some space below the table */
+    max-height: 500px;
+    /* Adjust this value as needed for your layout */
+    overflow-y: auto;
+    /* Enable vertical scrolling */
+    border-radius: 0.25rem;
+    /* Optional: Matches Bootstrap's table border-radius */
+    margin-bottom: 1rem;
+    /* Optional: Adds some space below the table */
 }
 
 .acctbl-table-scroll-wrapper::-webkit-scrollbar {
@@ -208,7 +216,8 @@ header {
 /* Optional: You might want to remove default table borders if the wrapper has one */
 .acctbl-table {
     width: 100%;
-    margin-bottom: 0; /* Remove default margin-bottom if wrapper has one */
+    margin-bottom: 0;
+    /* Remove default margin-bottom if wrapper has one */
     /* Add any other table specific styles here */
 }
 
@@ -216,19 +225,25 @@ header {
 .acctbl-table thead {
     position: sticky;
     top: 0;
-    background-color: inherit; /* Inherit background to match theme */
-    z-index: 1; /* Keep headers above scrolling content */
+    background-color: inherit;
+    /* Inherit background to match theme */
+    z-index: 1;
+    /* Keep headers above scrolling content */
 }
 
 /* Adjust header background for dark/light themes if necessary */
 .dark .acctbl-table thead {
-    background-color: #343a40; /* Dark background for dark theme headers */
-    color: #f8f9fa; /* Light text for dark theme headers */
+    background-color: #343a40;
+    /* Dark background for dark theme headers */
+    color: #f8f9fa;
+    /* Light text for dark theme headers */
 }
 
 .light .acctbl-table thead {
-    background-color: #f8f9fa; /* Light background for light theme headers */
-    color: #212529; /* Dark text for light theme headers */
+    background-color: #f8f9fa;
+    /* Light background for light theme headers */
+    color: #212529;
+    /* Dark text for light theme headers */
 }
 
 .acctbl-table {
@@ -298,7 +313,7 @@ header {
 
 
 /* ------------------------------------------- */
-/* BUTTONS                     */
+/* BUTTONS                     */
 /* ------------------------------------------- */
 .acctbl-create-btn {
     border: none;
@@ -366,7 +381,7 @@ header {
 }
 
 /* ------------------------------------------- */
-/* SPINNER & ALERT             */
+/* SPINNER & ALERT             */
 /* ------------------------------------------- */
 .spinner-border {
     color: #007bff;
@@ -399,9 +414,207 @@ header {
 
 
 /* ------------------------------------------- */
-/* MODALS                    */
+/* MODALS                    */
 /* ------------------------------------------- */
-/* Base Modal Container - applies to Bootstrap's .modal-content */
+
+/* Targeted Modal Class (Assuming this is for the 'Edit User' modal you want to style) */
+/* This class should be applied to your React-Bootstrap <Modal> component:
+   <Modal className="edit-user-modal" ...> */
+.edit-user-modal .modal-dialog {
+    max-width: 450px;
+    /* Adjust as per your image */
+    margin: 1.75rem auto;
+    /* Centering */
+    display: flex;
+    align-items: center;
+    min-height: calc(100vh - 60px);
+}
+
+.edit-user-modal .modal-content {
+    border-radius: var(--acctbl-container-radius);
+    /* Use existing variable for consistent rounded corners */
+    background-color: #2D2D2D;
+    /* Direct color from image */
+    color: var(--acctbl-title-color-dark);
+    /* Light text color for dark modal */
+    box-shadow: var(--acctbl-shadow-dark);
+    /* Apply dark shadow */
+    border: none;
+    /* Remove default Bootstrap border */
+}
+
+/* Modal Header */
+.edit-user-modal .modal-header {
+    border-bottom: 1px solid #444;
+    /* Custom dark border */
+    padding: 20px 25px 15px;
+    display: flex;
+    /* Ensure flexbox for alignment */
+    justify-content: space-between;
+    /* Space title and close button */
+    align-items: center;
+}
+
+.edit-user-modal .modal-title {
+    font-size: 1.5rem;
+    /* Matches image */
+    font-weight: 600;
+    color: var(--acctbl-title-color-dark);
+    /* Use variable for light text */
+    flex-grow: 1;
+    /* Allow title to take space */
+}
+
+/* Close button styling for the specific modal */
+.edit-user-modal .btn-close {
+    background: transparent url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23E0E0E0'%3e%3cpath d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414z'/%3e%3c/svg%3e") center / 1em auto no-repeat;
+    opacity: 1 !important;
+    /* Force visibility */
+    transition: opacity 0.2s ease;
+    border: 0;
+    border-radius: .25rem;
+    padding: .5rem;
+    margin: -.5rem -.5rem -.5rem auto;
+    /* Adjust positioning */
+    color: #E0E0E0 !important;
+    /* Explicitly set color for consistency */
+}
+
+.edit-user-modal .btn-close:hover {
+    opacity: 0.8 !important;
+    /* Slightly fade on hover */
+}
+
+/* Modal Body */
+.edit-user-modal .modal-body {
+    padding: 20px 25px 25px;
+    /* Adjust padding as per image */
+}
+
+.edit-user-modal .form-group {
+    margin-bottom: 15px;
+}
+
+/* Form Labels (using a custom class from previous example) */
+.edit-user-modal .edit-user-label {
+    /* Target specifically within the modal */
+    font-weight: 500;
+    margin-bottom: 8px;
+    display: block;
+    /* Make it a block element to properly use margin-bottom */
+    color: #B0B0B0;
+    /* Specific color from previous example */
+    text-align: left;
+    /* Align label to the left */
+}
+
+/* Input Fields (using a custom class from previous example) */
+.edit-user-modal .form-control.edit-user-input {
+    /* Target specifically within the modal and with Bootstrap's form-control */
+    width: 100%;
+    padding: var(--acctbl-input-padding-new);
+    border-radius: var(--acctbl-input-radius-new);
+    border: 1px solid #555;
+    /* Specific border color */
+    background-color: #3C3C3C;
+    /* Specific background color */
+    color: var(--acctbl-title-color-dark);
+    /* Light text color */
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.edit-user-modal .form-control.edit-user-input::placeholder {
+    color: #888;
+    opacity: 1;
+}
+
+.edit-user-modal .form-control.edit-user-input:focus {
+    border-color: #666;
+    /* Focus border color */
+    box-shadow: 0 0 0 0.2rem rgba(100, 100, 100, 0.25);
+    /* Subtle shadow on focus */
+}
+
+/* Horizontal Divider (assuming you add <hr className="edit-user-divider" />) */
+.edit-user-modal .edit-user-divider {
+    border-top: 1px solid #444;
+    /* Darker line for the divider */
+    margin-top: 25px;
+    /* Space above divider */
+    margin-bottom: 25px;
+    /* Space below divider */
+    opacity: 0.7;
+    /* Slightly transparent */
+}
+
+
+/* Modal Footer (assuming you add <div className="edit-user-buttons"> around your buttons) */
+.edit-user-modal .modal-footer,
+.edit-user-modal .edit-user-buttons {
+    /* Target both if used interchangeably */
+    border-top: none;
+    /* Remove default Bootstrap footer border */
+    padding: 0px 25px 0px;
+    /* Adjust padding to match image (no top padding) */
+    display: flex;
+    justify-content: flex-end;
+    /* Align buttons to the right */
+    gap: 15px;
+    /* Space between buttons */
+    margin-top: 20px;
+    /* Give some space from above content if not already in divider */
+}
+
+
+/* Buttons within Modal Footer (assuming you add custom classes for buttons) */
+/* Specific styling for the Save Changes button */
+.edit-user-modal .edit-user-save-button.btn {
+    /* Combined with Bootstrap's .btn class */
+    background-color: #4CAF50;
+    /* A shade of green for Save Changes */
+    border: none;
+    /* Remove default border */
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: var(--acctbl-btn-transition-new);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    /* Subtle shadow for buttons */
+}
+
+.edit-user-modal .edit-user-save-button.btn:hover {
+    background-color: #45a049;
+    /* Darker green on hover */
+}
+
+/* Styling for the Cancel button */
+.edit-user-modal .edit-user-cancel-button.btn {
+    /* Combined with Bootstrap's .btn class */
+    background-color: #4A4A4A;
+    /* Darker grey for cancel button */
+    border: none;
+    /* Remove default border */
+    color: #E0E0E0;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: var(--acctbl-btn-transition-new);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.edit-user-modal .edit-user-cancel-button.btn:hover {
+    background-color: #555;
+    color: #FFF;
+}
+
+
+/* Generic modal styles (apply to any modal, less specific) */
+/* If you have a global dark mode, this might apply the dark theme */
+/* I've kept these as they are, but the .edit-user-modal overrides them */
 .modal-content {
     border-radius: var(--acctbl-container-radius);
     background-color: var(--modal-bg-light);
@@ -572,3 +785,11 @@ body.dark .modal-footer .acctbl-cancel-btn:hover {
     background-color: var(--modal-cancel-btn-hover);
 }
 
+/* Base class for modal if applied directly, less specific than .edit-user-modal */
+.acctbl-modal {
+    max-width: 100%;
+    /* This seems to be a general modal class, not specific to the Edit User one */
+    margin: 30px auto;
+    padding: 20px;
+    color: var(--acctbl-title-color-light);
+}

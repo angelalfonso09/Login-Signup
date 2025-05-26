@@ -28,6 +28,7 @@
     "mysql": "^2.18.1",
     "mysql2": "^3.14.1",
     "nodemailer": "^6.10.0",
+    "otp-generator": "^4.0.1",
     "papaparse": "^5.5.2",
     "pg": "^8.13.3",
     "react-circular-progressbar": "^2.2.0",

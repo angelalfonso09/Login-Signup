@@ -21,3 +21,132 @@
 .form-control.transparent-input[readonly] {
   background-color: transparent;
 }
+
+/* Unique styles for the Signup Verification Modal */
+.signup-verification-modal .modal-content {
+    border-radius: 10px; /* Rounded corners */
+    background-color: var(--modal-bg-light); /* Default light background */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border: none; /* Remove default bootstrap border */
+}
+
+/* Dark theme specific styles for the modal content */
+.signup-verification-modal.dark .modal-content {
+    background-color: var(--modal-bg-dark); /* Dark background */
+    color: #e0e0e0; /* Light text */
+}
+
+.signup-verification-modal .modal-header {
+    border-bottom: 1px solid var(--modal-header-border-light); /* Light border */
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Dark theme specific header border */
+.signup-verification-modal.dark .modal-header {
+    border-color: var(--modal-header-border-dark); /* Darker border */
+}
+
+.signup-verification-modal .modal-title {
+    font-size: 1.25rem; /* Slightly smaller title */
+    font-weight: 600; /* Semi-bold */
+    color: #007bff; /* Primary brand color */
+}
+
+/* Dark theme specific title color */
+.signup-verification-modal.dark .modal-title {
+    color: #ffffff; /* White title text */
+}
+
+.signup-verification-modal .modal-body {
+    padding: 1.5rem;
+}
+
+.signup-verification-modal .modal-body p {
+    font-size: 1rem;
+    margin-bottom: 1rem;
+    color: #343a40; /* Dark text for light theme */
+}
+
+/* Dark theme specific body text color */
+.signup-verification-modal.dark .modal-body p {
+    color: #ffffff; /* White text for dark theme */
+}
+
+.signup-verification-modal .form-control {
+    border-radius: 4px; /* Less rounded input */
+    border: 1px solid #ced4da;
+    padding: 0.5rem 0.75rem; /* Smaller padding */
+    background-color: #ffffff; /* Explicit light background */
+    color: #212529; /* Explicit dark text */
+}
+
+/* Dark theme specific form control */
+.signup-verification-modal.dark .form-control {
+    background-color: #424242; /* Darker input background */
+    border-color: #616161; /* Darker border */
+    color: #ffffff; /* White text */
+}
+
+.signup-verification-modal .form-control::placeholder{
+   color: #6c757d;
+}
+    
+.signup-verification-modal .modal-footer {
+    border-top: 1px solid var(--modal-header-border-light); /* Light border */
+    padding: 1rem 1.5rem;
+    justify-content: flex-end; /* Align buttons to the right */
+    gap: 0.5rem; /* Space between buttons */
+    
+}
+
+/* Dark theme specific footer border */
+.signup-verification-modal.dark .modal-footer {
+    border-color: var(--modal-header-border-dark); /* Darker border */
+}
+
+.signup-verification-modal .modal-footer .btn {
+    border-radius: 4px; /* Less rounded buttons */
+    padding: 0.5rem 1rem; /* Smaller button padding */
+    font-weight: 500; /* Medium font weight */
+    transition: all 0.2s ease-in-out;
+        box-shadow: var(--acctbl-shadow-dark);
+}
+
+.signup-verification-modal .modal-footer .btn-primary {
+    background-color: var(--modal-create-btn-bg);
+    border-color: var(--modal-create-btn-bg);
+    color: white;
+}
+
+.signup-verification-modal .modal-footer .btn-primary:hover {
+    background-color: var(--modal-create-btn-hover);
+    border-color: var(--modal-create-btn-hover);
+}
+
+.signup-verification-modal .modal-footer .btn-secondary { /* Assuming "Cancel" uses Bootstrap's secondary */
+    background-color: var(--modal-cancel-btn-bg);
+    border-color: var(--modal-cancel-btn-bg);
+    color: white;
+}
+
+.signup-verification-modal .modal-footer .btn-secondary:hover {
+    background-color: var(--modal-cancel-btn-hover);
+    border-color: var(--modal-cancel-btn-hover);
+}
+
+/* Close button styling */
+.signup-verification-modal .btn-close {
+    color: var(--modal-close-color-light);
+    opacity: 0.5; /* Less prominent close button */
+}
+
+.signup-verification-modal .btn-close:hover {
+    opacity: 0.75;
+}
+
+.signup-verification-modal.dark .btn-close {
+    color: var(--modal-close-color-dark);
+}

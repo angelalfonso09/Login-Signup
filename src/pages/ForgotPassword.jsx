@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { Container, Card, Modal } from "react-bootstrap";
 import "../styles/ForgotPassword/ForgotPassword.css";
 import BackgroundLayout from '../components/BackgroundLayout';
+import { ThemeContext } from '../context/ThemeContext';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
@@ -14,6 +15,7 @@ const ForgotPassword = () => {
   const [showResetModal, setShowResetModal] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const { theme } = useContext(ThemeContext);
 
   const handleSubmitEmail = async (e) => {
     e.preventDefault();
@@ -27,7 +29,7 @@ const ForgotPassword = () => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },
-        credentials: 'include',  
+        credentials: 'include',
         body: JSON.stringify({ email }),
       });
 
@@ -92,13 +94,13 @@ const ForgotPassword = () => {
     e.preventDefault();
     setIsLoading(true);
     setStatus({ type: '', message: '' });
-  
+
     if (newPassword !== confirmPassword) {
       setStatus({ type: 'error', message: "Passwords don't match." });
       setIsLoading(false);
       return;
     }
-  
+
     try {
       const response = await fetch('http://localhost:5000/api/reset-password', {
         method: 'POST',
@@ -108,11 +110,11 @@ const ForgotPassword = () => {
         },
         body: JSON.stringify({ newPassword, confirmPassword }),
       });
-  
+
       const data = await response.json();
-  
+
       if (!response.ok) throw new Error(data.message);
-  
+
       setStatus({ type: 'success', message: 'Password reset successful! You can now log in.' });
       setShowResetModal(false);
       alert('Password reset successful! Redirecting to login...');
@@ -125,8 +127,8 @@ const ForgotPassword = () => {
       setConfirmPassword('');
     }
   };
-  
-  
+
+
   return (
     <BackgroundLayout variant="pink">
       <div className="forgot-password-container">
@@ -147,8 +149,8 @@ const ForgotPassword = () => {
                 />
               </div>
 
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 className="btn btn-primary w-100"
                 disabled={isLoading}
               >
@@ -168,8 +170,8 @@ const ForgotPassword = () => {
               </p>
             </div>
             <div className="forgot-password-links text-center text-muted small">
-              <a href="#" className="forgot-password-terms">Terms & Conditions</a> | 
-              <a href="#" className="forgot-password-support">Support</a> | 
+              <a href="#" className="forgot-password-terms">Terms & Conditions</a> |
+              <a href="#" className="forgot-password-support">Support</a> |
               <a href="#" className="forgot-password-care">Customer Care</a>
             </div>
           </Card.Body>
@@ -177,35 +179,45 @@ const ForgotPassword = () => {
       </div>
 
       {/* OTP Verification Modal */}
-      <Modal show={showOtpModal} onHide={() => setShowOtpModal(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>Enter OTP</Modal.Title>
+      <Modal show={showOtpModal} onHide={() => setShowOtpModal(false)} centered className="otp-verification-modal">
+        <Modal.Header closeButton className="otp-modal-header">
+          <Modal.Title className="otp-modal-title">OTP Verification</Modal.Title>
         </Modal.Header>
-        <Modal.Body>
+        <Modal.Body className="otp-modal-body">
+          <p className="otp-modal-description">Enter the verification code we just sent to your email address.</p>
           <form onSubmit={handleSubmitOtp}>
             <div className="mb-3">
               <input
                 type="text"
                 value={otp}
                 onChange={(e) => setOtp(e.target.value)}
-                className="form-control"
-                placeholder="Enter OTP"
+                className="form-control otp-input"
+                placeholder="Enter 6-digit code"
+                maxLength="6" // Assuming a 6-digit OTP
                 required
               />
             </div>
-            <button 
-              type="submit" 
-              className="btn btn-primary w-100"
+            <button
+              type="submit"
+              className="btn btn-primary w-100 otp-verify-button"
               disabled={isLoading}
             >
               {isLoading ? 'Verifying OTP...' : 'Verify OTP'}
             </button>
+            {status.message && (
+              <div className={`alert mt-3 ${status.type === 'success' ? 'alert-success' : 'alert-danger'}`}>
+                {status.message}
+              </div>
+            )}
+            <div className="resend-otp-section mt-3 text-center">
+              <p>Didn't receive code? <a href="#" className="resend-otp-link">Resend</a></p>
+            </div>
           </form>
         </Modal.Body>
       </Modal>
 
-      {/* Reset Password Modal */}
-      <Modal show={showResetModal} onHide={() => setShowResetModal(false)}>
+      {/* Reset Password Modal (optional, apply similar styling if needed) */}
+      <Modal show={showResetModal} onHide={() => setShowResetModal(false)} className={`forgot-verification-modal ${theme}`}>
         <Modal.Header closeButton>
           <Modal.Title>Reset Password</Modal.Title>
         </Modal.Header>
@@ -231,8 +243,8 @@ const ForgotPassword = () => {
                 required
               />
             </div>
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               className="btn btn-success w-100"
               disabled={isLoading}
             >

@@ -24,6 +24,7 @@ const authRoutes = require("./models/route");
 const app = express();
 const port = 5000;
 const saltRounds = 10;
+const otpGenerator = require('otp-generator');
 // const users = [];
 
 
@@ -108,11 +109,49 @@ io.listen(3001, () => {
 
 // mailer function
 app.post("/send-email", async (req, res) => {
-  const { email, subject, message } = req.body;
+    const { email, subject, message } = req.body; // 'message' will contain a placeholder from frontend
 
-  const response = await sendEmail(email, subject, message);
-  res.json(response);
+    if (!email) {
+        return res.status(400).json({ error: "Email is required." });
+    }
+
+    console.log("Backend received email:", email); // Debug: Check received email
+    console.log("Backend received message from frontend:", message); // Debug: Check raw message from frontend
+
+    try {
+        // 1. Generate OTP
+        const otp = otpGenerator.generate(6, {
+            upperCaseAlphabets: false,
+            lowerCaseAlphabets: false,
+            specialChars: false,
+        });
+        console.log("Generated OTP:", otp); // Debug: Check generated OTP
+
+        // 2. Store OTP (verification_code) in the database for the given email
+        const [userCheck] = await db.query("SELECT id FROM users WHERE email = ?", [email]);
+
+        if (userCheck.length === 0) {
+            return res.status(404).json({ error: "User with this email not found. Cannot send OTP." });
+        }
+
+        await db.query("UPDATE users SET verification_code = ?, email_verified = 0 WHERE email = ?", [otp, email]);
+
+        // 3. Send the email with the generated OTP
+        const finalMessage = message.replace("[OTP_PLACEHOLDER]", otp); // Replace placeholder with actual OTP
+
+        // Generate a unique subject line to bypass Gmail's caching
+        const uniqueSubject = `${subject} - ${new Date().toLocaleString()}`; // <-- ADDED: Unique subject for testing
+        console.log("Final message prepared for email:", finalMessage); // Debug: Check message AFTER replacement
+
+        // Pass the unique subject to sendEmail
+        const response = await sendEmail(email, uniqueSubject, finalMessage); // <-- MODIFIED: Using uniqueSubject
+        res.json({ success: true, message: "OTP sent successfully!", emailResponse: response });
+    } catch (error) {
+        console.error("Error in /send-email (OTP generation/storage/sending):", error);
+        res.status(500).json({ error: "Failed to send OTP. Please try again later." });
+    }
 });
+
 
 // verify code function (for email verification)
 app.post("/verify-code", async (req, res) => {
@@ -148,6 +187,49 @@ app.post("/verify-code", async (req, res) => {
     console.error("Database error during email verification:", err);
     res.status(500).json({ error: "Database error during email verification." });
   }
+});
+
+// --- NEW API Endpoint: Verify Admin/Super Admin OTP ---
+app.post("/admin/verify-otp", async (req, res) => {
+    console.log("Received admin/super admin verification request:", req.body);
+    const { email, code } = req.body;
+
+    if (!email || !code) {
+        return res
+            .status(400)
+            .json({ error: "Email and verification code are required." });
+    }
+
+    try {
+        // Query the database to find the user (admin/super admin)
+        // You might want to add a WHERE clause for role if you have specific admin tables or roles
+        const [results] = await db.query("SELECT * FROM users WHERE email = ?", [email]);
+        console.log("Database query results for admin verification:", results);
+
+        if (results.length === 0) {
+            return res.status(404).json({ error: "Admin/Super Admin user not found." });
+        }
+
+        const user = results[0];
+        console.log("Admin user found in DB for verification:", user);
+        console.log("Stored verification code in DB (admin):", user.verification_code);
+        console.log("Code received from frontend (admin):", code);
+
+        // Check verification code
+        if (user.verification_code !== code) {
+            console.log("OTP Mismatch (admin): Stored:", user.verification_code, "Received:", code);
+            return res.status(400).json({ error: "Invalid verification code." });
+        }
+
+        // Update user to set them as email_verified and clear the verification code
+        const [updateResult] = await db.query("UPDATE users SET email_verified = 1, verification_code = NULL WHERE email = ?", [email]);
+        console.log("Admin user email verified and code cleared:", updateResult);
+
+        res.json({ success: true, message: "Admin/Super Admin email verification successful!" });
+    } catch (err) {
+        console.error("Database error during admin email verification:", err);
+        res.status(500).json({ error: "Database error during admin email verification." });
+    }
 });
 
 
@@ -316,64 +398,55 @@ app.post("/login", async (req, res) => {
 });
 
 // Create admin
-app.post("/admin", async (req, res) => {
-  console.log("📩 Received data:", req.body);
+app.post('/admin', async (req, res) => {
+    const { username, email, password, confirmPassword, role } = req.body;
 
-  const { username, email, password, confirmPassword, role } = req.body;
-
-  if (!username || !email || !password || !confirmPassword || !role) {
-    console.log("❌ Missing fields:", {
-      username,
-      email,
-      password,
-      confirmPassword,
-      role,
-    });
-    return res.status(400).json({ error: "All fields are required" });
-  }
-
-  if (password !== confirmPassword) {
-    return res.status(400).json({ error: "Passwords do not match" });
-  }
-
-  const allowedRoles = ["Admin", "Super Admin"];
-  if (!allowedRoles.includes(role)) {
-    return res
-      .status(400)
-      .json({ error: "Invalid role. Allowed roles: Admin, Super Admin" });
-  }
-
-  try {
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-    console.log("📝 Inserting into DB:", { username, email, role });
-
-    const sql =
-      "INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)";
-    
-    // Corrected: Use await db.query and destructure the result
-    const [result] = await db.query(sql, [username, email, hashedPassword, role]);
-    
-    console.log("✅ User created successfully:", {
-      userId: result.insertId,
-      role,
-    });
-    res.json({
-      message: "User created successfully",
-      userId: result.insertId,
-    });
-  } catch (error) { // This catch block now handles both bcrypt errors and db.query errors
-    console.error("❌ Error during admin creation:", error); // More general error message
-    // Check for duplicate entry error specifically
-    if (error.code && error.code.startsWith('ER_')) { // MySQL error codes typically start with ER_
-        if (error.code === 'ER_DUP_ENTRY') {
-            return res.status(409).json({ error: "User with this username or email already exists." });
-        }
-        return res.status(500).json({ error: "Database error during admin creation." });
+    // Basic validation
+    if (!username || !email || !password || !confirmPassword || !role) {
+        return res.status(400).json({ error: "All fields are required." });
     }
-    res.status(500).json({ error: "Server error" }); // Generic server error
-  }
+    if (password !== confirmPassword) {
+        return res.status(400).json({ error: "Passwords do not match." });
+    }
+
+    try {
+        // 1. Generate OTP for this new user
+        const otp = otpGenerator.generate(6, {
+            upperCaseAlphabets: false,
+            lowerCaseAlphabets: false,
+            specialChars: false,
+        });
+        console.log("Generated OTP for new admin:", otp);
+
+        // 2. Insert the new admin into your database with email_verified = 0 and the OTP
+        // In a real application: Hash the password before storing it (e.g., using bcrypt).
+        // const hashedPassword = await bcrypt.hash(password, 10);
+
+        const [insertResult] = await db.query(
+            "INSERT INTO users (username, email, password_hash, role, email_verified, verification_code) VALUES (?, ?, ?, ?, ?, ?)", // Changed 'password' to 'password_hash'
+            [username, email, password, role, 0, otp] // Set email_verified to 0 and store OTP
+        );
+        console.log("New admin inserted into DB with OTP:", insertResult);
+
+        // 3. Send the OTP email to the newly created admin
+        const subject = "Verify Your Admin Account Email";
+        const messageBody = `Your verification code for your Admin account is: ${otp}. Please use this code to complete your registration.`;
+        const uniqueSubject = `${subject} - ${new Date().toLocaleString()}`;
+
+        await sendEmail(email, uniqueSubject, messageBody);
+        console.log(`OTP email sent to new admin ${email}`);
+
+        res.status(201).json({ message: 'Admin account created successfully! Please verify your email with the OTP sent.', adminId: insertResult.insertId });
+
+    } catch (error) {
+        console.error("Admin creation error:", error);
+        if (error.code === 'ER_DUP_ENTRY') {
+            return res.status(409).json({ error: "Email or username already exists." });
+        }
+        res.status(500).json({ error: "Failed to create admin account." });
+    }
 });
+
 
 // fetch users
 app.get("/api/users", async (req, res) => {

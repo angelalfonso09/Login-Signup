@@ -1,15 +1,15 @@
 body::-webkit-scrollbar {
-    display: none; 
+    display: none;
 }
 
 /* Main Container */
 .aquasense-main-container {
-    width: 100%; 
-    min-height: 100vh; 
+    width: 100%;
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
-    overflow-x: hidden; 
-    background-color: black; 
+    overflow-x: hidden;
+    background-color: #1e1f21; /* Updated background color */
     flex: 1;
     transition: all 0.3s ease-in-out;
     animation: fadeIn 0.5s ease-in-out;
@@ -22,7 +22,7 @@ body::-webkit-scrollbar {
     justify-content: space-between;
     align-items: center;
     padding: 20px 40px;
-    background: linear-gradient(to right, #020202, #0a0a1a);
+    background: linear-gradient(to right, #1e1f21, #2f2f31); /* Updated background color */
     border-bottom: 2px solid #004aad;
     transition: background 0.3s ease-in-out, border-bottom 0.3s ease-in-out;
     animation: slideInLeft 0.5s ease-in-out;
@@ -66,7 +66,7 @@ body::-webkit-scrollbar {
 .aquasense-hero-section {
     text-align: left;
     padding: 80px 40px;
-    background: linear-gradient(to right, black, #0a0f1f);
+    background: linear-gradient(to right, #1e1f21, #2f2f31); /* Updated background color */
     color: white;
     transition: color 0.3s ease-in-out;
     animation: fadeIn 1s ease-in-out;
@@ -119,7 +119,7 @@ body::-webkit-scrollbar {
 /* About Section */
 .aquasense-about-section {
     padding: 80px 50px;
-    background: black;
+    background: #1e1f21; /* Updated background color */
     color: white;
 }
 
@@ -203,7 +203,7 @@ body::-webkit-scrollbar {
     align-items: center;
     justify-content: space-between;
     padding: 80px 40px;
-    background: black;
+    background: #1e1f21; /* Updated background color */
     color: white;
 }
 
@@ -267,7 +267,7 @@ body::-webkit-scrollbar {
 }
 
 .service-card {
-    background: linear-gradient(to bottom, #10141c, black);
+    background: linear-gradient(to bottom, #2f2f31, #1e1f21); /* Updated background color */
     padding: 40px;
     text-align: center;
     border-radius: 10px;
@@ -295,7 +295,7 @@ body::-webkit-scrollbar {
 /* Contact Section */
 .aquasense-contact-section {
     padding: 80px 50px;
-    background: black;
+    background: #1e1f21; /* Updated background color */
     color: white;
 }
 
@@ -428,9 +428,9 @@ body::-webkit-scrollbar {
 .footer {
     text-align: center;
     padding: 40px 20px;
-    background: linear-gradient(to right, #000000, #0f1624);
+    background: linear-gradient(to right, #1e1f21, #2f2f31); /* Updated background color */
     color: white;
-    animation: fadeIn 1.5s ease-in-out; 
+    animation: fadeIn 1.5s ease-in-out;
 }
 
 .footer-title {
@@ -564,4 +564,3 @@ body::-webkit-scrollbar {
     color: #4a8af4; /* Change to your preferred highlight color */
     font-weight: bold;
 }
-

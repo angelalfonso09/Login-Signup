@@ -4,7 +4,11 @@ import App from "./App";
 
 // Import Bootstrap styles
 import "bootstrap/dist/css/bootstrap.min.css";
-// Import Bootstrap JavaScript (only needed if using tooltips, popovers, etc.)
+
+
+import "./styles/ForgotPassword/ForgotPasswordForm.css";
+import "./styles/Components Css/AdminAccountForm.css";
+
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 
 ReactDOM.createRoot(document.getElementById("root")).render(

@@ -8,12 +8,10 @@ import "../styles/theme.css";
 const AccountManagement = ({ theme, toggleTheme }) => {
   return (
     <div className={`account ${theme}`}>
-      {/* <Navbar /> */}
       <div className="account-container">
         <Sidebar theme={theme} toggleTheme={toggleTheme} />
         <div className="account-contents">
-          {/* <AdminAccountForm /> */}
-          <AccountTable/>
+          <AccountTable />
         </div>
       </div>
     </div>

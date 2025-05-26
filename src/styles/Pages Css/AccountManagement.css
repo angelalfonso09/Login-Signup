@@ -12,6 +12,10 @@
     display: flex;
     flex: 1;
     overflow: hidden; 
+    width: 100%;
+    height: 100%;
+    justify-content: start;
+    align-items: center;
   }
 
 
@@ -20,8 +24,6 @@
     display: flex;
     justify-content: start;
     height: 100vh;
-    overflow-y: hidden;
-    padding: 20px;
   }
 
 .account-contents::-webkit-scrollbar {

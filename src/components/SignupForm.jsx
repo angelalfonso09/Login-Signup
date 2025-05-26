@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { Form, Button, Modal } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import '../styles/Signup/SignupForm.css';
+import { ThemeContext } from '../context/ThemeContext'; // Import ThemeContext
 
 const SignupForm = () => {
   const [formData, setFormData] = useState({
@@ -17,6 +18,7 @@ const SignupForm = () => {
   const [showModal, setShowModal] = useState(false);
   const [verificationCode, setVerificationCode] = useState("");
   const navigate = useNavigate();
+  const { theme } = useContext(ThemeContext); // Use ThemeContext
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -65,10 +67,11 @@ const SignupForm = () => {
       setShowModal(true);
 
       // Send email after successful signup
+      // Ensure this matches what your backend /send-email expects
       await axios.post("http://localhost:5000/send-email", {
         email: formData.email,
         subject: "Verify Your Email",
-        message: `Your verification code is: 123456`, // You should generate a real code on the backend
+        message: `Your verification code is: [OTP_PLACEHOLDER]`, // Use placeholder for backend to fill
       });
 
     } catch (error) {
@@ -82,6 +85,12 @@ const SignupForm = () => {
       return;
     }
 
+    // --- ADDED FOR DEBUGGING ---
+    console.log("Attempting to verify code from SignupForm...");
+    console.log("Email being sent for verification:", formData.email);
+    console.log("Verification code being sent:", verificationCode);
+    // --- END DEBUGGING ---
+
     try {
       const response = await axios.post("http://localhost:5000/verify-code", {
         email: formData.email,
@@ -89,7 +98,8 @@ const SignupForm = () => {
       });
 
       if (response.data.success) {
-        window.alert("✅ Verification successful!");
+        // IMPORTANT: Avoid window.alert in production. Use a custom modal or toast.
+        // window.alert("✅ Verification successful!");
         setMessage("✅ Verification successful! Redirecting...");
         setShowModal(false);
         navigate("/login"); // Redirect to dashboard or login page
@@ -97,6 +107,7 @@ const SignupForm = () => {
         setMessage("❌ Invalid verification code. Please try again.");
       }
     } catch (error) {
+      console.error("❌ Verification failed:", error.response?.data || error);
       setMessage("❌ Verification failed: " + (error.response?.data.error || "Server error"));
     }
   };
@@ -171,8 +182,8 @@ const SignupForm = () => {
         {message && <p className="mt-3 text-center" style={{ color: message.includes("❌") ? "red" : "green" }}>{message}</p>}
       </Form>
 
-      {/* Verification Code Modal */}
-      <Modal show={showModal} onHide={() => setShowModal(false)}>
+      {/* Verification Code Modal - Added unique className and theme */}
+      <Modal show={showModal} onHide={() => setShowModal(false)} className={`signup-verification-modal ${theme}`}>
         <Modal.Header closeButton>
           <Modal.Title>Email Verification</Modal.Title>
         </Modal.Header>
@@ -189,7 +200,6 @@ const SignupForm = () => {
           />
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowModal(false)}>Close</Button>
           <Button variant="primary" onClick={handleVerification}>Verify</Button>
         </Modal.Footer>
       </Modal>

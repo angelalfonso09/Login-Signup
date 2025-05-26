@@ -9,14 +9,13 @@ import AccountManagement from "./pages/AccountManagement";
 import History from "./pages/History";
 import AdminDB from "./pages/adminDB";
 import UserDB from "./pages/userDB";
-import Notifications from "./pages/Notifications"; // <-- KEEP THIS LINE for Super Admin
-import UserNotif from "./pages/UserNotif";     // <-- New User Notifications component
-import AdminNotif from "./pages/AdminNotif";     // <-- New Admin Notifications component
+import Notifications from "./pages/Notifications"; 
+import UserNotif from "./pages/UserNotif";     
+import AdminNotif from "./pages/AdminNotif";     
 
 import { ThemeProvider, ThemeContext } from "./context/ThemeContext";
 import "./styles/common/App.css";
 import "./styles/theme.css";
-import 'bootstrap/dist/css/bootstrap.min.css';
 
 // Protected Route Wrapper
 const ProtectedRoute = ({ element, allowedRoles }) => {
