@@ -32,6 +32,7 @@
     display: flex;
     align-items: center;
     gap: 8px; 
+    font-family: 'montserrat', sans-serif;
   }
   
   .light-text {
@@ -46,6 +47,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: 8px; 
+    font-family: 'montserrat', sans-serif;
   }
   
   .notifications-button {
@@ -137,10 +139,12 @@
   .notification-type {
     font-size: 1rem; /* Equivalent to text-base */
     font-weight: 600; /* Equivalent to font-semibold */
+        font-family: 'montserrat', sans-serif;
   }
   
   .notification-type-read {
     color: #a0aec0; /* Equivalent to text-gray-400 */
+
   }
   
   .notification-type-unread {
@@ -149,6 +153,7 @@
   
   .notification-message {
     font-size: 0.875rem; /* Equivalent to text-sm */
+    font-family: 'poppins', sans-serif;
   }
   
   .notification-message-read {
@@ -159,6 +164,9 @@
     color: #d1d5db; /* Equivalent to text-gray-300 */
   }
   
+  .nitification-status{
+    font-family: 'poppins', sans-serif;
+  }
   .notification-actions {
     display: flex;
     align-items: center;
@@ -190,6 +198,7 @@
     color: #718096; /* Equivalent to text-gray-500 */
     margin-top: 8px; /* Equivalent to mt-2 */
     margin-left: 56px; /* Adjusted to align with text */
+    font-family: 'poppins', sans-serif;
   }
 
   .Notifpage{

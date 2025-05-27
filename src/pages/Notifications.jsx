@@ -326,7 +326,7 @@ const NotificationsPage = () => {
             <div className="notifications-wrapper">
                 <div className="notifications-header">
                     <h1 className={`notifications-title ${theme}-text`}>
-                        Super Admin Notifications
+                         Notifications
                     </h1>
                     <div className="notifications-actions">
                         <button

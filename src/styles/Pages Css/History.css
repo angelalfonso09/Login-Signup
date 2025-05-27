@@ -20,10 +20,11 @@ margin-left: 3rem;
 .history-title{
   display: flex;
   justify-content: end;
-  width: 15%;
+  width: 20%;
   font-size: 2rem;
   font-weight: 700;
   margin-top: 50px;
+  font-family: 'montserrat', sans-serif;
 }
 
 /* theme.css */
@@ -64,14 +65,14 @@ margin-left: 3rem;
 }
 
 /* Assign Grid Areas */
-.filter-buttons { grid-area: filters; display: flex; gap: 10px; height: 40px; }
-.export-buttons { grid-area: export; display: flex; justify-content: flex-end; height: 40px; }
-.water-temperature-container { grid-area: temp; }
-.ph-level-container { grid-area: ph; }
-.turbudity-container { grid-area: turbudity; }
-.tds-container { grid-area: tds; }
-.do-container { grid-area: do; }
-.conductivity-container { grid-area: conductivity; }
+.filter-buttons { grid-area: filters; display: flex; gap: 10px; height: 40px; font-family: 'montserrat';}
+.export-buttons { grid-area: export; display: flex; justify-content: flex-end; height: 40px; font-family: 'montserrat'}
+.water-temperature-container { grid-area: temp; font-family: 'montserrat'; }
+.ph-level-container { grid-area: ph; font-family: 'montserrat' }
+.turbudity-container { grid-area: turbudity; font-family: 'montserrat'}
+.tds-container { grid-area: tds; font-family: 'montserrat'}
+.do-container { grid-area: do; font-family: 'montserrat'}
+.conductivity-container { grid-area: conductivity;font-family: 'montserrat' }
 
 /* Sensor Chart Styling */
 .history-contents .water-temperature-container,
@@ -86,6 +87,7 @@ margin-left: 3rem;
   border-radius: 10px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
   transition: all 0.3s ease-in-out;
+
 }
 
 /* Hover Effect */
