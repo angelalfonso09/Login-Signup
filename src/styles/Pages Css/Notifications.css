@@ -1,220 +1,459 @@
-:root{
+:root {
   --notif-card-bg: #2f2f31;
+  /* Default dark mode card background */
+  --actions-button-bg-mark-read: green;
+  /* Specific variable for Mark all as read button background */
+  --actions-button-text-mark-read: #fff;
+  /* Specific variable for Mark all as read button text */
+  --actions-button-bg-delete-all: #e53e3e;
+  /* Specific variable for Delete all button background */
+  --actions-button-text-delete-all: #fff;
+  /* Specific variable for Delete all button text */
+
+  /* New variables for Approve/Decline buttons */
+  --approve-button-bg: #28a745;
+  /* Dark mode green for approve */
+  --approve-button-text: #fff;
+  --decline-button-bg: #dc3545;
+  /* Dark mode red for decline */
+  --decline-button-text: #fff;
 }
 
-.light{
-  --notif-card-bg: #FFFDF6;
+.light {
+  --notif-card-bg: #ffffff;
+  /* White card background for light mode, matching dashboard cards */
+  --actions-button-bg-mark-read: #28a745;
+  /* Green for light mode */
+  --actions-button-text-mark-read: #fff;
+  /* White text for light mode */
+  --actions-button-bg-delete-all: #dc3545;
+  /* Red for light mode (slightly different red for consistency) */
+  --actions-button-text-delete-all: #fff;
+  /* White text for light mode */
+
+  /* Light mode variables for Approve/Decline buttons */
+  --approve-button-bg: #28a745;
+  /* Still green, but ensuring it's defined */
+  --approve-button-text: #fff;
+  --decline-button-bg: #dc3545;
+  /* Still red, but ensuring it's defined */
+  --decline-button-text: #fff;
 }
+
 .notifications-container {
-    min-height: 100vh;
-    padding: 24px;
-    background: var(--bg-color);
-      transition: background-color 0.3s ease;
-  }
-  
-  
+  min-height: 100vh;
+  padding: 24px;
+  background: var(--bg-color);
+  /* This should be handled by a global --bg-color variable that switches with theme */
+  transition: background-color 0.3s ease;
+}
+
+/* Explicitly setting light mode background for the container */
+.notifications-container.light {
+  background-color: #f0f2f5;
+  /* Light grey background, consistent with history page light mode */
+}
+
 .notifications-wrapper {
   max-width: 768px;
   margin: 2rem 0 0 2rem;
 }
-  
-  .notifications-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 24px; /* Equivalent to mb-6 */
-  }
-  
-  .notifications-title {
-    font-size: 2rem; 
-    font-weight: 700;
-    color: #fff;
-    display: flex;
-    align-items: center;
-    gap: 8px; 
-    font-family: 'montserrat', sans-serif;
-  }
-  
-  .light-text {
-    color: #333; 
-  }
-  
-  .dark-text {
-    color: #eee; 
-  }
-  
-  .notifications-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px; 
-    font-family: 'montserrat', sans-serif;
-  }
-  
-  .notifications-button {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 16px;
-    border-radius: 0.375rem;
-    font-size: 0.875rem;
-    transition: background-color 0.15s ease-in-out;
-    background-color: #222; /* Default for buttons, adjust with theme if needed */
-    color: white; /* Default for buttons, adjust with theme if needed */
-    border: none; /* Remove default button border */
-    cursor: pointer;
-  }
-  
-  .mark-as-read-button {
-    border: 1px solid #4a5568; 
-    color: #fff; 
-  }
-  
-  .mark-as-read-button:hover {
-    background-color: #2d3748; 
-  }
-  
-  .delete-all-button {
-    color: #f56565; /* Equivalent to text-red-400 */
-  }
-  
-  .delete-all-button:hover {
-    background-color: #f5656526; /* Roughly equivalent to hover:bg-red-500/20 */
-  }
-  
-  .loading-text {
-    color: #a0aec0; /* Equivalent to text-gray-400 */
-    text-align: center;
-  }
-  
-  .no-notifications-text {
-    color: #718096; /* Equivalent to text-gray-500 */
-    text-align: center;
-    font-style: italic;
-  }
 
-  .notification-action-button{
-    background-color: #222;
-  }
-  
-  .notification-card {
-    margin-bottom: 16px; /* Spacing between cards */
-    border-radius: 0.75rem; /* Equivalent to rounded-xl */
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* Equivalent to shadow-md */
-    border: 1px solid #4a5568; /* Equivalent to border-gray-700 */
-    transition: all 0.15s ease-in-out;
-    background-color: var(--notif-card-bg); 
-    /* Equivalent to bg-gray-800 */
-  }
-  
-  .notification-card-read {
-    background-color: rgba(47, 47, 47, 0.5); /* Equivalent to bg-gray-800/50 */
-  }
-  
-    .notification-card .light{
-      background-color: #FFFDF6;
-    }
-  .notification-card-unread {
-    background-color: #2f2f2f; /* Equivalent to bg-gray-800 */
-  }
-  
-  .notification-content {
-    padding: 16px; /* Equivalent to p-4 */
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  
-  .notification-info {
-    display: flex;
-    align-items: center;
-    gap: 12px; 
+.notifications-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
 
-  }
-  
-  .notification-icon-wrapper {
-    padding: 8px;
-    border-radius: 50%; 
-  }
-  
-  .notification-type {
-    font-size: 1rem; /* Equivalent to text-base */
-    font-weight: 600; /* Equivalent to font-semibold */
-        font-family: 'montserrat', sans-serif;
-  }
-  
-  .notification-type-read {
-    color: #a0aec0; /* Equivalent to text-gray-400 */
+.notifications-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #fff;
+  /* Default dark mode color */
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'montserrat', sans-serif;
+}
 
-  }
-  
-  .notification-type-unread {
-    color: #fff; /* Equivalent to text-white */
-  }
-  
-  .notification-message {
-    font-size: 0.875rem; /* Equivalent to text-sm */
-    font-family: 'poppins', sans-serif;
-  }
-  
-  .notification-message-read {
-    color: #718096; /* Equivalent to text-gray-500 */
-  }
-  
-  .notification-message-unread {
-    color: #d1d5db; /* Equivalent to text-gray-300 */
-  }
-  
-  .nitification-status{
-    font-family: 'poppins', sans-serif;
-  }
-  .notification-actions {
-    display: flex;
-    align-items: center;
-    gap: 8px; /* Equivalent to gap-2 */
-  }
-  
-  .notification-actions button {
-    transition: color 0.15s ease-in-out;
-  }
+/* Light mode for title text */
+.notifications-container.light .notifications-title {
+  color: #333;
+  /* Dark text for light mode */
+}
 
-  .notification-actions button:hover {
-    cursor: pointer;
-  }
-  
-  .mark-read-icon {
-    width: 20px; /* Equivalent to h-5 w-5 */
-    height: 20px;
-    color: #63b3ed; /* Equivalent to hover:text-blue-500 */
-  }
-  
-  .delete-icon {
-    width: 20px; /* Equivalent to h-5 w-5 */
-    height: 20px;
-    color: #e53e3e; /* Equivalent to hover:text-red-500 */
-  }
-  
-  .notification-timestamp {
-    font-size: 0.75rem; /* Equivalent to text-xs */
-    color: #718096; /* Equivalent to text-gray-500 */
-    margin-top: 8px; /* Equivalent to mt-2 */
-    margin-left: 56px; /* Adjusted to align with text */
-    font-family: 'poppins', sans-serif;
-  }
+/* These are general utility classes, assume they are handled by your main theme.css */
+.light-text {
+  color: #333;
+}
 
-  .Notifpage{
-    display: flex;
-    width: 100%;
-    height: 100vh;
-    overflow: hidden;
-  }
+.dark-text {
+  color: #eee;
+}
 
-  .Notifpage-content{
-    width: 100%;
-    overflow: auto;
-  }
+.notifications-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-family: 'montserrat', sans-serif;
+}
 
-  .Notifpage-content::-webkit-scrollbar {
-    display: none;
-  }
+.notifications-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  transition: background-color 0.15s ease-in-out;
+  border: none;
+  /* Remove default button border */
+  cursor: pointer;
+}
+
+/* Specific styles for 'Mark all as read' button */
+.mark-as-read-button {
+  background-color: var(--actions-button-bg-mark-read);
+  color: var(--actions-button-text-mark-read);
+  border: 1px solid var(--actions-button-bg-mark-read);
+  /* Border matches background */
+}
+
+.mark-as-read-button:hover {
+  background-color: #2d3748;
+  /* Dark mode hover */
+  border-color: #2d3748;
+}
+
+/* Light mode for 'Mark all as read' button hover */
+.notifications-container.light .mark-as-read-button:hover {
+  background-color: #218838;
+  /* Slightly darker green for hover */
+  border-color: #218838;
+}
+
+/* Specific styles for 'Delete all' button */
+.delete-all-button {
+  background-color: var(--actions-button-bg-delete-all);
+  color: var(--actions-button-text-delete-all);
+  border: 1px solid var(--actions-button-bg-delete-all);
+  /* Border matches background */
+}
+
+.delete-all-button:hover {
+  background-color: #c82333;
+  /* Slightly darker red for hover */
+  border-color: #c82333;
+}
 
 
+.loading-text {
+  color: #a0aec0;
+  text-align: center;
+}
+
+/* Light mode for loading text */
+.notifications-container.light .loading-text {
+  color: #718096;
+  /* Darker grey for readability */
+}
+
+.no-notifications-text {
+  color: #718096;
+  text-align: center;
+  font-style: italic;
+}
+
+/* Light mode for no notifications text */
+.notifications-container.light .no-notifications-text {
+  color: #555;
+  /* Darker grey for readability */
+}
+
+.notification-action-button {
+  background-color: transparent;
+  /* Always transparent for this button */
+  border: none;
+  /* Ensure no border */
+  color: #fff;
+  /* Default dark mode icon color (like the trash icon) */
+}
+
+/* Light mode for individual notification action buttons (like delete icon) */
+.notifications-container.light .notification-action-button {
+  color: #666;
+  /* Darker color for the icon in light mode */
+}
+
+/* --- NEW / MODIFIED: Approve & Decline Buttons within Notification Card --- */
+
+/* Assuming these buttons are also within .notification-actions but specifically in the card */
+.notification-card .notification-actions .approve-request-button {
+  background-color: var(--approve-button-bg);
+  color: var(--approve-button-text);
+  padding: 6px 12px;
+  /* Adjust padding as needed */
+  border-radius: 5px;
+  /* Slightly rounded corners */
+  font-size: 0.8rem;
+  border: none;
+  /* No border for these by default */
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.notification-card .notification-actions .approve-request-button:hover {
+  background-color: #218838;
+  /* Darker green on hover */
+}
+
+.notification-card .notification-actions .decline-request-button {
+  background-color: var(--decline-button-bg);
+  color: var(--decline-button-text);
+  padding: 6px 12px;
+  /* Adjust padding as needed */
+  border-radius: 5px;
+  /* Slightly rounded corners */
+  font-size: 0.8rem;
+  border: none;
+  /* No border for these by default */
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.notification-card .notification-actions .decline-request-button:hover {
+  background-color: #c82333;
+  /* Darker red on hover */
+}
+
+
+/* Light mode adjustments for Approve & Decline buttons - these variables are already defined in .light */
+.notifications-container.light .notification-card .notification-actions .approve-request-button {
+  background-color: var(--approve-button-bg);
+  /* Uses #28a745 from .light variable */
+  color: var(--approve-button-text);
+  /* Uses #fff from .light variable */
+}
+
+.notifications-container.light .notification-card .notification-actions .approve-request-button:hover {
+  background-color: #218838;
+  /* Darker green on hover */
+}
+
+.notifications-container.light .notification-card .notification-actions .decline-request-button {
+  background-color: var(--decline-button-bg);
+  /* Uses #dc3545 from .light variable */
+  color: var(--decline-button-text);
+  /* Uses #fff from .light variable */
+}
+
+.notifications-container.light .notification-card .notification-actions .decline-request-button:hover {
+  background-color: #c82333;
+  /* Darker red on hover */
+}
+
+/* --- END NEW / MODIFIED --- */
+
+
+.notification-card {
+  margin-bottom: 16px;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  /* Default dark mode shadow */
+  border: 1px solid #4a5568;
+  /* Default dark mode border */
+  transition: all 0.15s ease-in-out;
+  background-color: var(--notif-card-bg);
+  /* Uses the theme variable */
+}
+
+/* Light mode for notification cards */
+.notifications-container.light .notification-card {
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  /* Lighter shadow for light mode */
+  border: 1px solid #e0e0e0;
+  /* Lighter border for light mode */
+}
+
+.notification-card-read {
+  background-color: rgba(47, 47, 47, 0.5);
+  /* Dark mode read card background */
+}
+
+/* Light mode for read notification cards */
+.notifications-container.light .notification-card-read {
+  background-color: #f8f8f8;
+  /* Slightly off-white for read cards in light mode */
+  border: 1px solid #f0f0f0;
+  /* Lighter border for read cards */
+}
+
+.notification-card-unread {
+  background-color: #2f2f2f;
+  /* Dark mode unread card background */
+}
+
+/* Light mode for unread notification cards */
+.notifications-container.light .notification-card-unread {
+  background-color: var(--notif-card-bg);
+  /* Will be #ffffff via :root .light */
+  border: 1px solid #e0e0e0;
+  /* Matches main card border */
+}
+
+.notification-content {
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.notification-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.notification-icon-wrapper {
+  padding: 8px;
+  border-radius: 50%;
+  /* You might want to add theme-based background for the icon wrapper if it has one */
+}
+
+.notification-type {
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: 'montserrat', sans-serif;
+}
+
+.notification-type-read {
+  color: #a0aec0;
+  /* Default dark mode read type color */
+}
+
+/* Light mode for read notification type text */
+.notifications-container.light .notification-type-read {
+  color: #718096;
+  /* Darker grey for readability */
+}
+
+.notification-type-unread {
+  color: #fff;
+  /* Default dark mode unread type color */
+}
+
+/* Light mode for unread notification type text */
+.notifications-container.light .notification-type-unread {
+  color: #333;
+  /* Dark text for unread in light mode */
+}
+
+.notification-message {
+  font-size: 0.875rem;
+  font-family: 'poppins', sans-serif;
+}
+
+.notification-message-read {
+  color: #718096;
+  /* Default dark mode read message color */
+}
+
+/* Light mode for read notification message text */
+.notifications-container.light .notification-message-read {
+  color: #555;
+  /* Darker grey for readability */
+}
+
+.notification-message-unread {
+  color: #d1d5db;
+  /* Default dark mode unread message color */
+}
+
+/* Light mode for unread notification message text */
+.notifications-container.light .notification-message-unread {
+  color: #333;
+  /* Dark text for unread message in light mode */
+}
+
+.nitification-status {
+  font-family: 'poppins', sans-serif;
+  /* This rule applies to Status: Approved/Invalid Date */
+}
+
+/* Light mode for status text */
+.notifications-container.light .nitification-status {
+  color: #555;
+  /* Ensure readability */
+}
+
+.notification-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.notification-actions button {
+  transition: color 0.15s ease-in-out;
+}
+
+.notification-actions button:hover {
+  cursor: pointer;
+}
+
+.mark-read-icon {
+  width: 20px;
+  height: 20px;
+  color: #63b3ed;
+  /* Default dark mode icon color */
+}
+
+/* Light mode for mark read icon */
+.notifications-container.light .mark-read-icon {
+  color: #007bff;
+  /* A standard blue that fits light mode */
+}
+
+.delete-icon {
+  width: 20px;
+  height: 20px;
+  color: #e53e3e;
+  /* Default dark mode icon color */
+}
+
+/* Light mode for delete icon */
+.notifications-container.light .delete-icon {
+  color: #dc3545;
+  /* A standard red that fits light mode */
+}
+
+.notification-timestamp {
+  font-size: 0.75rem;
+  color: #718096;
+  /* Default dark mode timestamp color */
+  margin-top: 8px;
+  margin-left: 56px;
+  font-family: 'poppins', sans-serif;
+}
+
+/* Light mode for timestamp text */
+.notifications-container.light .notification-timestamp {
+  color: #555;
+  /* Darker grey for readability */
+}
+
+.Notifpage {
+  display: flex;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.Notifpage-content {
+  width: 100%;
+  overflow: auto;
+}
+
+.Notifpage-content::-webkit-scrollbar {
+  display: none;
+}

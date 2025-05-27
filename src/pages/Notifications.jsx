@@ -107,14 +107,14 @@ const NotificationCard = ({ notification, onMarkAsRead, onDelete, onApproveReque
                                     className={`notification-action-button approve-button`}
                                     title="Approve Request"
                                 >
-                                    <ThumbsUp className="approve-icon" />
+                                    <ThumbsUp className="approve-request-button" />
                                 </button>
                                 <button
                                     onClick={() => onDeclineRequest(notification.id, notification.fromUserId)}
                                     className={`notification-action-button decline-button`}
                                     title="Decline Request"
                                 >
-                                    <ThumbsDown className="decline-icon" />
+                                    <ThumbsDown className="decline-request-button" />
                                 </button>
                             </>
                         )}

@@ -11,7 +11,7 @@
     --acctbl-controls-gap: 10px;
     --acctbl-controls-margin-bottom: 15px;
     --acctbl-controls-height: 40px;
-    --acctbl-controls-bg-light: transparent;
+    --acctbl-controls-bg-light: #f8f9fa;
     --acctbl-controls-bg-dark: transparent;
 
     --acctbl-input-padding: 8px;
@@ -52,6 +52,11 @@
     --acctbl-delete-btn-dark: #2f2f31;
     --acctbl-delete-btn-hover-dark: #e53935;
 
+    --acctbl-button-hover-light:#218838;
+
+    --acctbl-create-btn-light:#28a745;
+    --acctbl-delete-btn-light:#dc3545;
+
 
     --modal-bg-light: #ffffff;
     --modal-bg-dark: #2f2f31;
@@ -67,6 +72,7 @@
     /* Reusing for Cancel */
     --modal-cancel-btn-hover: #dc3545;
     /* Reusing for Cancel Hover */
+    
 
 }
 
@@ -85,7 +91,7 @@
 
 
 .acctbl-container.light {
-    background-color: #ffffff;
+    background-color: #FFFDF6;
     color: #000;
     box-shadow: var(--acctbl-shadow-light);
 }
@@ -330,10 +336,26 @@ header {
     display: flex;
     align-items: center;
     gap: 5px;
+    background-color:var(--acctbl-create-btn-light);
 }
 
+.acctbl-delete-btn {
+    border: none;
+    padding: var(--acctbl-btn-padding-new);
+    border-radius: var(--acctbl-btn-radius-new);
+    cursor: var(--acctbl-btn-cursor);
+    font-size: var(--acctbl-btn-font-size-new);
+    transition: var(--acctbl-btn-transition-new);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background-color:var(--acctbl-delete-btn-light);
+}
+
+
+
 .acctbl-container.light .acctbl-create-btn {
-    color: white;
+    color: black;
 }
 
 .acctbl-container.light .acctbl-create-btn:hover {

@@ -186,7 +186,7 @@ const UserAdminTable = () => {
                       <Pencil size={16} />
                     </button>
                     <button
-                      className="acctbl-create-btn"
+                      className="acctbl-delete-btn"
                       onClick={() => handleDelete(account.id)}
                     >
                       <Trash2 size={16} />

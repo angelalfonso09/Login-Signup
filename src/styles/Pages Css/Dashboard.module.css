@@ -6,15 +6,34 @@
     --card-bg: #2f2f31;
     --card-border: #3a3a3a;
     --shadow-color: rgba(0, 0, 0, 0.3);
-    --primary-blue: #8ab4f8;
-    --primary-blue-hover: #2b6cb0;
+    --primary-blue: #4caf50;
+    --primary-blue-hover: #45a049;
     --danger-red: #dc3545;
     --danger-red-hover: #c82333;
     --success-green: #28a745;
     --success-green-hover: #218838;
     --input-bg: #343a40;
     --input-border: #495057;
+    --addEstablishmentForm:#FFFDF6;
 }
+
+:root[data-theme='dark']{
+    --bg-color: #121212;
+    --text-color: #ffffff;
+    --card-bg: #1e1f21;
+    --card-border: #2a2a2a;
+    --shadow-color: rgba(0, 0, 0, 0.5);
+    --primary-blue: #222;
+    --primary-blue-hover: #5a6268;
+    --danger-red: #dc3545;
+    --danger-red-hover: #c82333;
+    --success-green: #28a745;
+    --success-green-hover: #218838;
+    --input-bg: #343a40;
+    --input-border: #495057;
+        --addEstablishmentForm:#3a3a3a;
+}
+
 
 .db {
   display: flex;
@@ -44,7 +63,7 @@
 
 /* Custom scrollbar for webkit browsers */
 .dbContents::-webkit-scrollbar {
-  width: 8px;
+  display: none;
 }
 
 .dbContents::-webkit-scrollbar-track {
@@ -150,7 +169,7 @@
 }
 
 .addEstablishmentForm {
-  background-color: #3a3a3a; /* Slightly different background for the form */
+  background-color: var(--addEstablishmentForm); /* Slightly different background for the form */
   border-radius: 8px;
   padding: 15px;
   margin-bottom: 20px;
