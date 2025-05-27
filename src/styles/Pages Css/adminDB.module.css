@@ -20,13 +20,37 @@
   flex-direction: column;
   gap: 20px;
   padding: 20px;
-  overflow: auto;
-  max-height: calc(100vh - 60px);
+  overflow-y: auto; /* Changed to overflow-y for vertical scrolling */
+  max-height: calc(100vh - 60px); /* Adjust based on Navbar height if uncommented */
 }
 
 .admindbContents::-webkit-scrollbar {
-  display: none;
+  width: 8px;
 }
+
+.admindbContents::-webkit-scrollbar-track {
+  background: var(--bg-color);
+  border-radius: 10px;
+}
+
+.admindbContents::-webkit-scrollbar-thumb {
+  background: var(--accent-color); /* Use a theme variable for scrollbar */
+  border-radius: 10px;
+}
+
+/* Calendar Widget Styles */
+.calendarWidget {
+  background: var(--card-bg);
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0px 4px 10px var(--shadow-color);
+  margin-bottom: 20px; /* Space below the calendar */
+  /* This ensures the calendar takes available width but doesn't stretch excessively */
+  width: 100%;
+  max-width: 900px; /* Limit max width for better aesthetics on large screens */
+  align-self: center; /* Center the calendar widget */
+}
+
 
 .meterRowFlex {
   display: flex;
@@ -34,25 +58,26 @@
   justify-content: center;
   gap: 20px;
   padding-bottom: 20px;
+  width: 100%; /* Ensure it takes full width */
 }
 
 .meterWidget {
   display: flex;
-  flex-direction: column; /* Arrange elements within each widget vertically */
+  flex-direction: column;
   align-items: center;
   background: var(--card-bg);
-  padding: 15px; /* Adjust padding as needed */
+  padding: 15px;
   border-radius: 12px;
   box-shadow: 0px 4px 10px var(--shadow-color);
   text-align: center;
   font-weight: bold;
   transition: transform 0.2s ease-in-out, box-shadow 0.3s ease-in-out;
-  width: 300px; 
-  flex-shrink: 0; 
+  width: 300px;
+  flex-shrink: 0;
 }
 
 .meterWidget:hover {
-  transform: scale(1.05);
+  transform: scale(1.03); /* Slightly less aggressive hover */
   box-shadow: 0px 6px 15px var(--shadow-color);
 }
 
@@ -61,46 +86,74 @@
   font-weight: bold;
   margin-bottom: 10px;
   color: var(--text-color);
-  width: 100%; 
-  text-align: left; 
-  padding-left: 10px; 
+  width: 100%;
+  text-align: left;
+  padding-left: 10px;
 }
 
+/* Admin Establishment Container */
+.adminEstablishmentContainer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center; /* Center items within the container */
+  gap: 20px;
+  width: 100%;
+}
+
+.adminEstablishmentContainer > div {
+  flex: 1 1 calc(33% - 20px);
+  min-width: 280px; /* Slightly reduced min-width for better wrapping */
+  max-width: 350px; /* Add a max-width to prevent stretching too wide */
+  background: var(--card-bg); /* Apply consistent styling */
+  padding: 15px;
+  border-radius: 12px;
+  box-shadow: 0px 4px 10px var(--shadow-color);
+}
+
+
 /* Media queries for responsiveness */
+@media (max-width: 1200px) {
+  .adminEstablishmentContainer > div {
+    flex: 1 1 calc(50% - 20px); /* Two columns on larger tablets */
+  }
+}
+
 @media (max-width: 768px) {
+  .admindbContents {
+    padding: 15px; /* Slightly less padding on smaller screens */
+  }
+
+  .calendarWidget {
+    padding: 15px;
+  }
+
   .meterRowFlex {
-    /* Adjust spacing or allow wrapping if needed */
     gap: 15px;
   }
   .meterWidget {
-    width: 280px; /* Slightly smaller on medium screens */
-    padding: 10px;
+    width: 100%; /* Full width on medium screens to stack */
+    max-width: 350px; /* Keep a max-width */
+  }
+  .adminEstablishmentContainer > div {
+    flex: 1 1 100%; /* Stack on small tablets and mobile */
+    max-width: 400px; /* Limit width */
   }
 }
 
 @media (max-width: 600px) {
+  .admindbContents {
+    padding: 10px;
+    gap: 15px;
+  }
+  .calendarWidget {
+    padding: 10px;
+  }
   .meterRowFlex {
-    /* Consider making it wrap or further reduce gap/width */
-    flex-wrap: wrap;
-    justify-content: center; /* Center widgets on smaller screens */
+    flex-direction: column; /* Stack all items vertically */
+    align-items: center; /* Center items when stacked */
   }
   .meterWidget {
-    width: 90%; /* Make widgets take more width on small screens */
-    margin-bottom: 20px; /* Add vertical spacing when wrapped */
+    width: 95%; /* Almost full width for better mobile experience */
+    margin-bottom: 15px; /* Add vertical spacing */
   }
-}
-
-.adminEstablishmentContainer {
-  display: flex;
-  flex-wrap: wrap; 
-  align-items: center;
-  justify-content: center;
-  gap: 20px; 
-  width: 100%; 
-}
-
-
-.adminEstablishmentContainer > div {
-  flex: 1 1 calc(33% - 20px); 
-  min-width: 300px; 
 }

@@ -1,42 +1,24 @@
 :root {
   --notif-card-bg: #2f2f31;
-  /* Default dark mode card background */
   --actions-button-bg-mark-read: green;
-  /* Specific variable for Mark all as read button background */
   --actions-button-text-mark-read: #fff;
-  /* Specific variable for Mark all as read button text */
   --actions-button-bg-delete-all: #e53e3e;
-  /* Specific variable for Delete all button background */
   --actions-button-text-delete-all: #fff;
-  /* Specific variable for Delete all button text */
-
-  /* New variables for Approve/Decline buttons */
   --approve-button-bg: #28a745;
-  /* Dark mode green for approve */
   --approve-button-text: #fff;
   --decline-button-bg: #dc3545;
-  /* Dark mode red for decline */
   --decline-button-text: #fff;
 }
 
 .light {
   --notif-card-bg: #ffffff;
-  /* White card background for light mode, matching dashboard cards */
   --actions-button-bg-mark-read: #28a745;
-  /* Green for light mode */
   --actions-button-text-mark-read: #fff;
-  /* White text for light mode */
   --actions-button-bg-delete-all: #dc3545;
-  /* Red for light mode (slightly different red for consistency) */
   --actions-button-text-delete-all: #fff;
-  /* White text for light mode */
-
-  /* Light mode variables for Approve/Decline buttons */
   --approve-button-bg: #28a745;
-  /* Still green, but ensuring it's defined */
   --approve-button-text: #fff;
   --decline-button-bg: #dc3545;
-  /* Still red, but ensuring it's defined */
   --decline-button-text: #fff;
 }
 
@@ -44,14 +26,11 @@
   min-height: 100vh;
   padding: 24px;
   background: var(--bg-color);
-  /* This should be handled by a global --bg-color variable that switches with theme */
   transition: background-color 0.3s ease;
 }
 
-/* Explicitly setting light mode background for the container */
 .notifications-container.light {
   background-color: #f0f2f5;
-  /* Light grey background, consistent with history page light mode */
 }
 
 .notifications-wrapper {
@@ -70,20 +49,17 @@
   font-size: 2rem;
   font-weight: 700;
   color: #fff;
-  /* Default dark mode color */
   display: flex;
   align-items: center;
   gap: 8px;
   font-family: 'montserrat', sans-serif;
 }
 
-/* Light mode for title text */
+
 .notifications-container.light .notifications-title {
   color: #333;
-  /* Dark text for light mode */
 }
 
-/* These are general utility classes, assume they are handled by your main theme.css */
 .light-text {
   color: #333;
 }
@@ -108,28 +84,22 @@
   font-size: 0.875rem;
   transition: background-color 0.15s ease-in-out;
   border: none;
-  /* Remove default button border */
   cursor: pointer;
 }
 
-/* Specific styles for 'Mark all as read' button */
 .mark-as-read-button {
   background-color: var(--actions-button-bg-mark-read);
   color: var(--actions-button-text-mark-read);
   border: 1px solid var(--actions-button-bg-mark-read);
-  /* Border matches background */
 }
 
 .mark-as-read-button:hover {
   background-color: #2d3748;
-  /* Dark mode hover */
   border-color: #2d3748;
 }
 
-/* Light mode for 'Mark all as read' button hover */
 .notifications-container.light .mark-as-read-button:hover {
   background-color: #218838;
-  /* Slightly darker green for hover */
   border-color: #218838;
 }
 
@@ -189,42 +159,42 @@
 /* --- NEW / MODIFIED: Approve & Decline Buttons within Notification Card --- */
 
 /* Assuming these buttons are also within .notification-actions but specifically in the card */
-.notification-card .notification-actions .approve-request-button {
+.approve-button {
   background-color: var(--approve-button-bg);
   color: var(--approve-button-text);
   padding: 6px 12px;
-  /* Adjust padding as needed */
   border-radius: 5px;
-  /* Slightly rounded corners */
   font-size: 0.8rem;
   border: none;
-  /* No border for these by default */
   cursor: pointer;
   transition: background-color 0.2s ease;
+  display: flex; /* Ensures icon is centered if alone */
+  align-items: center;
+  justify-content: center;
+  gap: 4px; /* Space between icon and text if you add text later */
 }
 
-.notification-card .notification-actions .approve-request-button:hover {
-  background-color: #218838;
-  /* Darker green on hover */
+.approve-button:hover {
+  background-color: #218838; /* Slightly darker green on hover */
 }
 
-.notification-card .notification-actions .decline-request-button {
+.decline-button {
   background-color: var(--decline-button-bg);
   color: var(--decline-button-text);
   padding: 6px 12px;
-  /* Adjust padding as needed */
   border-radius: 5px;
-  /* Slightly rounded corners */
   font-size: 0.8rem;
   border: none;
-  /* No border for these by default */
   cursor: pointer;
   transition: background-color 0.2s ease;
+  display: flex; /* Ensures icon is centered if alone */
+  align-items: center;
+  justify-content: center;
+  gap: 4px; /* Space between icon and text if you add text later */
 }
 
-.notification-card .notification-actions .decline-request-button:hover {
-  background-color: #c82333;
-  /* Darker red on hover */
+.decline-button:hover {
+  background-color: #c82333; /* Slightly darker red on hover */
 }
 
 
@@ -236,24 +206,43 @@
   /* Uses #fff from .light variable */
 }
 
-.notifications-container.light .notification-card .notification-actions .approve-request-button:hover {
-  background-color: #218838;
-  /* Darker green on hover */
-}
-
-.notifications-container.light .notification-card .notification-actions .decline-request-button {
-  background-color: var(--decline-button-bg);
-  /* Uses #dc3545 from .light variable */
-  color: var(--decline-button-text);
-  /* Uses #fff from .light variable */
-}
-
-.notifications-container.light .notification-card .notification-actions .decline-request-button:hover {
-  background-color: #c82333;
-  /* Darker red on hover */
+.approve-request-icon,
+.decline-request-icon {
+  width: 20px;
+  height: 20px;
+  color: inherit; /* Inherit color from the button's text color (var(--approve-button-text) or var(--decline-button-text)) */
+  stroke-width: 3; /* Increase stroke-width for bolder icon appearance */
 }
 
 /* --- END NEW / MODIFIED --- */
+
+/* --- ADDED / MODIFIED CODE FOR CHECK AND CROSS ICONS --- */
+
+/* Styles for the Check icon inside the Approve button */
+.notification-card .notification-actions .approve-request-button .approve-request-icon {
+  width: 20px;
+  /* Set a consistent size for the icon */
+  height: 20px;
+  /* Set a consistent size for the icon */
+  color: #fff;
+  /* Make the icon white to contrast with the green button */
+  stroke-width: 3;
+  /* Increase stroke-width for bolder icon appearance if it's an SVG icon */
+}
+
+/* Styles for the Cross icon inside the Decline button */
+.notification-card .notification-actions .decline-request-button .decline-request-icon {
+  width: 20px;
+  /* Set a consistent size for the icon */
+  height: 20px;
+  /* Set a consistent size for the icon */
+  color: #fff;
+  /* Make the icon white to contrast with the red button */
+  stroke-width: 3;
+  /* Increase stroke-width for bolder icon appearance if it's an SVG icon */
+}
+
+/* --- END ADDED / MODIFIED CODE --- */
 
 
 .notification-card {

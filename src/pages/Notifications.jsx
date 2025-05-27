@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
-import { Bell, CheckCircle, AlertTriangle, XCircle, Trash2, ThumbsUp, ThumbsDown, UserCheck } from 'lucide-react';
+import { Bell, CheckCircle, AlertTriangle, XCircle, Trash2, UserCheck, Check, X } from 'lucide-react'; // Changed 'Cross' to 'X' as 'Cross' is not a standard Lucide icon
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 import '../styles/Pages Css/Notifications.css';
@@ -107,14 +107,14 @@ const NotificationCard = ({ notification, onMarkAsRead, onDelete, onApproveReque
                                     className={`notification-action-button approve-button`}
                                     title="Approve Request"
                                 >
-                                    <ThumbsUp className="approve-request-button" />
+                                    <Check className="approve-request-icon" /> {/* Changed to Check */}
                                 </button>
                                 <button
                                     onClick={() => onDeclineRequest(notification.id, notification.fromUserId)}
                                     className={`notification-action-button decline-button`}
                                     title="Decline Request"
                                 >
-                                    <ThumbsDown className="decline-request-button" />
+                                    <X className="decline-request-icon" /> {/* Changed to X */}
                                 </button>
                             </>
                         )}
@@ -326,7 +326,7 @@ const NotificationsPage = () => {
             <div className="notifications-wrapper">
                 <div className="notifications-header">
                     <h1 className={`notifications-title ${theme}-text`}>
-                         Notifications
+                        Notifications
                     </h1>
                     <div className="notifications-actions">
                         <button

@@ -1,94 +1,88 @@
 :root {
+    /* Title */
     --acctbl-title-font-size: 22px;
     --acctbl-title-font-weight: 600;
     --acctbl-title-margin-bottom: 15px;
-
     --acctbl-title-color-light: #000;
     --acctbl-title-color-dark: #f8f9fa;
+
+    /* Borders */
     --acctbl-border-light: #ddd;
     --acctbl-border-dark: #1e1f21;
+    --acctbl-border-dark-new: #1e1f21; /* Duplicate, consider merging if same */
 
+    /* Controls (Search & Filter) */
     --acctbl-controls-gap: 10px;
     --acctbl-controls-margin-bottom: 15px;
     --acctbl-controls-height: 40px;
     --acctbl-controls-bg-light: #f8f9fa;
     --acctbl-controls-bg-dark: transparent;
 
-    --acctbl-input-padding: 8px;
-    --acctbl-input-radius: 5px;
+    /* Inputs */
+    --acctbl-input-padding: 8px; /* Original, consider if new is sufficient */
+    --acctbl-input-radius: 5px; /* Original, consider if new is sufficient */
     --acctbl-input-padding-new: 8px 12px;
     --acctbl-input-radius-new: 8px;
 
+    /* Table */
     --acctbl-table-border: 1px solid;
     --acctbl-table-padding: 10px;
-    --acctbl-table-text-align: center;
+    --acctbl-table-text-align: center; /* This might be redundant with specific td text-align */
     --acctbl-table-bg-light: #ffffff;
     --acctbl-th-bg-light: #f1f1f1;
     --acctbl-td-bg-light: #ffffff;
     --acctbl-table-bg-dark-new: #20202e;
     --acctbl-th-bg-dark-new: #2f2f31;
     --acctbl-td-bg-dark-new: #2f2f31;
-    --acctbl-border-dark-new: #1e1f21;
 
-
-    --acctbl-btn-padding: 8px 12px;
-    --acctbl-btn-radius: 5px;
+    /* Buttons */
+    --acctbl-btn-padding: 8px 12px; /* Original, consider if new is sufficient */
+    --acctbl-btn-radius: 5px; /* Original, consider if new is sufficient */
     --acctbl-btn-cursor: pointer;
     --acctbl-btn-padding-new: 8px 16px;
     --acctbl-btn-radius-new: 8px;
     --acctbl-btn-font-size-new: 0.9rem;
     --acctbl-btn-transition-new: all 0.2s ease-in-out;
 
-
-    --acctbl-container-radius: 10px;
-    --acctbl-shadow-dark: 0 4px 8px rgba(0, 0, 0, 0.2);
-    --acctbl-shadow-light: 0 2px 4px rgba(0, 0, 0, 0.1);
-
-
-    --acctbl-button-hover-dark: #3a3a50;
+    --acctbl-button-hover-dark: #1230AE;
     --acctbl-button-bg-dark: #2f2f31;
     --acctbl-edit-btn-dark: #2f2f31;
     --acctbl-edit-btn-hover-dark: #388e3c;
     --acctbl-delete-btn-dark: #2f2f31;
     --acctbl-delete-btn-hover-dark: #e53935;
+    --acctbl-button-hover-light: #218838;
+    --acctbl-edit-btn-light: #28a745;
+    --acctbl-delete-btn-light: #dc3545;
 
-    --acctbl-button-hover-light:#218838;
+    /* Container & Shadow */
+    --acctbl-container-radius: 10px;
+    --acctbl-shadow-dark: 0 4px 8px rgba(0, 0, 0, 0.2);
+    --acctbl-shadow-light: 0 2px 4px rgba(0, 0, 0, 0.1);
 
-    --acctbl-create-btn-light:#28a745;
-    --acctbl-delete-btn-light:#dc3545;
-
-
+    /* Modals */
     --modal-bg-light: #ffffff;
     --modal-bg-dark: #2f2f31;
     --modal-header-border-light: #dee2e6;
     --modal-header-border-dark: #4a4a60;
     --modal-close-color-light: #000;
     --modal-close-color-dark: #f8f9fa;
-    --modal-create-btn-bg: #2f2f31;
-    /* Reusing for Save Changes */
-    --modal-create-btn-hover: #218838;
-    /* Reusing for Save Changes Hover */
-    --modal-cancel-btn-bg: #2f2f31;
-    /* Reusing for Cancel */
-    --modal-cancel-btn-hover: #dc3545;
-    /* Reusing for Cancel Hover */
-    
-
+    --modal-create-btn-bg: #1B56FD; /* Reused for Save Changes */
+    --modal-create-btn-hover: #1230AE; /* Reused for Save Changes Hover */
+    --modal-cancel-btn-bg: #dc3545; /* Reused for Cancel */
+    --modal-cancel-btn-hover: #c82333; /* Reused for Cancel Hover */
 }
 
 /* ------------------------------------------- */
-/* GLOBAL & CONTAINER            */
+/* GLOBAL & CONTAINER                          */
 /* ------------------------------------------- */
 .acctbl-container {
     padding: 30px;
     box-sizing: border-box;
     border-radius: var(--acctbl-container-radius);
-    transition: background-color 0.3s ease, color 0.3s ease;
+    transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
     height: fit-content;
     margin-top: 50px;
-    height: fit-content;
 }
-
 
 .acctbl-container.light {
     background-color: #FFFDF6;
@@ -103,22 +97,22 @@
 }
 
 /* ------------------------------------------- */
-/* HEADER                     */
+/* HEADER                                      */
 /* ------------------------------------------- */
-header {
+.acctbl-header { /* New class */
     width: 100%;
     margin-bottom: 30px;
     font-family: 'monrse', sans-serif;
 }
 
-.Table-title {
+.acctbl-title-main { /* Renamed from .Table-title */
     font-size: 2rem;
     font-weight: 700;
     color: inherit;
     margin-left: 10px;
 }
 
-.acctbl-title {
+.acctbl-title { /* Kept as a general title style if needed, but not directly used by h1 anymore */
     text-align: center;
     font-size: var(--acctbl-title-font-size);
     font-weight: var(--acctbl-title-font-weight);
@@ -131,7 +125,7 @@ header {
 }
 
 /* ------------------------------------------- */
-/* CONTROLS (SEARCH & FILTER)         */
+/* CONTROLS (SEARCH & FILTER)                  */
 /* ------------------------------------------- */
 .acctbl-controls {
     display: flex;
@@ -152,8 +146,8 @@ header {
     box-shadow: var(--acctbl-shadow-dark);
 }
 
-.acctbl-search,
-.acctbl-filter {
+.acctbl-search-input, /* Renamed from .acctbl-search */
+.acctbl-filter-select { /* Renamed from .acctbl-filter */
     flex: 1;
     padding: var(--acctbl-input-padding-new);
     border-radius: var(--acctbl-input-radius-new);
@@ -165,73 +159,99 @@ header {
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.acctbl-container.dark .acctbl-search,
-.acctbl-container.dark .acctbl-filter {
+.acctbl-container.dark .acctbl-search-input,
+.acctbl-container.dark .acctbl-filter-select {
     background: #2a2a2a;
     color: var(--acctbl-title-color-dark);
     border: 1px solid var(--acctbl-border-dark-new);
 }
 
-.acctbl-search:focus,
-.acctbl-filter:focus {
+.acctbl-search-input:focus,
+.acctbl-filter-select:focus {
     border-color: #007bff;
     box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
 }
 
-.acctbl-container.dark .acctbl-search:focus,
-.acctbl-container.dark .acctbl-filter:focus {
+.acctbl-container.dark .acctbl-search-input:focus,
+.acctbl-container.dark .acctbl-filter-select:focus {
     border-color: #6a92ed;
     box-shadow: 0 0 0 0.2rem rgba(106, 146, 237, 0.25);
 }
 
-.acctbl-search::placeholder,
-.acctbl-filter::placeholder {
+.acctbl-search-input::placeholder,
+.acctbl-filter-select::placeholder {
     color: #6c757d;
     opacity: 1;
 }
 
-.acctbl-container.dark .acctbl-search::placeholder,
-.acctbl-container.dark .acctbl-filter::placeholder {
+.acctbl-container.dark .acctbl-search-input::placeholder,
+.acctbl-container.dark .acctbl-filter-select::placeholder {
     color: #b0b3b8;
     opacity: 1;
 }
 
+.acctbl-add-btn { /* Renamed from .acctbl-create-btn for the Add Admin button */
+    border: none;
+    padding: var(--acctbl-btn-padding-new);
+    border-radius: var(--acctbl-btn-radius-new);
+    cursor: var(--acctbl-btn-cursor);
+    font-size: var(--acctbl-btn-font-size-new);
+    transition: var(--acctbl-btn-transition-new);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background-color: var(--acctbl-edit-btn-light); /* Assuming it uses a similar light theme green */
+    color: white; /* Assuming white text for light theme add button */
+}
+
+.acctbl-container.dark .acctbl-add-btn {
+    background: var(--acctbl-button-bg-dark);
+    color: white;
+    box-shadow: var(--acctbl-shadow-dark);
+    border: none;
+}
+
+.acctbl-container.dark .acctbl-add-btn:hover {
+    background: var(--acctbl-button-hover-dark);
+}
 
 /* ------------------------------------------- */
-/* TABLE                     */
+/* TABLE                                       */
 /* ------------------------------------------- */
-/* Add this to your existing CSS file */
 .acctbl-table-scroll-wrapper {
     max-height: 500px;
-    /* Adjust this value as needed for your layout */
     overflow-y: auto;
-    /* Enable vertical scrolling */
     border-radius: 0.25rem;
-    /* Optional: Matches Bootstrap's table border-radius */
     margin-bottom: 1rem;
-    /* Optional: Adds some space below the table */
 }
 
 .acctbl-table-scroll-wrapper::-webkit-scrollbar {
     width: 8px;
 }
 
-
-
 .acctbl-table-scroll-wrapper::-webkit-scrollbar-thumb:hover {
     background-color: #555;
 }
 
-/* Optional: You might want to remove default table borders if the wrapper has one */
-.acctbl-table {
+.acctbl-data-table { /* Renamed from .acctbl-table */
     width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: var(--acctbl-container-radius);
+    box-shadow: var(--acctbl-shadow-light);
+    background: var(--acctbl-table-bg-light);
+    color: var(--acctbl-title-color-light);
+    height: fit-content;
     margin-bottom: 0;
-    /* Remove default margin-bottom if wrapper has one */
-    /* Add any other table specific styles here */
 }
 
-/* Ensure table headers remain visible when scrolling */
-.acctbl-table thead {
+.acctbl-container.dark .acctbl-data-table {
+    background: var(--acctbl-table-bg-dark-new);
+    color: var(--acctbl-title-color-dark);
+    box-shadow: var(--acctbl-shadow-dark);
+}
+
+.acctbl-data-table thead {
     position: sticky;
     top: 0;
     background-color: inherit;
@@ -239,48 +259,25 @@ header {
     font-family: 'montserrat', sans-serif;
 }
 
-/* Adjust header background for dark/light themes if necessary */
-.dark .acctbl-table thead {
-    background-color: #343a40;
-    /* Dark background for dark theme headers */
-    color: #f8f9fa;
-    /* Light text for dark theme headers */
-}
-
-.light .acctbl-table thead {
-    background-color: #f8f9fa;
-    /* Light background for light theme headers */
-    color: #212529;
-    /* Dark text for light theme headers */
-}
-
-.acctbl-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-    border-radius: var(--acctbl-container-radius);
-    overflow-y: scroll;
-    box-shadow: var(--acctbl-shadow-light);
-    background: var(--acctbl-table-bg-light);
+.light .acctbl-data-table thead {
+    background-color: var(--acctbl-th-bg-light);
     color: var(--acctbl-title-color-light);
-    height: fit-content;
 }
 
-.acctbl-container.dark .acctbl-table {
-    background: var(--acctbl-table-bg-dark-new);
+.dark .acctbl-data-table thead {
+    background-color: var(--acctbl-th-bg-dark-new);
     color: var(--acctbl-title-color-dark);
-    box-shadow: var(--acctbl-shadow-dark);
 }
 
-.acctbl-table th,
-.acctbl-table td {
+.acctbl-data-table th,
+.acctbl-data-table td {
     padding: var(--acctbl-table-padding);
     text-align: left;
     border-bottom: var(--acctbl-table-border) var(--acctbl-border-light);
     transition: background-color 0.2s ease;
 }
 
-.acctbl-table th {
+.acctbl-data-table th {
     background: var(--acctbl-th-bg-light);
     color: var(--acctbl-title-color-light);
     font-weight: 600;
@@ -289,389 +286,178 @@ header {
     z-index: 1;
 }
 
-.acctbl-container.dark .acctbl-table th {
+.acctbl-container.dark .acctbl-data-table th {
     background: var(--acctbl-th-bg-dark-new);
     color: var(--acctbl-title-color-dark);
     border: 1px solid var(--acctbl-border-dark);
 }
 
-.acctbl-table td {
+.acctbl-data-table td {
     background: var(--acctbl-td-bg-light);
     color: var(--acctbl-title-color-light);
     text-align: center;
 }
 
-.acctbl-container.dark .acctbl-table td {
+.acctbl-container.dark .acctbl-data-table td {
     background: var(--acctbl-td-bg-dark-new);
     color: var(--acctbl-title-color-dark);
     border: 1px solid var(--acctbl-border-dark-new);
 }
 
-.acctbl-table tbody tr:last-child td {
-    border-bottom: none;  
+.acctbl-data-table tbody tr:last-child td {
+    border-bottom: none;
 }
 
-.acctbl-table tbody tr {
+.acctbl-data-table tbody tr {
     font-family: 'poppins', sans-serif;
 }
-.acctbl-table tbody tr:hover {
+
+.acctbl-data-table tbody tr:hover {
     background-color: rgba(0, 0, 0, 0.03);
 }
 
-.acctbl-container.dark .acctbl-table tbody tr:hover {
+.acctbl-container.dark .acctbl-data-table tbody tr:hover {
     background-color: rgba(255, 255, 255, 0.05);
 }
 
+.acctbl-actions-cell { /* New class for the actions cell */
+    text-align: center; /* Adjust as needed */
+}
+
+.acctbl-no-data { /* New class for the 'No users found' cell */
+    text-align: center; /* Adjust as needed */
+}
 
 /* ------------------------------------------- */
-/* BUTTONS                     */
+/* BUTTONS (Table Row Actions)                             */
 /* ------------------------------------------- */
-.acctbl-create-btn {
+.acctbl-edit-btn, /* New class for Edit button in table */
+.acctbl-delete-btn { /* Already existed, but ensuring it's for table rows */
     border: none;
-    padding: var(--acctbl-btn-padding-new);
+    padding: 6px 10px; /* Specific padding for table row buttons */
     border-radius: var(--acctbl-btn-radius-new);
     cursor: var(--acctbl-btn-cursor);
     font-size: var(--acctbl-btn-font-size-new);
     transition: var(--acctbl-btn-transition-new);
-    display: flex;
+    display: inline-flex; /* Use inline-flex for side-by-side icons and text */
     align-items: center;
     gap: 5px;
-    background-color:var(--acctbl-create-btn-light);
+    margin: 0 5px; /* Spacing between buttons */
+    justify-content: center;
+}
+
+.acctbl-edit-btn {
+    background-color: var(--acctbl-edit-btn-light);
+    color: white; /* Default text color for light theme */
+}
+
+.acctbl-container.light .acctbl-edit-btn {
+    color: white; /* Ensure text color is white for light theme */
+}
+
+.acctbl-edit-btn:hover {
+    background-color: var(--acctbl-button-hover-light); /* Or a specific edit hover light color */
 }
 
 .acctbl-delete-btn {
-    border: none;
-    padding: var(--acctbl-btn-padding-new);
-    border-radius: var(--acctbl-btn-radius-new);
-    cursor: var(--acctbl-btn-cursor);
-    font-size: var(--acctbl-btn-font-size-new);
-    transition: var(--acctbl-btn-transition-new);
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    background-color:var(--acctbl-delete-btn-light);
+    background-color: var(--acctbl-delete-btn-light);
+    color: white; /* Default text color for light theme */
 }
 
-
-
-.acctbl-container.light .acctbl-create-btn {
-    color: black;
-}
-
-.acctbl-container.light .acctbl-create-btn:hover {
-    background: var(--acctbl-button-hover-light);
-}
-
-.acctbl-container.dark .acctbl-create-btn {
-    background: var(--acctbl-button-bg-dark);
-    color: white;
-    box-shadow: var(--acctbl-shadow-dark);
-}
-
-.acctbl-container.dark .acctbl-create-btn:hover {
-    background: var(--acctbl-button-hover-dark);
-}
-
-.acctbl-create-btn i,
-.acctbl-create-btn svg {
-    color: inherit;
-    vertical-align: middle;
-}
-
-.acctbl-table td button {
-    display: inline-flex;
-    justify-content: center;
-    margin: 0 5px;
-    padding: 6px 10px;
-    border-radius: var(--acctbl-btn-radius-new);
-    border: none;
-    font-size: var(--acctbl-btn-font-size-new);
-    align-items: center;
-}
-
-.acctbl-container.dark .acctbl-table td .acctbl-create-btn:nth-of-type(1) {
+.acctbl-container.dark .acctbl-edit-btn {
     background: var(--acctbl-edit-btn-dark);
     color: white;
 }
 
-.acctbl-container.dark .acctbl-table td .acctbl-create-btn:nth-of-type(1):hover {
+.acctbl-container.dark .acctbl-edit-btn:hover {
     background: var(--acctbl-edit-btn-hover-dark);
 }
 
-.acctbl-container.dark .acctbl-table td .acctbl-create-btn:nth-of-type(2) {
+.acctbl-container.dark .acctbl-delete-btn {
     background: var(--acctbl-delete-btn-dark);
     color: white;
 }
 
-.acctbl-container.dark .acctbl-table td .acctbl-create-btn:nth-of-type(2):hover {
+.acctbl-container.dark .acctbl-delete-btn:hover {
     background: var(--acctbl-delete-btn-hover-dark);
 }
 
 /* ------------------------------------------- */
-/* SPINNER & ALERT             */
+/* SPINNER & ALERT                             */
 /* ------------------------------------------- */
-.spinner-border {
+.acctbl-spinner { /* New class */
     color: #007bff;
     margin: 20px auto;
     display: block;
 }
 
-.acctbl-container.dark .spinner-border {
+.acctbl-container.dark .acctbl-spinner {
     color: #6a92ed;
 }
 
-.alert {
+.acctbl-error-alert { /* New class */
     margin-top: 20px;
     padding: 15px;
     border-radius: var(--acctbl-input-radius-new);
     font-weight: 500;
-}
-
-.alert-danger {
     background-color: #f8d7da;
     color: #721c24;
     border: 1px solid #f5c6cb;
 }
 
-.acctbl-container.dark .alert-danger {
+.acctbl-container.dark .acctbl-error-alert {
     background-color: #4e2b30;
     color: #f7a7ab;
     border: 1px solid #7c3f46;
 }
 
-
 /* ------------------------------------------- */
-/* MODALS                    */
+/* MODALS                                      */
 /* ------------------------------------------- */
 
-/* Targeted Modal Class (Assuming this is for the 'Edit User' modal you want to style) */
-/* This class should be applied to your React-Bootstrap <Modal> component:
-   <Modal className="edit-user-modal" ...> */
-.edit-user-modal .modal-dialog {
-    max-width: 450px;
-    /* Adjust as per your image */
-    margin: 1.75rem auto;
-    /* Centering */
-    display: flex;
-    align-items: center;
-    min-height: calc(100vh - 60px);
-}
-
-.edit-user-modal .modal-content {
-    border-radius: var(--acctbl-container-radius);
-    /* Use existing variable for consistent rounded corners */
-    background-color: #2D2D2D;
-    /* Direct color from image */
-    color: var(--acctbl-title-color-dark);
-    /* Light text color for dark modal */
-    box-shadow: var(--acctbl-shadow-dark);
-    /* Apply dark shadow */
-    border: none;
-    /* Remove default Bootstrap border */
-}
-
-/* Modal Header */
-.edit-user-modal .modal-header {
-    border-bottom: 1px solid #444;
-    /* Custom dark border */
-    padding: 20px 25px 15px;
-    display: flex;
-    /* Ensure flexbox for alignment */
-    justify-content: space-between;
-    /* Space title and close button */
-    align-items: center;
-}
-
-.edit-user-modal .modal-title {
-    font-size: 1.5rem;
-    /* Matches image */
-    font-weight: 600;
-    color: var(--acctbl-title-color-dark);
-    /* Use variable for light text */
-    flex-grow: 1;
-    /* Allow title to take space */
-}
-
-/* Close button styling for the specific modal */
-.edit-user-modal .btn-close {
-    background: transparent url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23E0E0E0'%3e%3cpath d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414z'/%3e%3c/svg%3e") center / 1em auto no-repeat;
-    opacity: 1 !important;
-    /* Force visibility */
-    transition: opacity 0.2s ease;
-    border: 0;
-    border-radius: .25rem;
-    padding: .5rem;
-    margin: -.5rem -.5rem -.5rem auto;
-    /* Adjust positioning */
-    color: #E0E0E0 !important;
-    /* Explicitly set color for consistency */
-}
-
-.edit-user-modal .btn-close:hover {
-    opacity: 0.8 !important;
-    /* Slightly fade on hover */
-}
-
-/* Modal Body */
-.edit-user-modal .modal-body {
-    padding: 20px 25px 25px;
-    /* Adjust padding as per image */
-}
-
-.edit-user-modal .form-group {
-    margin-bottom: 15px;
-}
-
-/* Form Labels (using a custom class from previous example) */
-.edit-user-modal .edit-user-label {
-    /* Target specifically within the modal */
-    font-weight: 500;
-    margin-bottom: 8px;
-    display: block;
-    /* Make it a block element to properly use margin-bottom */
-    color: #B0B0B0;
-    /* Specific color from previous example */
-    text-align: left;
-    /* Align label to the left */
-}
-
-/* Input Fields (using a custom class from previous example) */
-.edit-user-modal .form-control.edit-user-input {
-    /* Target specifically within the modal and with Bootstrap's form-control */
-    width: 100%;
-    padding: var(--acctbl-input-padding-new);
-    border-radius: var(--acctbl-input-radius-new);
-    border: 1px solid #555;
-    /* Specific border color */
-    background-color: #3C3C3C;
-    /* Specific background color */
-    color: var(--acctbl-title-color-dark);
-    /* Light text color */
-    outline: none;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.edit-user-modal .form-control.edit-user-input::placeholder {
-    color: #888;
-    opacity: 1;
-}
-
-.edit-user-modal .form-control.edit-user-input:focus {
-    border-color: #666;
-    /* Focus border color */
-    box-shadow: 0 0 0 0.2rem rgba(100, 100, 100, 0.25);
-    /* Subtle shadow on focus */
-}
-
-/* Horizontal Divider (assuming you add <hr className="edit-user-divider" />) */
-.edit-user-modal .edit-user-divider {
-    border-top: 1px solid #444;
-    /* Darker line for the divider */
-    margin-top: 25px;
-    /* Space above divider */
-    margin-bottom: 25px;
-    /* Space below divider */
-    opacity: 0.7;
-    /* Slightly transparent */
-}
-
-
-/* Modal Footer (assuming you add <div className="edit-user-buttons"> around your buttons) */
-.edit-user-modal .modal-footer,
-.edit-user-modal .edit-user-buttons {
-    /* Target both if used interchangeably */
-    border-top: none;
-    /* Remove default Bootstrap footer border */
-    padding: 0px 25px 0px;
-    /* Adjust padding to match image (no top padding) */
-    display: flex;
-    justify-content: flex-end;
-    /* Align buttons to the right */
-    gap: 15px;
-    /* Space between buttons */
-    margin-top: 20px;
-    /* Give some space from above content if not already in divider */
-}
-
-
-/* Buttons within Modal Footer (assuming you add custom classes for buttons) */
-/* Specific styling for the Save Changes button */
-.edit-user-modal .edit-user-save-button.btn {
-    /* Combined with Bootstrap's .btn class */
-    background-color: #4CAF50;
-    /* A shade of green for Save Changes */
-    border: none;
-    /* Remove default border */
-    color: white;
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-size: 1rem;
-    font-weight: 500;
-    transition: var(--acctbl-btn-transition-new);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    /* Subtle shadow for buttons */
-}
-
-.edit-user-modal .edit-user-save-button.btn:hover {
-    background-color: #45a049;
-    /* Darker green on hover */
-}
-
-/* Styling for the Cancel button */
-.edit-user-modal .edit-user-cancel-button.btn {
-    /* Combined with Bootstrap's .btn class */
-    background-color: #4A4A4A;
-    /* Darker grey for cancel button */
-    border: none;
-    /* Remove default border */
-    color: #E0E0E0;
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-size: 1rem;
-    font-weight: 500;
-    transition: var(--acctbl-btn-transition-new);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-}
-
-.edit-user-modal .edit-user-cancel-button.btn:hover {
-    background-color: #555;
-    color: #FFF;
-}
-
-
-/* Generic modal styles (apply to any modal, less specific) */
-/* If you have a global dark mode, this might apply the dark theme */
-/* I've kept these as they are, but the .edit-user-modal overrides them */
-.modal-content {
+/* Base modal styles */
+.acctbl-add-admin-modal .modal-content, /* Specific modal classes */
+.acctbl-edit-user-modal .modal-content {
     border-radius: var(--acctbl-container-radius);
     background-color: var(--modal-bg-light);
     color: var(--acctbl-title-color-light);
-    transition: background-color 0.3s ease, color 0.3s ease;
+    transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+    border: none;
 }
 
-body.dark .modal-content {
+body.dark .acctbl-add-admin-modal .modal-content,
+body.dark .acctbl-edit-user-modal .modal-content {
     background-color: var(--modal-bg-dark);
     color: var(--acctbl-title-color-dark);
     box-shadow: var(--acctbl-shadow-dark);
 }
 
-.modal-header {
+.acctbl-add-admin-modal .modal-header,
+.acctbl-edit-user-modal .modal-header {
     border-bottom: 1px solid var(--modal-header-border-light);
     padding: 15px 20px;
     font-family: 'montserrat', sans-serif;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
-body.dark .modal-header {
+body.dark .acctbl-add-admin-modal .modal-header,
+body.dark .acctbl-edit-user-modal .modal-header {
     border-bottom: 1px solid var(--modal-header-border-dark);
 }
 
-.modal-title {
+.acctbl-add-admin-modal .modal-title,
+.acctbl-edit-user-modal .modal-title {
     font-size: 1.5rem;
     font-weight: 600;
     color: inherit;
+    flex-grow: 1;
 }
 
-.modal-header .btn-close {
+/* Ensure these are specific if the base Bootstrap class is causing issues */
+.acctbl-add-admin-modal .modal-header .btn-close,
+.acctbl-edit-user-modal .modal-header .btn-close {
     background: transparent url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23000'%3e%3cpath d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414z'/%3e%3c/svg%3e") center / 1em auto no-repeat;
     opacity: 0.7;
     transition: opacity 0.2s ease;
@@ -679,25 +465,32 @@ body.dark .modal-header {
     border-radius: .25rem;
     padding: .5rem;
     margin: -.5rem -.5rem -.5rem auto;
+    color: var(--modal-close-color-light);
 }
 
-.modal-header .btn-close:hover {
+.acctbl-add-admin-modal .modal-header .btn-close:hover,
+.acctbl-edit-user-modal .modal-header .btn-close:hover {
     opacity: 1;
 }
 
-body.dark .modal-header .btn-close {
+body.dark .acctbl-add-admin-modal .modal-header .btn-close,
+body.dark .acctbl-edit-user-modal .modal-header .btn-close {
     background: transparent url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23f8f9fa'%3e%3cpath d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414z'/%3e%3c/svg%3e") center / 1em auto no-repeat;
+    color: var(--modal-close-color-dark);
 }
 
-.modal-body {
+.acctbl-add-admin-modal .modal-body,
+.acctbl-edit-user-modal .modal-body {
     padding: 20px;
 }
 
-.modal-body .form-group {
+.acctbl-add-admin-modal .mb-3.acctbl-form-group, /* Specific form group for modals */
+.acctbl-edit-user-modal .mb-3.acctbl-form-group {
     margin-bottom: 15px;
 }
 
-.modal-body .form-label {
+.acctbl-add-admin-modal .acctbl-form-label,
+.acctbl-edit-user-modal .acctbl-form-label {
     font-weight: 500;
     margin-bottom: 8px;
     display: flex;
@@ -706,7 +499,8 @@ body.dark .modal-header .btn-close {
     font-family: 'montserrat', sans-serif;
 }
 
-.modal-body .form-control {
+.acctbl-add-admin-modal .acctbl-form-control,
+.acctbl-edit-user-modal .acctbl-form-control {
     width: 100%;
     padding: var(--acctbl-input-padding-new);
     border-radius: var(--acctbl-input-radius-new);
@@ -717,112 +511,136 @@ body.dark .modal-header .btn-close {
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-body.dark .modal-body .form-control {
+body.dark .acctbl-add-admin-modal .acctbl-form-control,
+body.dark .acctbl-edit-user-modal .acctbl-form-control {
     background-color: #2a2a2a;
     color: var(--acctbl-title-color-dark);
     border: 1px solid var(--acctbl-border-dark-new);
     font-family: 'poppins', sans-serif;
-    
 }
 
-body.dark .modal-body .form-control::placeholder {
+body.dark .acctbl-add-admin-modal .acctbl-form-control::placeholder,
+body.dark .acctbl-edit-user-modal .acctbl-form-control::placeholder {
     color: #b0b3b8;
     opacity: 1;
     font-family: 'montserrat', sans-serif;
 }
 
-.modal-body .form-control:focus {
+.acctbl-add-admin-modal .acctbl-form-control:focus,
+.acctbl-edit-user-modal .acctbl-form-control:focus {
     border-color: #007bff;
     box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
 }
 
-body.dark .modal-body .form-control:focus {
+body.dark .acctbl-add-admin-modal .acctbl-form-control:focus,
+body.dark .acctbl-edit-user-modal .acctbl-form-control:focus {
     border-color: #6a92ed;
     box-shadow: 0 0 0 0.2rem rgba(106, 146, 237, 0.25);
 }
 
-.modal-footer {
+.acctbl-edit-error-alert { /* New class for the edit error alert */
+    margin-top: 15px; /* Adjust spacing */
+    padding: 15px;
+    border-radius: var(--acctbl-input-radius-new);
+    font-weight: 500;
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.acctbl-container.dark .acctbl-edit-error-alert {
+    background-color: #4e2b30;
+    color: #f7a7ab;
+    border: 1px solid #7c3f46;
+}
+
+
+.acctbl-add-admin-modal .acctbl-modal-footer, /* Specific modal footer classes */
+.acctbl-edit-user-modal .acctbl-modal-footer {
     border-top: 1px solid var(--modal-header-border-light);
-    padding: 15px 20px;
     display: flex;
     justify-content: flex-end;
     gap: 10px;
-
 }
 
-
-body.dark .modal-footer {
-    border-top: 1px solid var(--modal-header-border-dark);
+body.dark .acctbl-add-admin-modal .acctbl-modal-footer,
+body.dark .acctbl-edit-user-modal .acctbl-modal-footer {
+    border-top: 1px solid var(--modal-header-border-dark); /* Corrected variable name */
 }
 
-/* Buttons within Modal Footer (assuming they are standard Bootstrap Buttons) */
-.modal-footer .btn {
+/* Buttons within Modal Footer */
+.acctbl-add-admin-modal .acctbl-save-changes-btn, /* Specific button classes */
+.acctbl-edit-user-modal .acctbl-save-changes-btn {
     padding: var(--acctbl-btn-padding-new);
     border-radius: var(--acctbl-btn-radius-new);
     font-size: var(--acctbl-btn-font-size-new);
     cursor: pointer;
     transition: var(--acctbl-btn-transition-new);
     border: none;
-}
-
-/* Specific styling for the Create Admin / Save Changes button */
-/* Ensure this class is applied to your submit button in AdminCreationForm as well */
-.modal-footer .acctbl-create-btn[type="submit"] {
     background-color: var(--modal-create-btn-bg);
     color: white;
     box-shadow: var(--acctbl-shadow-light);
     font-family: 'poppins', sans-serif;
 }
 
-.modal-footer .acctbl-create-btn[type="submit"]:hover {
+.acctbl-add-admin-modal .acctbl-save-changes-btn:hover,
+.acctbl-edit-user-modal .acctbl-save-changes-btn:hover {
     background-color: var(--modal-create-btn-hover);
 }
 
-/* Dark Theme for Create/Save Button */
-body.dark .modal-footer .acctbl-create-btn[type="submit"] {
+body.dark .acctbl-add-admin-modal .acctbl-save-changes-btn,
+body.dark .acctbl-edit-user-modal .acctbl-save-changes-btn {
     background-color: var(--modal-create-btn-bg);
-    /* Still green for dark theme */
     color: white;
     box-shadow: var(--acctbl-shadow-dark);
 }
 
-body.dark .modal-footer .acctbl-create-btn[type="submit"]:hover {
+body.dark .acctbl-add-admin-modal .acctbl-save-changes-btn:hover,
+body.dark .acctbl-edit-user-modal .acctbl-save-changes-btn:hover {
     background-color: var(--modal-create-btn-hover);
 }
 
-.modal-footer .btn-secondary,
-.modal-footer .acctbl-cancel-btn {
+.acctbl-add-admin-modal .acctbl-cancel-btn,
+.acctbl-edit-user-modal .acctbl-cancel-btn {
     background-color: var(--modal-cancel-btn-bg);
-    /* Gray background */
     color: white;
     box-shadow: var(--acctbl-shadow-light);
     font-family: 'poppins', sans-serif;
 }
 
-.modal-footer .btn-secondary:hover,
-.modal-footer .acctbl-cancel-btn:hover {
+.acctbl-add-admin-modal .acctbl-cancel-btn:hover,
+.acctbl-edit-user-modal .acctbl-cancel-btn:hover {
     background-color: var(--modal-cancel-btn-hover);
 }
 
-/* Dark Theme for Cancel Button */
-body.dark .modal-footer .btn-secondary,
-body.dark .modal-footer .acctbl-cancel-btn {
+body.dark .acctbl-add-admin-modal .acctbl-cancel-btn,
+body.dark .acctbl-edit-user-modal .acctbl-cancel-btn {
     background-color: var(--modal-cancel-btn-bg);
-    /* Still gray for dark theme */
     color: white;
     box-shadow: var(--acctbl-shadow-dark);
 }
 
-body.dark .modal-footer .btn-secondary:hover,
-body.dark .modal-footer .acctbl-cancel-btn:hover {
+body.dark .acctbl-add-admin-modal .acctbl-cancel-btn:hover,
+body.dark .acctbl-edit-user-modal .acctbl-cancel-btn:hover {
     background-color: var(--modal-cancel-btn-hover);
 }
 
-/* Base class for modal if applied directly, less specific than .edit-user-modal */
-.acctbl-modal {
-    max-width: 100%;
-    /* This seems to be a general modal class, not specific to the Edit User one */
-    margin: 30px auto;
-    padding: 20px;
-    color: var(--acctbl-title-color-light);
-}
+
+/* Cleanup for old/redundant modal styles */
+/* The following styles are now redundant or should be handled by the new specific classes */
+/* .edit-user-modal .modal-dialog { ... } */
+/* .edit-user-modal .modal-content { ... } */
+/* .edit-user-modal .modal-header { ... } */
+/* .edit-user-modal .modal-title { ... } */
+/* .edit-user-modal .btn-close { ... } */
+/* .edit-user-modal .modal-body { ... } */
+/* .edit-user-modal .form-group { ... } */
+/* .edit-user-modal .edit-user-label { ... } */
+/* .edit-user-modal .form-control.edit-user-input { ... } */
+/* .edit-user-modal .form-control.edit-user-input::placeholder { ... } */
+/* .edit-user-modal .form-control.edit-user-input:focus { ... } */
+/* .edit-user-modal .edit-user-divider { ... } */
+/* .edit-user-modal .modal-footer, .edit-user-modal .edit-user-buttons { ... } */
+/* .edit-user-modal .edit-user-save-button.btn { ... } */
+/* .edit-user-modal .edit-user-cancel-button.btn { ... } */
+/* .acctbl-modal { ... } This was a generic class, replaced by specific modal classes */

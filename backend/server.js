@@ -262,6 +262,9 @@ app.post("/users", async (req, res) => {
     role = "User",
   } = req.body;
 
+  // Add this line to log the password
+  console.log("Password accepted:", password);
+
   if (!username || !email || !phone || !password || !confirmPassword) {
     return res.status(400).json({ error: "All fields are required" });
   }
@@ -410,7 +413,10 @@ app.post('/admin', async (req, res) => {
     }
 
     try {
-        // 1. Generate OTP for this new user
+        // 1. Hash the password before storing it
+        const hashedPassword = await bcrypt.hash(password, 10); // 10 is the salt rounds
+
+        // 2. Generate OTP for this new user
         const otp = otpGenerator.generate(6, {
             upperCaseAlphabets: false,
             lowerCaseAlphabets: false,
@@ -418,17 +424,14 @@ app.post('/admin', async (req, res) => {
         });
         console.log("Generated OTP for new admin:", otp);
 
-        // 2. Insert the new admin into your database with email_verified = 0 and the OTP
-        // In a real application: Hash the password before storing it (e.g., using bcrypt).
-        // const hashedPassword = await bcrypt.hash(password, 10);
-
+        // 3. Insert the new admin into your database with email_verified = 0 and the OTP
         const [insertResult] = await db.query(
-            "INSERT INTO users (username, email, password_hash, role, email_verified, verification_code) VALUES (?, ?, ?, ?, ?, ?)", // Changed 'password' to 'password_hash'
-            [username, email, password, role, 0, otp] // Set email_verified to 0 and store OTP
+            "INSERT INTO users (username, email, password_hash, role, email_verified, verification_code) VALUES (?, ?, ?, ?, ?, ?)",
+            [username, email, hashedPassword, role, 0, otp] // Use hashedPassword here
         );
         console.log("New admin inserted into DB with OTP:", insertResult);
 
-        // 3. Send the OTP email to the newly created admin
+        // 4. Send the OTP email to the newly created admin
         const subject = "Verify Your Admin Account Email";
         const messageBody = `Your verification code for your Admin account is: ${otp}. Please use this code to complete your registration.`;
         const uniqueSubject = `${subject} - ${new Date().toLocaleString()}`;
@@ -894,6 +897,77 @@ app.post('/save-user', async (req, res) => {
     res.status(500).json({ error: 'Server error during social login process.' });
   }
 });
+
+app.get('/api/events-all', async (req, res) => {
+  try {
+    // Select all events, ordered by event_date and time
+    const [rows] = await pool.execute('SELECT * FROM events ORDER BY event_date, time');
+    res.json(rows);
+  } catch (err) {
+    console.error('Error fetching all events:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Endpoint to fetch events for a specific date (if needed for specific date view)
+
+// Example: GET /api/events?date=2024-03-15
+app.get('/api/events', async (req, res) => {
+  const { date } = req.query; // date should be in 'YYYY-MM-DD' format
+
+  if (!date) {
+    return res.status(400).json({ error: 'Date parameter is required.' });
+  }
+
+  try {
+    const [rows] = await pool.execute('SELECT * FROM events WHERE event_date = ? ORDER BY time, id', [date]);
+    res.json(rows);
+  } catch (err) {
+    console.error('Error fetching events for date:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.post('/api/events', async (req, res) => {
+  const { title, time, description, event_date } = req.body;
+
+  if (!title || !event_date) {
+    return res.status(400).json({ error: 'Title and event_date are required.' });
+  }
+
+  try {
+    // Using parameterized queries (?) for security against SQL injection
+    const [result] = await pool.execute(
+      'INSERT INTO events (title, time, description, event_date) VALUES (?, ?, ?, ?)',
+      [title, time || null, description || null, event_date]
+    );
+
+    // After insertion, fetch the newly created event to return it (including its ID)
+    const [newEventRows] = await pool.execute('SELECT * FROM events WHERE id = ?', [result.insertId]);
+    res.status(201).json(newEventRows[0]); // Return the newly created event
+  } catch (err) {
+    console.error('Error adding event:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Delete an event
+// Example: DELETE /api/events/123
+app.delete('/api/events/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const [result] = await pool.execute('DELETE FROM events WHERE id = ?', [id]);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Event not found.' });
+    }
+    res.status(200).json({ message: `Event with ID ${id} deleted successfully.` });
+  } catch (err) {
+    console.error('Error deleting event:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 
 // // --- NEW API ENDPOINT FOR DECLINING USER ACCESS ---
 // app.post("/api/admin/decline-user-access", verifyToken, authorizeSuperAdmin, (req, res) => {

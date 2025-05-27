@@ -11,21 +11,6 @@ const DashboardSearch = () => {
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
   };
-
-  return (
-    <div className="w-full">
-      <div className="dashboard-search-input-wrapper">
-        <Search className="dashboard-search-icon" /> {/* Icon inside input wrapper */}
-        <input
-          type="text"
-          placeholder="Search establishments..."
-          value={searchTerm}
-          onChange={handleSearchChange}
-          className="dashboard-search-input"
-        />
-      </div>
-    </div>
-  );
 };
 
 // DashboardSummary Component

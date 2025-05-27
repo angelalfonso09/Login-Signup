@@ -8,6 +8,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 
 import "./styles/ForgotPassword/ForgotPasswordForm.css";
 import "./styles/Components Css/AdminAccountForm.css";
+import "./styles/Components Css/AccountManagementTable.css";
 
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 

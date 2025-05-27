@@ -11,15 +11,15 @@ import {
 import { Pencil, Trash2, Plus } from "lucide-react";
 import AdminCreationForm from "./AddAdminAccountForm";
 import axios from "axios";
-import "../styles/Components Css/AccountManagementTable.css"; // Ensure this CSS file exists
+import "../styles/Components Css/AccountManagementTable.css";
 import { ThemeContext } from "../context/ThemeContext";
 
 const UserAdminTable = () => {
   const { theme } = useContext(ThemeContext);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterRole, setFilterRole] = useState("All");
-  const [showAdminModal, setShowAdminModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
+  const [showAddAdminModal, setShowAddAdminModal] = useState(false); // Unique classname
+  const [showEditUserModal, setShowEditUserModal] = useState(false); // Unique classname
   const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -27,22 +27,19 @@ const UserAdminTable = () => {
   const [editingUser, setEditingUser] = useState(null);
   const [editFormData, setEditFormData] = useState({ username: "", email: "" });
 
-  // --- NEW useEffect to apply theme to body ---
   useEffect(() => {
     if (theme === "dark") {
       document.body.classList.add("dark");
-      document.body.classList.remove("light"); // Ensure 'light' is removed if present
+      document.body.classList.remove("light");
     } else {
       document.body.classList.add("light");
-      document.body.classList.remove("dark"); // Ensure 'dark' is removed if present
+      document.body.classList.remove("dark");
     }
-    // Cleanup function: remove classes when component unmounts or theme changes
     return () => {
       document.body.classList.remove("dark", "light");
     };
-  }, [theme]); // Re-run this effect whenever the 'theme' changes
+  }, [theme]);
 
-  // ... (rest of your existing useEffect for fetching accounts)
   useEffect(() => {
     const fetchAccounts = async () => {
       try {
@@ -70,7 +67,7 @@ const UserAdminTable = () => {
     } catch (error) {
       console.error("Error creating admin:", error);
     } finally {
-      setShowAdminModal(false);
+      setShowAddAdminModal(false);
     }
   };
 
@@ -87,7 +84,7 @@ const UserAdminTable = () => {
   const handleEdit = (user) => {
     setEditingUser(user);
     setEditFormData({ username: user.username, email: user.email || "" });
-    setShowEditModal(true);
+    setShowEditUserModal(true);
   };
 
   const handleEditSubmit = async (e) => {
@@ -103,7 +100,7 @@ const UserAdminTable = () => {
           acc.id === editingUser.id ? { ...acc, ...editFormData } : acc
         )
       );
-      setShowEditModal(false);
+      setShowEditUserModal(false);
     } catch (err) {
       setEditError("Failed to update user details.");
     }
@@ -122,8 +119,8 @@ const UserAdminTable = () => {
 
   return (
     <Container className={`acctbl-container ${theme}`}>
-      <header>
-        <h1 className="Table-title">Account Management</h1>
+      <header className="acctbl-header">
+        <h1 className="acctbl-title-main">Account Management</h1> {/* Unique classname */}
       </header>
 
       <div className="acctbl-controls">
@@ -132,31 +129,30 @@ const UserAdminTable = () => {
           placeholder="Search by username or email..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="acctbl-search"
+          className="acctbl-search-input" // Unique classname
         />
         <Form.Select
           value={filterRole}
           onChange={(e) => setFilterRole(e.target.value)}
-          className="acctbl-filter"
+          className="acctbl-filter-select" // Unique classname
         >
           <option value="All">All</option>
           <option value="User">User</option>
           <option value="Admin">Admin</option>
         </Form.Select>
         <Button
-          onClick={() => setShowAdminModal(true)}
-          className="acctbl-create-btn"
+          onClick={() => setShowAddAdminModal(true)}
+          className="acctbl-add-btn" // Unique classname
         >
-          <Plus size={16} />
+          <Plus size={16} /> Add Admin
         </Button>
       </div>
 
-      {loading && <Spinner animation="border" />}
-      {error && <Alert variant="danger">{error}</Alert>}
+      {loading && <Spinner animation="border" className="acctbl-spinner" />} {/* Unique classname */}
+      {error && <Alert variant="danger" className="acctbl-error-alert">{error}</Alert>} {/* Unique classname */}
 
-      {/* NEW: Wrapper div for scrollability */}
       <div className="acctbl-table-scroll-wrapper">
-        <Table className="acctbl-table">
+        <Table className="acctbl-data-table"> {/* Unique classname */}
           <thead>
             <tr>
               <th>ID</th>
@@ -178,76 +174,78 @@ const UserAdminTable = () => {
                   <td>{account.role}</td>
                   <td>{account.is_verified ? "Yes" : "No"}</td>
                   <td>{account.email_verified ? "Yes" : "No"}</td>
-                  <td>
+                  <td className="acctbl-actions-cell"> {/* Unique classname */}
                     <button
-                      className="acctbl-create-btn"
+                      className="acctbl-edit-btn" // Unique classname
                       onClick={() => handleEdit(account)}
                     >
-                      <Pencil size={16} />
+                      <Pencil size={16} /> Edit
                     </button>
                     <button
                       className="acctbl-delete-btn"
                       onClick={() => handleDelete(account.id)}
                     >
-                      <Trash2 size={16} />
+                      <Trash2 size={16} /> Delete
                     </button>
                   </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan="7">No users found</td> {/* Corrected colspan */}
+                <td colSpan="7" className="acctbl-no-data">No users found</td> {/* Unique classname */}
               </tr>
             )}
           </tbody>
         </Table>
-      </div> {/* END: Wrapper div for scrollability */}
+      </div>
 
       {/* Admin Creation Modal */}
-      <Modal show={showAdminModal} onHide={() => setShowAdminModal(false)} className="acctbl-modal">
+      <Modal show={showAddAdminModal} onHide={() => setShowAddAdminModal(false)} className="acctbl-add-admin-modal"> {/* Unique classname */}
         <Modal.Header closeButton>
           <Modal.Title>Create Admin</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <AdminCreationForm
-            onClose={() => setShowAdminModal(false)}
+            onClose={() => setShowAddAdminModal(false)}
             onAddAdmin={handleAddAdmin}
           />
         </Modal.Body>
       </Modal>
 
       {/* Edit User Modal */}
-      <Modal show={showEditModal} onHide={() => setShowEditModal(false)} className="acctbl-modal">
+      <Modal show={showEditUserModal} onHide={() => setShowEditUserModal(false)} className="acctbl-edit-user-modal"> {/* Unique classname */}
         <Modal.Header closeButton>
           <Modal.Title>Edit User</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form onSubmit={handleEditSubmit}>
-            <Form.Group className="mb-3">
-              <Form.Label>Username</Form.Label>
+            <Form.Group className="mb-3 acctbl-form-group"> {/* Unique classname */}
+              <Form.Label className="acctbl-form-label">Username</Form.Label> {/* Unique classname */}
               <Form.Control
                 name="username"
                 value={editFormData.username}
                 onChange={handleInputChange}
+                className="acctbl-form-control" // Unique classname
               />
             </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Email</Form.Label>
+            <Form.Group className="mb-3 acctbl-form-group">
+              <Form.Label className="acctbl-form-label">Email</Form.Label>
               <Form.Control
                 name="email"
                 value={editFormData.email}
                 onChange={handleInputChange}
+                className="acctbl-form-control"
               />
             </Form.Group>
-            {editError && <Alert variant="danger">{editError}</Alert>}
-            <Modal.Footer>
-              <Button type="submit" className="acctbl-create-btn">
+            {editError && <Alert variant="danger" className="acctbl-edit-error-alert">{editError}</Alert>} {/* Unique classname */}
+            <Modal.Footer className="acctbl-modal-footer"> {/* Unique classname */}
+              <Button type="submit" className="acctbl-save-changes-btn"> {/* Unique classname */}
                 Save Changes
               </Button>
               <Button
                 variant="secondary"
-                onClick={() => setShowEditModal(false)}
-                className="acctbl-cancel-btn"
+                onClick={() => setShowEditUserModal(false)}
+                className="acctbl-cancel-edit-btn" // Unique classname
               >
                 Cancel
               </Button>

@@ -6,8 +6,8 @@
     --card-bg: #2f2f31;
     --card-border: #3a3a3a;
     --shadow-color: rgba(0, 0, 0, 0.3);
-    --primary-blue: #4caf50;
-    --primary-blue-hover: #45a049;
+    --primary-blue: #1B56FD;
+    --primary-blue-hover: #1230AE;
     --danger-red: #dc3545;
     --danger-red-hover: #c82333;
     --success-green: #28a745;
@@ -15,6 +15,11 @@
     --input-bg: #343a40;
     --input-border: #495057;
     --addEstablishmentForm:#FFFDF6;
+    --input-background-color: #ffffff;
+    --input-text-color: #333333;
+    --input-border-color: #cccccc; 
+
+
 }
 
 :root[data-theme='dark']{
@@ -31,7 +36,10 @@
     --success-green-hover: #218838;
     --input-bg: #343a40;
     --input-border: #495057;
-        --addEstablishmentForm:#3a3a3a;
+    --addEstablishmentForm:#3a3a3a;
+    --input-background-color: #2a2a2a; 
+    --input-text-color: #eeeeee; 
+    --input-border-color: #444444; 
 }
 
 
@@ -137,6 +145,7 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 30px;
+  font-family: 'poppins';
 }
 
 /* Establishment Section */
@@ -382,4 +391,20 @@
   .addEstablishmentForm .formButtons button {
     width: 100%;
   }
+}
+
+.searchBar {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--input-border-color); /* Uses variable */
+  border-radius: 5px;
+  background-color: var(--input-background-color); /* Uses variable */
+  color: var(--input-text-color); /* Uses variable */
+  font-size: 1rem;
+  /* Add transition for smooth theme changes */
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+.searchBar::placeholder {
+  color: var(--text-color-secondary); /* Placeholder text color, also themed */
 }

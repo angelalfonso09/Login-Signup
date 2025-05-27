@@ -1,7 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronRight, Plus, X, Clock, Sun, Moon } from 'lucide-react';
 import '../styles/Components Css/CalendarComponent.css'; // Import the CSS file
 import { useTheme } from '../context/ThemeContext'; // Import the custom hook to use theme context (Adjust path if necessary)
+
+// Define your backend API base URL
+const API_BASE_URL = 'http://localhost:5000/api'; // Make sure this matches your backend port
 
 export default function Calendar() {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -15,6 +18,8 @@ export default function Calendar() {
     date: null
   });
   const [showEventList, setShowEventList] = useState(false);
+  const [loading, setLoading] = useState(true); // Added loading state
+  const [error, setError] = useState(null);   // Added error state
 
   const { theme, toggleTheme } = useTheme();
 
@@ -36,6 +41,122 @@ export default function Calendar() {
   const getDateKey = (date) => {
     return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
   };
+
+  // Helper function to format date for backend (YYYY-MM-DD)
+  const formatDateToYYYYMMDD = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  // --- API Interaction Functions ---
+
+  // Function to fetch all events from the backend and organize them by date
+  // This will be called on initial load and after any CUD operation.
+  const fetchEventsFromBackend = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(`${API_BASE_URL}/events-all`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const allEvents = await response.json();
+
+      const organizedEvents = {};
+      allEvents.forEach(event => {
+        // MySQL `DATE` type returns a string like 'YYYY-MM-DD'
+        const eventDate = new Date(event.event_date);
+        const dateKey = getDateKey(eventDate);
+        if (!organizedEvents[dateKey]) {
+          organizedEvents[dateKey] = [];
+        }
+        organizedEvents[dateKey].push({
+          id: event.id,
+          title: event.title,
+          time: event.time,
+          description: event.description,
+          date: eventDate, // Store as Date object for consistency
+        });
+      });
+      setEvents(organizedEvents);
+
+    } catch (err) {
+      console.error('Failed to fetch events:', err);
+      setError('Failed to load events. Please try again.');
+      setEvents({}); // Clear events on error
+    } finally {
+      setLoading(false);
+    }
+  }, []); // No dependencies, as it fetches all events
+
+  // useEffect to load events from the backend on initial mount
+  useEffect(() => {
+    fetchEventsFromBackend();
+  }, [fetchEventsFromBackend]);
+
+  // Modified handleAddEvent to interact with the backend
+  const handleAddEvent = async () => {
+    if (!newEvent.title.trim() || !newEvent.date) return;
+
+    setLoading(true);
+    setError(null);
+    try {
+      const eventData = {
+        title: newEvent.title.trim(),
+        time: newEvent.time || null, // Send null if empty
+        description: newEvent.description.trim() || null, // Send null if empty
+        event_date: formatDateToYYYYMMDD(newEvent.date), // Format for backend
+      };
+
+      const response = await fetch(`${API_BASE_URL}/events`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(eventData),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // After adding, refresh events from the backend to ensure UI is in sync
+      fetchEventsFromBackend();
+      closeEventModal();
+    } catch (err) {
+      console.error('Error adding event:', err);
+      setError('Failed to add event. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Modified handleDeleteEvent to interact with the backend
+  const handleDeleteEvent = async (eventId, dateKey) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(`${API_BASE_URL}/events/${eventId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // After deleting, refresh events from the backend to ensure UI is in sync
+      fetchEventsFromBackend();
+    } catch (err) {
+      console.error('Error deleting event:', err);
+      setError('Failed to delete event. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // --- End API Interaction Functions ---
 
   const navigateMonth = (direction) => {
     setCurrentDate(prev => {
@@ -70,33 +191,6 @@ export default function Calendar() {
       description: '',
       date: null
     });
-  };
-
-  const handleAddEvent = () => {
-    if (!newEvent.title.trim() || !newEvent.date) return;
-
-    const dateKey = getDateKey(newEvent.date);
-    const eventData = {
-      id: Date.now(),
-      title: newEvent.title.trim(),
-      time: newEvent.time,
-      description: newEvent.description.trim(),
-      date: newEvent.date
-    };
-
-    setEvents(prev => ({
-      ...prev,
-      [dateKey]: [...(prev[dateKey] || []), eventData]
-    }));
-
-    closeEventModal();
-  };
-
-  const handleDeleteEvent = (eventId, dateKey) => {
-    setEvents(prev => ({
-      ...prev,
-      [dateKey]: prev[dateKey].filter(event => event.id !== eventId)
-    }));
   };
 
   const hasEvents = (day) => {
@@ -168,11 +262,6 @@ export default function Calendar() {
     });
   };
 
-  // toggleTheme is now coming from the context, so no need for a local function here
-  // const toggleTheme = () => {
-  //   setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light'));
-  // };
-
   return (
     <div className="calendar-container">
       {/* Header */}
@@ -209,6 +298,10 @@ export default function Calendar() {
       <div className="calendar-grid">
         {renderCalendarDays()}
       </div>
+
+      {/* Loading and Error Indicators */}
+      {loading && <p className="loading-indicator">Loading events...</p>}
+      {error && <p className="error-indicator">{error}</p>}
 
       {/* Selected date display and add event button */}
       <div className="selected-date-display">

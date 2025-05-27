@@ -250,7 +250,7 @@ const AdminCreationForm = ({ onClose, onAddAdmin }) => {
 
           <div className="admin-form-buttons">
             {!isOtpSent ? (
-              <Button type="submit">Create Admin & Send OTP</Button> // Changed button text
+              <Button type="submit"> Send OTP</Button> // Changed button text
             ) : (
               <Button type="submit">Verify OTP & Finalize Admin</Button> // Changed button text
             )}
