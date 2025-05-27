@@ -67,6 +67,7 @@
     /* Reusing for Cancel */
     --modal-cancel-btn-hover: #dc3545;
     /* Reusing for Cancel Hover */
+
 }
 
 /* ------------------------------------------- */
@@ -101,6 +102,7 @@
 header {
     width: 100%;
     margin-bottom: 30px;
+    font-family: 'monrse', sans-serif;
 }
 
 .Table-title {
@@ -136,6 +138,7 @@ header {
     align-items: center;
     padding: 0 10px;
     box-shadow: var(--acctbl-shadow-light);
+    font-family: 'montserrat', sans-serif;
 }
 
 .acctbl-container.dark .acctbl-controls {
@@ -226,9 +229,8 @@ header {
     position: sticky;
     top: 0;
     background-color: inherit;
-    /* Inherit background to match theme */
     z-index: 1;
-    /* Keep headers above scrolling content */
+    font-family: 'montserrat', sans-serif;
 }
 
 /* Adjust header background for dark/light themes if necessary */
@@ -300,9 +302,12 @@ header {
 }
 
 .acctbl-table tbody tr:last-child td {
-    border-bottom: none;
+    border-bottom: none;  
 }
 
+.acctbl-table tbody tr {
+    font-family: 'poppins', sans-serif;
+}
 .acctbl-table tbody tr:hover {
     background-color: rgba(0, 0, 0, 0.03);
 }
@@ -631,6 +636,7 @@ body.dark .modal-content {
 .modal-header {
     border-bottom: 1px solid var(--modal-header-border-light);
     padding: 15px 20px;
+    font-family: 'montserrat', sans-serif;
 }
 
 body.dark .modal-header {
@@ -675,6 +681,7 @@ body.dark .modal-header .btn-close {
     display: flex;
     justify-content: start;
     color: inherit;
+    font-family: 'montserrat', sans-serif;
 }
 
 .modal-body .form-control {
@@ -692,11 +699,14 @@ body.dark .modal-body .form-control {
     background-color: #2a2a2a;
     color: var(--acctbl-title-color-dark);
     border: 1px solid var(--acctbl-border-dark-new);
+    font-family: 'poppins', sans-serif;
+    
 }
 
 body.dark .modal-body .form-control::placeholder {
     color: #b0b3b8;
     opacity: 1;
+    font-family: 'montserrat', sans-serif;
 }
 
 .modal-body .form-control:focus {
@@ -715,6 +725,7 @@ body.dark .modal-body .form-control:focus {
     display: flex;
     justify-content: flex-end;
     gap: 10px;
+
 }
 
 
@@ -738,6 +749,7 @@ body.dark .modal-footer {
     background-color: var(--modal-create-btn-bg);
     color: white;
     box-shadow: var(--acctbl-shadow-light);
+    font-family: 'poppins', sans-serif;
 }
 
 .modal-footer .acctbl-create-btn[type="submit"]:hover {
@@ -756,14 +768,13 @@ body.dark .modal-footer .acctbl-create-btn[type="submit"]:hover {
     background-color: var(--modal-create-btn-hover);
 }
 
-/* Styling for the Cancel button */
-/* Add `acctbl-cancel-btn` class to your cancel button in AdminCreationForm's footer */
 .modal-footer .btn-secondary,
 .modal-footer .acctbl-cancel-btn {
     background-color: var(--modal-cancel-btn-bg);
     /* Gray background */
     color: white;
     box-shadow: var(--acctbl-shadow-light);
+    font-family: 'poppins', sans-serif;
 }
 
 .modal-footer .btn-secondary:hover,
