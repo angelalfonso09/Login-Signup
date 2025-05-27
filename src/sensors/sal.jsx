@@ -38,7 +38,7 @@ const DOMonitor = ({ theme, updateSensorData }) => {
   const tooltipBg = theme === "dark" ? "#222222" : "#ffffff";  // Dark tooltip for dark mode
 
   return (
-    <div className={`do-monitor-container ${theme}`}>
+    <div className={`salinity-container ${theme}`}>
       <h2 style={{ color: textColor }}>Salinity Level (ppt)</h2>
       <ResponsiveContainer width="100%" height={300}>
         <LineChart data={doData}>
