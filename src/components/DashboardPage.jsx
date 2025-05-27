@@ -1,11 +1,12 @@
-import React, { useState, useContext, useEffect } from 'react'; // Import useEffect
-import { Search } from 'lucide-react';
+import React, { useState, useContext, useEffect } from 'react';
+import { Search, Building, Wifi, Users } from 'lucide-react'; // Import new icons
 import '../styles/Components Css/DashboardPage.css';
 import { ThemeContext } from '../context/ThemeContext';
 
+// DashboardSearch Component
 const DashboardSearch = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const { theme } = useContext(ThemeContext);
+  const { theme } = useContext(ThemeContext); // Theme context is available but not directly used in styling here as it's handled by CSS variables
 
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
@@ -14,6 +15,7 @@ const DashboardSearch = () => {
   return (
     <div className="w-full">
       <div className="dashboard-search-input-wrapper">
+        <Search className="dashboard-search-icon" /> {/* Icon inside input wrapper */}
         <input
           type="text"
           placeholder="Search establishments..."
@@ -21,19 +23,21 @@ const DashboardSearch = () => {
           onChange={handleSearchChange}
           className="dashboard-search-input"
         />
-        <Search className="ml-3 w-5 h-5 text-gray-500" />
       </div>
     </div>
   );
 };
 
+// DashboardSummary Component
 const DashboardSummary = ({ totalEstablishments, totalSensors, totalUsers }) => {
-  const { theme } = useContext(ThemeContext);
+  const { theme } = useContext(ThemeContext); // Theme context is available
 
   return (
     <div className="dashboard-summary-container">
+      {/* Total Establishments Card */}
       <div className="dashboard-summary-card">
         <div className="dashboard-summary-header">
+          <Building className="dashboard-summary-icon blue" /> {/* Icon for Establishments */}
           <h2 className="dashboard-summary-title">Total Establishments</h2>
         </div>
         <div className="dashboard-summary-content">
@@ -41,8 +45,10 @@ const DashboardSummary = ({ totalEstablishments, totalSensors, totalUsers }) => 
         </div>
       </div>
 
+      {/* Total Sensors Card */}
       <div className="dashboard-summary-card">
         <div className="dashboard-summary-header">
+          <Wifi className="dashboard-summary-icon green" /> {/* Icon for Sensors */}
           <h2 className="dashboard-summary-title">Total Sensors</h2>
         </div>
         <div className="dashboard-summary-content">
@@ -50,12 +56,13 @@ const DashboardSummary = ({ totalEstablishments, totalSensors, totalUsers }) => 
         </div>
       </div>
 
+      {/* Total Users Card */}
       <div className="dashboard-summary-card">
         <div className="dashboard-summary-header">
+          <Users className="dashboard-summary-icon purple" /> {/* Icon for Users */}
           <h2 className="dashboard-summary-title">Total Users</h2>
         </div>
         <div className="dashboard-summary-content">
-          {/* Display totalUsers here. Add a fallback like 0 or a loading indicator */}
           <p className="dashboard-summary-value-purple">
             {totalUsers !== null ? totalUsers : 'Loading...'}
           </p>
@@ -65,87 +72,84 @@ const DashboardSummary = ({ totalEstablishments, totalSensors, totalUsers }) => 
   );
 };
 
-
-
+// DashboardPage Component
 const DashboardPage = () => {
   const [dashboardSummaryData, setDashboardSummaryData] = useState({
-    totalEstablishments: 0, 
-    totalSensors: 0,      
-    totalUsers: null,    
+    totalEstablishments: 0,
+    totalSensors: 0,
+    totalUsers: null,
   });
 
-    useEffect(() => {
-        const fetchTotalUsers = async () => {
-            setDashboardSummaryData(prevData => ({ ...prevData, userError: false })); // Reset error on new attempt
-            try {
-                const response = await fetch('http://localhost:5000/api/total-users');
-                if (!response.ok) {
-                    // Try to parse error message from backend if available
-                    const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
-                    throw new Error(`HTTP error! Status: ${response.status}. Message: ${errorData.error || 'Failed to fetch'}`);
-                }
-                const data = await response.json();
-                setDashboardSummaryData(prevData => ({
-                    ...prevData,
-                    totalUsers: data.totalUsers,
-                    userError: false, // Ensure error is false on success
-                }));
-            } catch (error) {
-                console.error("Error fetching total users:", error);
-                setDashboardSummaryData(prevData => ({
-                    ...prevData,
-                    totalUsers: null, 
-                    userError: true, 
-                }));
-            }
-        };
+  useEffect(() => {
+    const fetchTotalUsers = async () => {
+      setDashboardSummaryData(prevData => ({ ...prevData, userError: false }));
+      try {
+        const response = await fetch('http://localhost:5000/api/total-users');
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
+          throw new Error(`HTTP error! Status: ${response.status}. Message: ${errorData.error || 'Failed to fetch'}`);
+        }
+        const data = await response.json();
+        setDashboardSummaryData(prevData => ({
+          ...prevData,
+          totalUsers: data.totalUsers,
+          userError: false,
+        }));
+      } catch (error) {
+        console.error("Error fetching total users:", error);
+        setDashboardSummaryData(prevData => ({
+          ...prevData,
+          totalUsers: null,
+          userError: true,
+        }));
+      }
+    };
 
-const fetchOtherData = async () => {
-  try {
-    const estResponse = await fetch('http://localhost:5000/api/total-establishments');
-    if (!estResponse.ok) {
-      const errorData = await estResponse.json().catch(() => ({ message: 'Unknown error' }));
-      throw new Error(`HTTP error! Status: ${estResponse.status}. Message: ${errorData.error || 'Failed to fetch'}`);
-    }
+    const fetchOtherData = async () => {
+      // Fetch total establishments
+      try {
+        const estResponse = await fetch('http://localhost:5000/api/total-establishments');
+        if (!estResponse.ok) {
+          const errorData = await estResponse.json().catch(() => ({ message: 'Unknown error' }));
+          throw new Error(`HTTP error! Status: ${estResponse.status}. Message: ${errorData.error || 'Failed to fetch'}`);
+        }
+        const estData = await estResponse.json();
+        setDashboardSummaryData(prevData => ({
+          ...prevData,
+          totalEstablishments: estData.totalEstablishments,
+        }));
+      } catch (error) {
+        console.error("Error fetching total establishments:", error);
+        setDashboardSummaryData(prevData => ({
+          ...prevData,
+          totalEstablishments: 0,
+        }));
+      }
 
-    const estData = await estResponse.json();
-    setDashboardSummaryData(prevData => ({
-      ...prevData,
-      totalEstablishments: estData.totalEstablishments,
-    }));
-  } catch (error) {
-    console.error("Error fetching total establishments:", error);
-    setDashboardSummaryData(prevData => ({
-      ...prevData,
-      totalEstablishments: 0, // fallback value on error
-    }));
-  }
-
- // ✅ Fetch total sensors
-  try {
-    const sensorResponse = await fetch('http://localhost:5000/api/total-sensors');
-    if (!sensorResponse.ok) {
-      const errorData = await sensorResponse.json().catch(() => ({ message: 'Unknown error' }));
-      throw new Error(`HTTP error! Status: ${sensorResponse.status}. Message: ${errorData.error || 'Failed to fetch'}`);
-    }
-
-    const sensorData = await sensorResponse.json();
-    setDashboardSummaryData(prevData => ({
-      ...prevData,
-      totalSensors: sensorData.totalSensors,
-    }));
-  } catch (error) {
-    console.error("Error fetching total sensors:", error);
-    setDashboardSummaryData(prevData => ({
-      ...prevData,
-      totalSensors: 0, 
-    }));
-  }
-};
+      // Fetch total sensors
+      try {
+        const sensorResponse = await fetch('http://localhost:5000/api/total-sensors');
+        if (!sensorResponse.ok) {
+          const errorData = await sensorResponse.json().catch(() => ({ message: 'Unknown error' }));
+          throw new Error(`HTTP error! Status: ${sensorResponse.status}. Message: ${errorData.error || 'Failed to fetch'}`);
+        }
+        const sensorData = await sensorResponse.json();
+        setDashboardSummaryData(prevData => ({
+          ...prevData,
+          totalSensors: sensorData.totalSensors,
+        }));
+      } catch (error) {
+        console.error("Error fetching total sensors:", error);
+        setDashboardSummaryData(prevData => ({
+          ...prevData,
+          totalSensors: 0,
+        }));
+      }
+    };
 
     fetchTotalUsers();
-    fetchOtherData(); 
-  }, []); 
+    fetchOtherData();
+  }, []);
 
   return (
     <div className="dashboard-page">

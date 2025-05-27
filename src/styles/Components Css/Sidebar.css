@@ -28,6 +28,7 @@ padding-bottom: 1rem;
   color: var(--sidebar-text); 
   margin-bottom: 0.2rem; 
   margin-left: 0;
+  font-family: 'Montserrat';
 }
 
 .User h4 {
@@ -35,6 +36,7 @@ padding-bottom: 1rem;
   color: var(--sidebar-text);
   margin-top: 0; 
   margin-left: 0;
+  font-family: 'Poppins';
 }
 
 /* Optional: Style for the username if you decide to re-introduce it */
@@ -55,6 +57,7 @@ padding-bottom: 1rem;
   font-size: 14px;
   position: relative;
   width: 100%;
+  font-family: 'Poppins';
 }
 
 .menu-item.active {
@@ -89,6 +92,7 @@ padding-bottom: 1rem;
 
 .logout .menu-item {
   color: var(--sidebar-text-light);
+  font-family: 'Poppins';
 }
 
 .active-indicator {

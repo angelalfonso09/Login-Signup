@@ -138,3 +138,18 @@
         transform: scale(1);
     }
 }
+
+@font-face {
+    font-family: 'Montserrat';
+    src: url('/fonts/Montserrat-Medium.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'Lato';
+    src: url('/fonts/Lato-Regular.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'Poppins';
+    src: url('/fonts/Poppins-Regular.ttf') format('truetype');
+}

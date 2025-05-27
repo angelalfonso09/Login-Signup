@@ -1,10 +1,11 @@
 import React, { useContext, useState, useEffect } from "react";
-import Navbar from "../components/Navbar";
+import Navbar from "../components/Navbar"; // Assuming Navbar exists and is used elsewhere
 import Sidebar from "../components/Sidebar";
 import styles from "../styles/Pages Css/Dashboard.module.css";
 import { ThemeContext } from "../context/ThemeContext";
-import DashboardPage from "../components/DashboardPage";
-import EstablishmentSensors from "../components/DashboardEstablishment";
+import DashboardPage from "../components/DashboardPage"; // This component holds the total stats
+import EstablishmentSensors from "../components/DashboardEstablishment"; // This component displays individual establishment cards
+import CalendarComponent from "../components/CalendarComponent"; // Import Calendar Component
 
 const Dashboard = () => {
   const { theme, toggleTheme } = useContext(ThemeContext);
@@ -19,7 +20,7 @@ const Dashboard = () => {
     setLoading(true);
     try {
       // Simulate fetching data from a database (replace with actual API call)
-      const response = await fetch('http://localhost:5000/api/establishments');  //  Endpoint
+      const response = await fetch('http://localhost:5000/api/establishments'); // Endpoint
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -96,39 +97,54 @@ const Dashboard = () => {
       <div className={styles.dbContainer}>
         <Sidebar theme={theme} toggleTheme={toggleTheme} />
         <div className={styles.dbContents}>
+          {/* Dashboard Metrics Section */}
           <div className={styles.meterRowFlex}>
-            <DashboardPage />
+            <DashboardPage /> {/* This component displays Total Establishments, Sensors, Users */}
+          </div>
+
+          {/* Main Content Area: Establishments List and Calendar */}
+          <div className={styles.mainContentGrid}>
+            {/* Establishment Management Section */}
             <div className={styles.establishmentSection}>
-              <div className={styles.addEstablishmentContainer}>
+              <div className={styles.sectionHeader}>
+                <h3>Establishments</h3>
                 {!showAddForm && (
-                  <button onClick={handleAddButtonClick}>Add Establishment</button>
-                )}
-                {showAddForm && (
-                  <div className={styles.addEstablishmentForm}>
-                    <input
-                      type="text"
-                      placeholder="Establishment Name"
-                      value={newEstablishmentName}
-                      onChange={handleInputChange}
-                    />
-                    <div className={styles.formButtons}>
-                      <button onClick={handleAddEstablishment}>Add</button>
-                      <button onClick={handleCancelAdd}>Cancel</button>
-                    </div>
-                  </div>
+                  <button onClick={handleAddButtonClick} className={styles.addEstablishmentButton}>
+                    + Add New Establishment
+                  </button>
                 )}
               </div>
+              {showAddForm && (
+                <div className={styles.addEstablishmentForm}>
+                  <input
+                    type="text"
+                    placeholder="Enter establishment name"
+                    value={newEstablishmentName}
+                    onChange={handleInputChange}
+                  />
+                  <div className={styles.formButtons}>
+                    <button onClick={handleAddEstablishment} className={styles.addButton}>Add</button>
+                    <button onClick={handleCancelAdd} className={styles.cancelButton}>Cancel</button>
+                  </div>
+                </div>
+              )}
               <div className={styles.establishmentsList}>
                 {loading ? (
-                  <div>Loading establishments...</div> //  Loading message
+                  <div className={styles.loadingMessage}>Loading establishments...</div>
                 ) : establishments.length === 0 ? (
-                  <div>No establishments found.</div>
+                  <div className={styles.noEstablishmentsMessage}>No establishments found. Click '+ Add New Establishment' to add one.</div>
                 ) : (
                   establishments.map((establishmentName, index) => (
                     <EstablishmentSensors key={index} establishmentName={establishmentName} />
                   ))
                 )}
               </div>
+            </div>
+
+            {/* Calendar Section */}
+            <div className={styles.calendarSection}>
+
+              <CalendarComponent />
             </div>
           </div>
         </div>
