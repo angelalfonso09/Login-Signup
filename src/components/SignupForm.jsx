@@ -98,8 +98,6 @@ const SignupForm = () => {
       });
 
       if (response.data.success) {
-        // IMPORTANT: Avoid window.alert in production. Use a custom modal or toast.
-        // window.alert("✅ Verification successful!");
         setMessage("✅ Verification successful! Redirecting...");
         setShowModal(false);
         navigate("/login"); // Redirect to dashboard or login page
@@ -115,63 +113,63 @@ const SignupForm = () => {
   return (
     <>
       <Form onSubmit={handleSubmit}>
-        <Form.Group className="mb-3">
+        <Form.Group className="mb-4">
           <Form.Control
             type="text"
             placeholder="Username"
             name="username"
             id="username"
-            className="input-field transparent-input"
             onChange={handleChange}
             autoComplete="username"
+            className={`input-field ${theme}`}
           />
         </Form.Group>
 
-        <Form.Group className="mb-3">
+        <Form.Group className="mb-4">
           <Form.Control
             type="email"
             placeholder="Email"
             name="email"
             id="email"
-            className="input-field transparent-input"
             onChange={handleChange}
             autoComplete="email"
+            className={`input-field ${theme}`}
           />
         </Form.Group>
 
-        <Form.Group className="mb-3">
+        <Form.Group className="mb-4">
           <Form.Control
             type="tel"
             placeholder="Phone"
             name="phone"
             id="phone"
-            className="input-field transparent-input"
             onChange={handleChange}
             autoComplete="tel"
+            className={`input-field ${theme}`}
           />
         </Form.Group>
 
-        <Form.Group className="mb-3">
+        <Form.Group className="mb-4">
           <Form.Control
             type="password"
             placeholder="Password"
             name="password"
             id="password"
-            className="input-field transparent-input"
             onChange={handleChange}
             autoComplete="new-password"
+            className={`input-field ${theme}`}
           />
         </Form.Group>
 
-        <Form.Group className="mb-3">
+        <Form.Group className="mb-4">
           <Form.Control
             type="password"
             placeholder="Confirm Password"
             name="confirmPassword"
             id="confirmPassword"
-            className="input-field transparent-input"
             onChange={handleChange}
             autoComplete="new-password"
+            className={`input-field ${theme}`}
           />
         </Form.Group>
 
@@ -179,10 +177,17 @@ const SignupForm = () => {
           Sign Up
         </Button>
 
-        {message && <p className="mt-3 text-center" style={{ color: message.includes("❌") ? "red" : "green" }}>{message}</p>}
+        {/* Apply a unique class for the message and use theme for color */}
+        {message && (
+          <p className={`mt-3 text-center signup-form-message ${message.includes("❌") ? 'error' : 'success'}`}>
+            {message}
+          </p>
+        )}
       </Form>
 
       {/* Verification Code Modal - Added unique className and theme */}
+      {/* Bootstrap Modals add classes like .modal, .modal-dialog, .modal-content.
+          We'll target .modal-content inside our unique class for theming. */}
       <Modal show={showModal} onHide={() => setShowModal(false)} className={`signup-verification-modal ${theme}`}>
         <Modal.Header closeButton>
           <Modal.Title>Email Verification</Modal.Title>
@@ -197,10 +202,13 @@ const SignupForm = () => {
             value={verificationCode}
             onChange={(e) => setVerificationCode(e.target.value)}
             autoComplete="one-time-code"
+            className="input-field" // Apply input-field class to modal input
           />
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="primary" onClick={handleVerification}>Verify</Button>
+          <Button variant="primary" onClick={handleVerification} className="gradient-btn"> {/* Apply gradient-btn to modal button */}
+            Verify
+          </Button>
         </Modal.Footer>
       </Modal>
     </>
