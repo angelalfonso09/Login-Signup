@@ -88,7 +88,7 @@
 
 /* Hover effect for menu items */
 .menu-item:hover {
-  background-color: var(--sidebar-hover-bg, rgba(255, 255, 255, 0.1)); /* Subtle background on hover */
+  background-color: var(--sidebar-hover-bg, rgba(255, 255, 255, 0.1)); 
   color: var(--sidebar-hover-text, var(--sidebar-active)); /* Change text color on hover, perhaps to the active color */
   border-radius: 8px; /* Apply similar rounding on hover for consistency */
 }
@@ -187,8 +187,8 @@
   background-color: #0056b3;
 }
 
-.modal-actions button:last-child { /* Cancel button */
-  background-color: #6c757d; /* Example gray */
+.modal-actions button:last-child { 
+  background-color: #6c757d; 
   color: white;
 }
 

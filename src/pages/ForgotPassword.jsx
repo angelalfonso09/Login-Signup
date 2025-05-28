@@ -15,7 +15,7 @@ const ForgotPassword = () => {
   const [showResetModal, setShowResetModal] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const { theme } = useContext(ThemeContext);
+  const { theme } = useContext(ThemeContext); // Destructure theme from context
 
   const handleSubmitEmail = async (e) => {
     e.preventDefault();
@@ -128,14 +128,15 @@ const ForgotPassword = () => {
     }
   };
 
-
   return (
     <BackgroundLayout variant="pink">
-      <div className="forgot-password-container">
+      {/* Apply theme to the main container or card that wraps content */}
+      <div className={`forgot-password-container ${theme}`}>
         <Container className="forgot-password-wrapper d-flex justify-content-center align-items-center p-5">
-          <Card.Body>
-            <h2 className="forgot-password-title text-white text-left">Forgot Password?</h2>
-            <p className="forgot-password-description text-white text-left">Please enter your email.</p>
+          {/* Apply theme to Card.Body and other relevant elements */}
+          <Card.Body className={`forgot-password-card-body ${theme}`}>
+            <h2 className="forgot-password-title text-left">Forgot Password?</h2> {/* Remove text-white if theme handles color */}
+            <p className="forgot-password-description text-left">Please enter your email.</p> {/* Remove text-white if theme handles color */}
 
             <form onSubmit={handleSubmitEmail}>
               <div className="mb-3">
@@ -143,44 +144,42 @@ const ForgotPassword = () => {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="form-control"
+                  // className="form-control forgot-password-input" // Add a unique class for main form input
                   placeholder="Enter your email"
                   required
+                  className={`input-field ${theme}`}
                 />
               </div>
 
               <button
                 type="submit"
-                className="btn btn-primary w-100"
+                className="btn btn-primary w-100 forgot-password-button" // Add a unique class for main form button
                 disabled={isLoading}
               >
                 {isLoading ? 'Sending OTP...' : 'Send OTP'}
               </button>
 
               {status.message && (
-                <div className={`alert mt-3 ${status.type === 'success' ? 'alert-success' : 'alert-danger'}`}>
+                <div className={`alert mt-3 ${status.type === 'success' ? 'alert-success' : 'alert-danger'} forgot-password-status-message`}>
                   {status.message}
                 </div>
               )}
             </form>
 
             <div className="forgot-password-footer text-center mt-3">
-              <p className="forgot-password-login text-white">
-                Don't have an account? <a href="/signup" className="forgot-password-link text-white">Signup</a>
+              <p className="forgot-password-login"> {/* Remove text-white if theme handles color */}
+                Don't have an account? <a href="/signup" className="forgot-password-link">Signup</a> {/* Remove text-white if theme handles color */}
               </p>
             </div>
-            <div className="forgot-password-links text-center text-muted small">
-              <a href="#" className="forgot-password-terms">Terms & Conditions</a> |
-              <a href="#" className="forgot-password-support">Support</a> |
-              <a href="#" className="forgot-password-care">Customer Care</a>
-            </div>
+
           </Card.Body>
         </Container>
       </div>
 
       {/* OTP Verification Modal */}
-      <Modal show={showOtpModal} onHide={() => setShowOtpModal(false)} centered className="otp-verification-modal">
-        <Modal.Header closeButton className="otp-modal-header">
+      {/* Apply theme to the Modal directly */}
+      <Modal show={showOtpModal} onHide={() => setShowOtpModal(false)} centered className={`otp-verification-modal ${theme}`}>
+        <Modal.Header  className="otp-modal-header">
           <Modal.Title className="otp-modal-title">OTP Verification</Modal.Title>
         </Modal.Header>
         <Modal.Body className="otp-modal-body">
@@ -191,9 +190,9 @@ const ForgotPassword = () => {
                 type="text"
                 value={otp}
                 onChange={(e) => setOtp(e.target.value)}
-                className="form-control otp-input"
+                className={`input-field ${theme}`}
                 placeholder="Enter 6-digit code"
-                maxLength="6" // Assuming a 6-digit OTP
+                maxLength="6" 
                 required
               />
             </div>
@@ -205,7 +204,7 @@ const ForgotPassword = () => {
               {isLoading ? 'Verifying OTP...' : 'Verify OTP'}
             </button>
             {status.message && (
-              <div className={`alert mt-3 ${status.type === 'success' ? 'alert-success' : 'alert-danger'}`}>
+              <div className={`alert mt-3 ${status.type === 'success' ? 'alert-success' : 'alert-danger'} otp-status-message`}>
                 {status.message}
               </div>
             )}
@@ -216,17 +215,18 @@ const ForgotPassword = () => {
         </Modal.Body>
       </Modal>
 
-      {/* Reset Password Modal (optional, apply similar styling if needed) */}
-      <Modal show={showResetModal} onHide={() => setShowResetModal(false)} className={`forgot-verification-modal ${theme}`}>
-        <Modal.Header closeButton>
-          <Modal.Title>Reset Password</Modal.Title>
+      {/* Reset Password Modal */}
+      {/* Apply theme to the Modal directly */}
+      <Modal show={showResetModal} onHide={() => setShowResetModal(false)} centered className={`reset-password-modal ${theme}`}>
+        <Modal.Header closeButton className="reset-modal-header">
+          <Modal.Title className="reset-modal-title">Reset Password</Modal.Title>
         </Modal.Header>
-        <Modal.Body>
+        <Modal.Body className="reset-modal-body">
           <form onSubmit={handleResetPassword}>
             <div className="mb-3">
               <input
                 type="password"
-                className="form-control"
+                className={`input-field ${theme}`}// Add unique class for reset input
                 placeholder="New Password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
@@ -236,7 +236,7 @@ const ForgotPassword = () => {
             <div className="mb-3">
               <input
                 type="password"
-                className="form-control"
+                className={`input-field ${theme}`} // Add unique class for reset input
                 placeholder="Confirm Password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
@@ -245,11 +245,16 @@ const ForgotPassword = () => {
             </div>
             <button
               type="submit"
-              className="btn btn-success w-100"
+              className="btn btn-success w-100 reset-password-button" // Add unique class for reset button
               disabled={isLoading}
             >
               {isLoading ? 'Resetting...' : 'Reset Password'}
             </button>
+            {status.message && (
+              <div className={`alert mt-3 ${status.type === 'success' ? 'alert-success' : 'alert-danger'} reset-status-message`}>
+                {status.message}
+              </div>
+            )}
           </form>
         </Modal.Body>
       </Modal>
