@@ -151,7 +151,7 @@
     flex: 1;
     padding: var(--acctbl-input-padding-new);
     border-radius: var(--acctbl-input-radius-new);
-    background: var(--acctbl-table-bg-light);
+    background: var(--acctbl-table-bg-light) !important;
     color: var(--acctbl-title-color-light);
     border: 1px solid var(--acctbl-border-light);
     font-size: 0.95rem;

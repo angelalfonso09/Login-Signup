@@ -70,6 +70,7 @@
   width: 100%; /* Ensure label takes full width of the widget */
   text-align: left; /* Align label to the left as in the image */
   padding-left: 10px; /* Add some left padding */
+  font-family: 'montserrat';
 }
 
 /* Media queries for responsiveness */

@@ -3,19 +3,22 @@
   --dark-mode-bg-rgba: #1e1f21;
   --light-mode-bg: #f9f9f9;
   --toggle-slider-light: white;
-  --toggle-slider-dark: #d3d3d3;
-  --toggle-text-light: white;
-  --toggle-text-dark: #f9f9f9;
+
+  --toggle-text-light: black;
+
   --widget-text-light: #333;
-  --widget-text-dark: #f9f9f9;
-  --toggle-label-light:black;
-  --slider-bg-light: #87CEEB;
+
+  --toggle-label-light:white;
+  --slider-bg-light: #1230AE;
 }
 
 [data-theme="dark"] {
   --custom-toggle-bg-dark: #444444; 
   --toggle-label-dark:white;
   --slider-bg-dark: white;
+    --widget-text-dark: #f9f9f9;
+      --toggle-text-dark: #f9f9f9;
+        --toggle-slider-dark: #1230AE;
 }
 
 .widget-container {
@@ -36,6 +39,7 @@
   display: flex;
   justify-content: center;
   margin-bottom: 1rem;
+  font-family: 'poppins';
 }
 
 .custom-toggle {
@@ -64,12 +68,24 @@
   font-size: 0.95rem;
   font-weight: 600;
   transition: color 0.3s ease;
-  color: var(--toggle-label-light);
 }
 
-.toggle-label.dark{
-  color: var(--toggle-label-dark);
+/* .custom-toggle.disconnected .disconnected-label {
+  color: black;
 }
+
+.custom-toggle.disconnected .disconnected-label .light{
+  color: black;
+}
+
+.custom-toggle.disconnected .connected-label {
+  color: black;
+}
+
+.custom-toggle.disconnected .connected-label .light{
+  color: black;
+} */
+
 
 .slider {
   position: absolute;
@@ -78,7 +94,7 @@
   top: 0;
   left: 0;
   border-radius: 9999px;
-  z-index: 1;
+  z-index: 2;
   transition: transform 0.3s ease;
   background-color: var(--slider-bg-light);
 }
@@ -95,19 +111,14 @@
   transform: translateX(100%);
 }
 
-.custom-toggle.connected .connected-label {
-  color: #1e1e2f;
-}
 
-.custom-toggle.disconnected .disconnected-label {
-  color: #1e1e2f;
-}
 
 /* Meter Styling */
 .meter-container {
   width: 180px;
   height: 180px;
   margin: 0 auto 1rem auto;
+    font-family: 'poppins';
 }
 
 .temperature-text {
@@ -115,7 +126,11 @@
   flex-direction: column;
   align-items: center;
   font-weight: bold;
-  color: #2563eb;
+  color: var(--toggle-text-dark);
+}
+
+.temperature-text .light{
+    color: var(--toggle-text-light);
 }
 
 .temperature-text .label {
@@ -132,4 +147,5 @@
 
 .water-quality-text {
   font-size: 0.95rem;
+    font-family: 'poppins';
 }

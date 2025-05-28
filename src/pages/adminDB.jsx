@@ -16,24 +16,20 @@ const AdminDb = () => {
       <div className={styles.admindbContainer}>
         <Sidebar theme={theme} toggleTheme={toggleTheme} />
         <div className={styles.admindbContents}>
-
-
-
-          <div className={styles.dashboardGrid}>
-
             <div className={styles.mainMetrics}>
               <AdminDashboardPage />
             </div>
 
-            <div className={styles.establishmentCardsContainer}>
+            <div className={styles.mainContentGrid}>
+            <div className={styles.establishmentSection}>
               <EstablishmentSensors />
               <EstablishmentSensors />
               <EstablishmentSensors />
               {/* Add more EstablishmentSensors if you need a specific number, or make this dynamic */}
             </div>
-                      <div className={styles.calendarWidget}>
+                      <div className={styles.calendarSection}>
             <Calendar />
-          </div>
+            </div>
           </div>
         </div>
       </div>

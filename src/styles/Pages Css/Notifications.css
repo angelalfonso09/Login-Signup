@@ -8,6 +8,8 @@
   --approve-button-text: #fff;
   --decline-button-bg: #dc3545;
   --decline-button-text: #fff;
+  --notif-text-color:white;
+  --notif-timestamp:white;
 }
 
 .light {
@@ -20,6 +22,8 @@
   --approve-button-text: #fff;
   --decline-button-bg: #dc3545;
   --decline-button-text: #fff;
+  --notif-text-color:black;
+   --notif-timestamp:#718096;
 }
 
 .notifications-container {
@@ -307,6 +311,7 @@
 .notification-icon-wrapper {
   padding: 8px;
   border-radius: 50%;
+  color: var(--notif-text-color);
   /* You might want to add theme-based background for the icon wrapper if it has one */
 }
 
@@ -314,6 +319,7 @@
   font-size: 1rem;
   font-weight: 600;
   font-family: 'montserrat', sans-serif;
+  color: var(--notif-text-color);
 }
 
 .notification-type-read {
@@ -341,11 +347,17 @@
 .notification-message {
   font-size: 0.875rem;
   font-family: 'poppins', sans-serif;
+    color: var(--notif-text-color);
 }
 
 .notification-message-read {
   color: #718096;
   /* Default dark mode read message color */
+}
+
+.notification-status{
+    color: var(--notif-text-color);
+    font-family: 'poppins';
 }
 
 /* Light mode for read notification message text */
@@ -418,17 +430,15 @@
 
 .notification-timestamp {
   font-size: 0.75rem;
-  color: #718096;
-  /* Default dark mode timestamp color */
+  color: var(--notif-timestamp);
   margin-top: 8px;
-  margin-left: 56px;
+  margin-left: 66px;
   font-family: 'poppins', sans-serif;
 }
 
-/* Light mode for timestamp text */
+
 .notifications-container.light .notification-timestamp {
   color: #555;
-  /* Darker grey for readability */
 }
 
 .Notifpage {

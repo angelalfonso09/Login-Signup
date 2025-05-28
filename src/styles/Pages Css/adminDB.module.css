@@ -157,3 +157,87 @@
     margin-bottom: 15px; /* Add vertical spacing */
   }
 }
+
+.mainContentGrid{
+  display: grid;
+  grid-template-columns: 2fr 1fr; /* Establishments take 2/3, Calendar 1/3 */
+  gap: 25px; /* Gap between the two main sections */
+  flex-grow: 1; /* Allow this section to grow */
+  min-height: 0; /* Important for flex/grid parents with scrollable children */
+}
+
+.calendarSection {
+  background-color: var(--card-bg);
+  border-radius: 12px;
+  padding: 25px;
+  box-sizing: border-box; 
+  box-shadow: 0px 4px 15px var(--shadow-color);
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center calendar within its section */
+  min-height: 400px;
+  overflow-y: scroll;
+}
+
+.establishmentSection {
+  background-color: var(--card-bg);
+  border-radius: 12px;
+  padding: 25px;
+  box-shadow: 0px 4px 15px var(--shadow-color);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Hide overflow of content within this section */
+  min-height: 400px; /* Ensure a minimum height */
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .mainContentGrid {
+    grid-template-columns: 1fr; /* Stack on smaller screens */
+  }
+}
+
+@media (max-width: 768px) {
+  .dbContainer {
+    flex-direction: column; /* Stack sidebar and content vertically */
+  }
+
+  .dbContents {
+    padding: 15px;
+    gap: 15px;
+  }
+
+  .meterRowFlex {
+    grid-template-columns: 1fr; /* Single column for meters */
+  }
+
+  .meterWidget {
+    width: 100%;
+    min-width: unset;
+  }
+
+  .mainContentGrid {
+    gap: 20px;
+  }
+
+  .establishmentSection, .calendarSection {
+    padding: 20px;
+    min-height: unset; /* Allow height to adjust */
+  }
+}
+
+@media (max-width: 480px) {
+  .sectionHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .addEstablishmentButton {
+    width: 100%;
+  }
+  .addEstablishmentForm .formButtons {
+    flex-direction: column;
+  }
+  .addEstablishmentForm .formButtons button {
+    width: 100%;
+  }
+}
