@@ -23,11 +23,13 @@
 .login-title {
     color: white;
     text-align: left;
+    font-family: 'montserrat';
 }
 
 .login-subtitle {
     color: white;
     text-align: left;
+    font-family: 'poppins';
 }
 
 .login-divider {
@@ -66,8 +68,8 @@
 
 .login-footer {
     text-align: center;
-    font-size: 0.875rem;
     color: #ddd;
+    font-family: 'poppins';
 }
 
 .login-footer-link {

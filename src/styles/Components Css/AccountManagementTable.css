@@ -558,6 +558,7 @@ body.dark .acctbl-edit-user-modal .acctbl-form-control:focus {
 .acctbl-add-admin-modal .acctbl-modal-footer, /* Specific modal footer classes */
 .acctbl-edit-user-modal .acctbl-modal-footer {
     border-top: 1px solid var(--modal-header-border-light);
+    padding: 15px 20px;
     display: flex;
     justify-content: flex-end;
     gap: 10px;
@@ -624,23 +625,3 @@ body.dark .acctbl-add-admin-modal .acctbl-cancel-btn:hover,
 body.dark .acctbl-edit-user-modal .acctbl-cancel-btn:hover {
     background-color: var(--modal-cancel-btn-hover);
 }
-
-
-/* Cleanup for old/redundant modal styles */
-/* The following styles are now redundant or should be handled by the new specific classes */
-/* .edit-user-modal .modal-dialog { ... } */
-/* .edit-user-modal .modal-content { ... } */
-/* .edit-user-modal .modal-header { ... } */
-/* .edit-user-modal .modal-title { ... } */
-/* .edit-user-modal .btn-close { ... } */
-/* .edit-user-modal .modal-body { ... } */
-/* .edit-user-modal .form-group { ... } */
-/* .edit-user-modal .edit-user-label { ... } */
-/* .edit-user-modal .form-control.edit-user-input { ... } */
-/* .edit-user-modal .form-control.edit-user-input::placeholder { ... } */
-/* .edit-user-modal .form-control.edit-user-input:focus { ... } */
-/* .edit-user-modal .edit-user-divider { ... } */
-/* .edit-user-modal .modal-footer, .edit-user-modal .edit-user-buttons { ... } */
-/* .edit-user-modal .edit-user-save-button.btn { ... } */
-/* .edit-user-modal .edit-user-cancel-button.btn { ... } */
-/* .acctbl-modal { ... } This was a generic class, replaced by specific modal classes */

@@ -5,12 +5,14 @@ import SocialLogin from "../components/SocialLogin";
 import "../styles/Login/Login.css";
 import BackgroundLayout from '../components/BackgroundLayout';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate for programmatic navigation
+import { useTheme } from '../context/ThemeContext'; // Import useTheme hook
 
 const Login = () => {
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [termsChecked, setTermsChecked] = useState(false);
   const [loginError, setLoginError] = useState("");
   const navigate = useNavigate(); // Initialize useNavigate hook
+  const { theme } = useTheme(); // Use the theme from the ThemeContext
 
   const handleCloseTermsModal = () => setShowTermsModal(false);
   const handleShowTermsModal = () => setShowTermsModal(true);
@@ -59,17 +61,15 @@ const Login = () => {
 
   return (
     <BackgroundLayout variant="purple">
-      <div className="login-container">
+      {/* Apply theme class to the outermost container */}
+      <div className={`login-container ${theme}`}>
         <Container className="login-container-inner d-flex justify-content-center align-items-center p-5">
-          <Card.Body className="login-card-body">
-            <h2 className="login-title text-white text-left">Login</h2>
-            <p className="login-subtitle text-white text-left">Glad you're back!</p>
+          {/* Apply theme class to the Card.Body */}
+          <Card.Body className={`login-card-body ${theme}`}>
+            {/* Apply theme-specific text colors */}
+            <h2 className={`login-title text-left ${theme === 'dark' ? 'text-white' : 'text-dark'}`}>Login</h2>
+            <p className={`login-subtitle text-left ${theme === 'dark' ? 'text-white' : 'text-dark'}`}>Glad you're back!</p>
 
-            {/*
-              LoginForm is responsible for handling the email/password inputs and the actual authentication call.
-              It should call onLoginSuccess with the user's role or onLoginFailure with an error message.
-              The termsChecked and setTermsChecked are passed down if LoginForm also handles the checkbox.
-            */}
             <LoginForm
               onLoginSuccess={handleLoginSuccess}
               onLoginFailure={handleLoginFailure}
@@ -79,31 +79,34 @@ const Login = () => {
             />
 
             <div className="login-divider d-flex align-items-center my-3">
-              <hr className="login-hr flex-grow-1 text-white" />
-              <span className="login-or-text mx-2 text-white">Or</span>
-              <hr className="login-hr flex-grow-1 text-white" />
+              {/* Apply theme-specific hr and text colors */}
+              <hr className={`login-hr flex-grow-1 ${theme === 'dark' ? 'text-white' : 'text-dark'}`} />
+              <span className={`login-or-text mx-2 ${theme === 'dark' ? 'text-white' : 'text-dark'}`}>Or</span>
+              <hr className={`login-hr flex-grow-1 ${theme === 'dark' ? 'text-white' : 'text-dark'}`} />
             </div>
 
             <SocialLogin />
 
             <div className="login-signup-link text-center mt-3">
-              <p className="login-signup-text text-white">
-                Don't have an account? <a href="/signup" className="login-signup-link-text text-white">Signup</a>
+              {/* Apply theme-specific text colors */}
+              <p className={`login-signup-text ${theme === 'dark' ? 'text-white' : 'text-dark'}`}>
+                Don't have an account? <a href="/signup" className={`login-signup-link-text ${theme === 'dark' ? 'text-white' : 'text-dark'}`}>Signup</a>
               </p>
             </div>
-            <div className="login-footer text-center text-muted small">
-              <a href="#" className="login-footer-link" onClick={handleShowTermsModal}>Terms & Conditions</a>
+            <div className="login-footer text-center small">
+              {/* Apply theme-specific link color */}
+              <a href="#" className={`login-footer-link ${theme === 'dark' ? 'text-light' : 'text-muted'}`} onClick={handleShowTermsModal}>Terms & Conditions</a>
             </div>
           </Card.Body>
         </Container>
       </div>
 
-      {/* Terms and Conditions Modal */}
-      <Modal show={showTermsModal} onHide={handleCloseTermsModal} centered>
-        <Modal.Header closeButton>
+      {/* Terms and Conditions Modal - Bootstrap Modals typically handle their own styling well */}
+      <Modal show={showTermsModal} onHide={handleCloseTermsModal} centered className={theme}> {/* Apply theme class to the Modal itself */}
+        <Modal.Header closeButton className={theme === 'dark' ? 'bg-dark text-white' : 'bg-light text-dark'}>
           <Modal.Title>Terms and Conditions</Modal.Title>
         </Modal.Header>
-        <Modal.Body style={{ maxHeight: '800px', overflowY: 'scroll', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}>
+        <Modal.Body style={{ maxHeight: '800px', overflowY: 'scroll', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }} className={theme === 'dark' ? 'bg-secondary text-white' : 'bg-light text-dark'}>
           <p>These terms and conditions ("Terms") govern your use of [Your Website/Application Name]. By accessing or using our services, you agree to be bound by these Terms. Please read them carefully.</p>
           <p><strong>1. Acceptance of Terms</strong></p>
           <p>By creating an account or using our services, you acknowledge that you have read, understood, and agree to be bound by these Terms.</p>
@@ -126,7 +129,7 @@ const Login = () => {
           <p><strong>10. Contact Us</strong></p>
           <p>If you have any questions about these Terms, please contact us at [Your Contact Information].</p>
         </Modal.Body>
-        <Modal.Footer>
+        <Modal.Footer className={theme === 'dark' ? 'bg-dark text-white' : 'bg-light text-dark'}>
           <Button variant="secondary" onClick={handleCloseTermsModal}>
             Close
           </Button>

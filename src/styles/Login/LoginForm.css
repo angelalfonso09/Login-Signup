@@ -1,50 +1,119 @@
-/* Make input fields transparent */
-.input-field.transparent-input {
-  background-color: transparent;
-  border: 2px solid rgba(255, 255, 255, 0.8);
-  color: #fff;
-  border-radius: 8px;
-  padding: 10px 15px;
-  font-size: 1rem;
+/* Base styles for input fields - adaptable to both themes */
+.input-field {
+    border-radius: 8px; /* Consistent rounded corners */
+    padding: 10px 15px;
+    font-size: 1rem;
+    width: 100%; /* Ensure inputs take full width */
+    transition: all 0.3s ease-in-out; /* Smooth transitions for theme changes and focus */
 }
 
-.input-field.transparent-input:focus {
-  background-color: transparent;
-  border-color: #fff;
-  color: #fff;
-  box-shadow: 0 0 0 0.25rem rgba(255, 255, 255, 0.25);
+/* Light Theme Input Field Styles (matching the provided image) */
+.input-field.light {
+    background-color: #ffffff;
+    border: 1px solid #ced4da; /* Light grey border */
+    color: #495057; /* Dark text for light theme */
 }
 
-/* Placeholder text styling */
-.input-field.transparent-input::placeholder {
-  color: rgba(255, 255, 255, 0.7); /* Light placeholder */
+.input-field.light:focus {
+    background-color: #ffffff;
+    border-color: #80bdff; /* Bootstrap primary blue on focus */
+    color: #495057;
+    box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25); /* Blue focus shadow */
 }
 
-/* Disabled or readonly fields */
-.input-field.transparent-input:disabled,
-.input-field.transparent-input[readonly] {
-  background-color: transparent;
+/* Placeholder text styling for light theme */
+.input-field.light::placeholder {
+    color: #6c757d; /* Muted grey placeholder */
 }
 
-/* Form Button */
+/* Dark Theme Input Field Styles (contrast to light theme) */
+.input-field.dark {
+    background-color: rgba(255, 255, 255, 0.1); /* Slightly transparent white/dark background */
+    border: 1px solid rgba(255, 255, 255, 0.3); /* Lighter border for dark theme */
+    color: #f8f9fa; /* Light text for dark theme */
+}
+
+.input-field.dark:focus {
+    background-color: rgba(255, 255, 255, 0.15); /* Slightly less transparent on focus *//* A purple tone for dark theme focus */
+    color: #f8f9fa;
+/* Purple focus shadow */
+}
+
+/* Placeholder text styling for dark theme */
+.input-field.dark::placeholder {
+    color: rgba(255, 255, 255, 0.6); /* Slightly lighter placeholder */
+}
+
+/* Disabled or readonly fields - applies to both themes */
+.input-field:disabled,
+.input-field[readonly] {
+    opacity: 0.7; /* Slightly faded */
+    cursor: not-allowed;
+}
+
+
+/* --- Form Button --- */
+/* The image shows a pink-to-purple gradient. Let's create that. */
 .gradient-btn {
-  background: linear-gradient(45deg, #2563eb, #4f8af8);
-  border: none;
-  padding: 10px;
-  color: white;
-  font-weight: bold;
-  border-radius: 4px;
+    /* Updated gradient to match the image */
+    background: linear-gradient(45deg, #FF6B8B, #8E2DE2); /* Pink to purple gradient */
+    border: none;
+    padding: 10px 20px; /* Added horizontal padding */
+    color: white;
+    font-weight: bold;
+    border-radius: 8px; /* Matching input field border-radius */
+    cursor: pointer;
+    width: 100%; /* Make button full width as per image */
+    transition: all 0.3s ease-in-out;
+    font-family: 'poppins';
 }
 
-/* Form Check and other text styling */
-.text-white {
-  color: #fff;
+.gradient-btn:hover {
+    opacity: 0.9; /* Slight dim on hover */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Subtle shadow on hover */
 }
 
+.gradient-btn:active {
+    opacity: 0.8; /* Further dim on click */
+    transform: translateY(1px); /* Slight press effect */
+}
+
+/* --- Form Checkbox and Label Styling --- */
+/* You'll likely need to target the Bootstrap Form.Check component */
+.form-check-label {
+    font-size: 0.95rem;
+    cursor: pointer;
+}
+
+/* Styles for the actual checkbox input (hidden, if custom styled) */
+.form-check-input {
+    /* You might want to custom style this more if Bootstrap's default isn't enough */
+}
+
+
+/* --- General Utility Classes (Keep these) --- */
 .text-center {
-  text-align: center;
+    text-align: center;
 }
 
 .mb-3 {
-  margin-bottom: 1.5rem;
+    margin-bottom: 1.5rem !important; 
+    font-family: 'poppins';
+}
+.mt-3 {
+    margin-top: 1.5rem !important;
+    font-family: 'poppins';
+}
+.my-3 {
+    margin-top: 1.5rem !important;
+    margin-bottom: 1.5rem !important;
+}
+
+/* New: For the checkbox text */
+.form-check-label.light {
+    color: #333333; /* Dark text for light theme checkbox label */
+}
+
+.form-check-label.dark {
+    color: #f8f9fa; /* Light text for dark theme checkbox label */
 }

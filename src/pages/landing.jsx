@@ -1,12 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react"; // Import useContext
 import { useNavigate } from "react-router-dom";
 import "../styles/Pages Css/landing.css";
-
+import { ThemeContext } from "../context/ThemeContext"; // Adjust path as needed
 
 
 const AquaSense = () => {
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState("home");
+  const { theme } = useContext(ThemeContext); // Access the theme from context
 
   const handleLoginClick = () => {
     navigate("/login");
@@ -48,8 +49,14 @@ const AquaSense = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Apply the theme class to the body and main container
+  useEffect(() => {
+    document.body.className = theme; // Apply to body for global background/text
+  }, [theme]);
+
+
   return (
-    <div className="aquasense-main-container">
+    <div className={`aquasense-main-container ${theme}`}> {/* Apply theme class here */}
       {/* Navbar */}
       <nav className="aquasense-navbar">
         <h1 className="aquasense-brand">AQUASENSE</h1>
@@ -206,14 +213,6 @@ const AquaSense = () => {
 
       <footer className="footer">
         <h2 className="footer-title">AQUASENSE</h2>
-        {/* <nav className="footer-nav">
-          <a href="#">Categories</a>
-          <a href="#">About</a>
-          <a href="#">Services</a>
-          <a href="#">Portfolio</a>
-          <a href="#">Pages</a>
-          <a href="#">Support</a>
-        </nav> */}
         <p className="footer-text">
           Lorem ipsum Neque porro quisquam est qui do lorem ipsum quia dolor sit amet,
           Neque porro elit NeDaque porro.

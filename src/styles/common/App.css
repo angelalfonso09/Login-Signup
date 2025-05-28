@@ -4,17 +4,6 @@
     transition: background 0.3s ease, color 0.3s ease;
 }
 
-/* Dark Mode */
-.app-container.dark {
-    background: #020202;
-    color: white;
-}
-
-/* Light Mode */
-.app-container.light {
-    background: #f9f9f9;
-    color: black;
-}
 
 /* Light Mode - Ensure Consistent UI Elements */
 .app-container.light a {
