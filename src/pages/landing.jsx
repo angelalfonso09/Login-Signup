@@ -102,9 +102,9 @@ const AquaSense = () => {
 
       {/* Hero Section */}
       <header id="home" className="aquasense-hero-section">
-        <h2 className="hero-welcome-text">Welcome to Aquasense</h2>
+        <h2 className="hero-welcome-text">Welcome to Aquasense Solution</h2>
         <h1 className="hero-main-title">Water Quality Monitoring System</h1>
-        <p className="hero-description">Lorem ipsum dolor sit amet consectetur adipiscing elit...</p>
+        <p className="hero-description">Aquasense Solution is a real-time water quality monitoring solution designed to ensure the safety, cleanliness, and sustainability of water sources. With smart sensors and an intuitive dashboard, we help communities and organizations detect water quality issues early because clean water is a right, not a privilege.</p>
         <button className="hero-btn-contact" onClick={handleLoginClick}>
           Get in Touch
         </button>
@@ -122,7 +122,7 @@ const AquaSense = () => {
             <p className="about-subtitle">ABOUT US</p>
             <h3 className="about-heading">When It Comes To H2O, We Don’t Go With The Flow</h3>
             <p className="about-description">
-              Lorem ipsum Neque porro quisquam est qui do lorem ipsum quia dolor sit amet, Neque porro elit...
+             AquaSense is developed to support sustainable water monitoring and public health protection. We empower the Environment and Sanitary Office of the City Health Office of General Trias Cavite by providing real-time data, alerts, and visual insights that help their staff detect fluctuations in water quality, enabling timely and informed decisions. Our goal is to strengthen local efforts in ensuring clean and safe water for every community.
             </p>
             <button className="about-btn-learn-more">Read More</button>
           </div>
@@ -137,7 +137,7 @@ const AquaSense = () => {
             Experience The Power Of <span className="highlight-text">Innovation.</span>
           </h2>
           <p className="services-description">
-            Lorem ipsum Neque porro quisquam est qui do lorem ipsum quia dolor sit amet...
+            We harness the potential of emerging technologies to redefine how water quality is monitored. AquaSense integrates smart sensors, microcontrollers, and cloud-based platforms to provide real-time data collection, intuitive dashboards, and automated alert systems. Our goal is to help local health units and environmental offices make faster, evidence-based decisions, all in one seamless system.
           </p>
           <button className="services-btn-view-all">View All</button>
         </div>
@@ -145,11 +145,14 @@ const AquaSense = () => {
         <div className="services-list">
           <div className="service-card sanitation">
             <h4 className="service-title">Water Sanitation</h4>
-            <p className="service-description">Lorem ipsum Neque do porro quisquam est qui do quam</p>
+            <p className="service-description">Track vital indicators to support water safety and sanitation efforts.<br></br>
+→ Real-time detection of contaminants<br></br>
+→ Data logging for traceability<br></br>
+→ Support for regulatory compliance</p>
           </div>
           <div className="service-card monitoring">
             <h4 className="service-title">Real-Time Monitoring</h4>
-            <p className="service-description">Lorem ipsum Neque do porro quisquam est qui do quam</p>
+            <p className="service-description">Stay informed with instant updates on water quality metrics such as pH, turbidity, total dissolved solids, conductivity, temperature, and more, helping decision-makers respond before it’s too late.</p>
           </div>
         </div>
       </section>
@@ -162,8 +165,7 @@ const AquaSense = () => {
             </h2>
             <hr className="contact-divider" />
             <p className="contact-description">
-              Lorem ipsum Neque porro quisquam est qui do lorem ipsum quia dolor sit amet,
-              Neque porro elit NeDaque porro.
+City Health Office - General Trias City: <br></br>The main mover & excellent provider of quality health services with 41 Health Stations under 33 brgys
             </p>
 
             <div className="contact-details">
@@ -171,7 +173,7 @@ const AquaSense = () => {
                 <img src="/src/assets/location.png" alt="Location" className="contact-icon" />
                 <div>
                   <h4>Office Address</h4>
-                  <p>General Trias, Cavite</p>
+                  <p>Hospital Area, Brgy. Pinagtipunan, General Trias, Philippines</p>
                 </div>
               </div>
 
@@ -179,7 +181,7 @@ const AquaSense = () => {
                 <img src="/src/assets/telephone.png" alt="Phone" className="contact-icon" />
                 <div>
                   <h4>Call Us</h4>
-                  <p>123456789</p>
+                  <p>(046) 509 5289</p>
                 </div>
               </div>
 
@@ -187,7 +189,7 @@ const AquaSense = () => {
                 <img src="/src/assets/gmail.png" alt="Mail" className="contact-icon" />
                 <div>
                   <h4>Mail Us</h4>
-                  <p>your@email.com</p>
+                  <p>chogentri@gmail.com</p>
                 </div>
               </div>
             </div>
@@ -214,8 +216,7 @@ const AquaSense = () => {
       <footer className="footer">
         <h2 className="footer-title">AQUASENSE</h2>
         <p className="footer-text">
-          Lorem ipsum Neque porro quisquam est qui do lorem ipsum quia dolor sit amet,
-          Neque porro elit NeDaque porro.
+
         </p>
         <div className="footer-socials">
           <a href="#"><img src="/src/assets/facebook.png" alt="Facebook" /></a>

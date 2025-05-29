@@ -1,9 +1,10 @@
 import React, { useState, useContext } from "react";
-import { Form, Button, Modal } from "react-bootstrap";
+import { Form, Button, Modal, InputGroup } from "react-bootstrap"; // Import InputGroup
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import '../styles/Signup/SignupForm.css';
-import { ThemeContext } from '../context/ThemeContext'; // Import ThemeContext
+import { ThemeContext } from '../context/ThemeContext';
+import { FaEye, FaEyeSlash } from 'react-icons/fa'; // Import eye icons
 
 const SignupForm = () => {
     const [formData, setFormData] = useState({
@@ -17,8 +18,11 @@ const SignupForm = () => {
     const [message, setMessage] = useState("");
     const [showModal, setShowModal] = useState(false);
     const [verificationCode, setVerificationCode] = useState("");
+    const [showPassword, setShowPassword] = useState(false); // New state for password visibility
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false); // New state for confirm password visibility
+
     const navigate = useNavigate();
-    const { theme } = useContext(ThemeContext); // Use ThemeContext
+    const { theme } = useContext(ThemeContext);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -26,19 +30,16 @@ const SignupForm = () => {
 
     // Function to validate password
     const validatePassword = (password) => {
-        // Password must be at least 8 characters long
         if (password.length < 8) {
             return "Password must be at least 8 characters long.";
         }
-        // Password must contain at least one number
         if (!/\d/.test(password)) {
             return "Password must contain at least one number.";
         }
-        // Password must contain at least one special character
         if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/.test(password)) {
             return "Password must contain at least one special character.";
         }
-        return null; // Password is valid
+        return null;
     };
 
     const handleSubmit = async (e) => {
@@ -54,7 +55,6 @@ const SignupForm = () => {
             return;
         }
 
-        // Validate password using the new function
         const passwordError = validatePassword(formData.password);
         if (passwordError) {
             setMessage(`❌ ${passwordError}`);
@@ -66,12 +66,10 @@ const SignupForm = () => {
             setMessage("✅ " + response.data.message);
             setShowModal(true);
 
-            // Send email after successful signup
-            // Ensure this matches what your backend /send-email expects
             await axios.post("http://localhost:5000/send-email", {
                 email: formData.email,
                 subject: "Verify Your Email",
-                message: `Your verification code is: [OTP_PLACEHOLDER]`, // Use placeholder for backend to fill
+                message: `Your verification code is: [OTP_PLACEHOLDER]`,
             });
 
         } catch (error) {
@@ -85,12 +83,6 @@ const SignupForm = () => {
             return;
         }
 
-        // --- ADDED FOR DEBUGGING ---
-        console.log("Attempting to verify code from SignupForm...");
-        console.log("Email being sent for verification:", formData.email);
-        console.log("Verification code being sent:", verificationCode);
-        // --- END DEBUGGING ---
-
         try {
             const response = await axios.post("http://localhost:5000/verify-code", {
                 email: formData.email,
@@ -100,9 +92,8 @@ const SignupForm = () => {
             if (response.data.success) {
                 setMessage("✅ Verification successful! Redirecting...");
                 setShowModal(false);
-                // Call the function to send notification to Super Admin
-                await sendSuperAdminNotification(formData.username, formData.email, response.data.userId); // Pass userId if available from backend
-                navigate("/login"); // Redirect to login page
+                await sendSuperAdminNotification(formData.username, formData.email, response.data.userId);
+                navigate("/login");
             } else {
                 setMessage("❌ Invalid verification code. Please try again.");
             }
@@ -112,15 +103,13 @@ const SignupForm = () => {
         }
     };
 
-    // Modified sendSuperAdminNotification function
     const sendSuperAdminNotification = async (username, email, userId) => {
         try {
-            // This is the endpoint your backend should listen to for new notifications
             await axios.post("http://localhost:5000/api/notifications/superadmin", {
-                type: "new_user", // Changed to "new_user" to match your ENUM type
-                title: "New User Registered", // Add a specific title
+                type: "new_user",
+                title: "New User Registered",
                 message: `New user "${username}" (${email}) has successfully signed up and verified their email.`,
-                user_id: userId // Pass the userId for proper linking in the notifications table
+                user_id: userId
             });
             console.log("Notification sent to Super Admin successfully.");
         } catch (error) {
@@ -167,35 +156,54 @@ const SignupForm = () => {
                     />
                 </Form.Group>
 
+                {/* Password Field with Show/Hide Toggle */}
                 <Form.Group className="mb-4">
-                    <Form.Control
-                        type="password"
-                        placeholder="Password"
-                        name="password"
-                        id="password"
-                        onChange={handleChange}
-                        autoComplete="new-password"
-                        className={`input-field ${theme}`}
-                    />
+                    <InputGroup> {/* Use InputGroup for input and button alignment */}
+                        <Form.Control
+                            type={showPassword ? "text" : "password"}
+                            placeholder="Password"
+                            name="password"
+                            id="password"
+                            onChange={handleChange}
+                            autoComplete="new-password"
+                            className={`input-field ${theme}`}
+                        />
+                        <Button
+                            variant="outline-secondary"
+                            onClick={() => setShowPassword(!showPassword)}
+                            aria-label={showPassword ? "Hide password" : "Show password"}
+                        >
+                            {showPassword ? <FaEyeSlash /> : <FaEye />}
+                        </Button>
+                    </InputGroup>
                 </Form.Group>
 
+                {/* Confirm Password Field with Show/Hide Toggle */}
                 <Form.Group className="mb-4">
-                    <Form.Control
-                        type="password"
-                        placeholder="Confirm Password"
-                        name="confirmPassword"
-                        id="confirmPassword"
-                        onChange={handleChange}
-                        autoComplete="new-password"
-                        className={`input-field ${theme}`}
-                    />
+                    <InputGroup> {/* Use InputGroup for input and button alignment */}
+                        <Form.Control
+                            type={showConfirmPassword ? "text" : "password"}
+                            placeholder="Confirm Password"
+                            name="confirmPassword"
+                            id="confirmPassword"
+                            onChange={handleChange}
+                            autoComplete="new-password"
+                            className={`input-field ${theme}`}
+                        />
+                        <Button
+                            variant="outline-secondary"
+                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
+                        >
+                            {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                        </Button>
+                    </InputGroup>
                 </Form.Group>
 
-                <Button type="submit" variant="primary" className="w-100 gradient-btn">
+                <Button type="submit" variant="primary" className="gradient-btn-signup">
                     Sign Up
                 </Button>
 
-                {/* Apply a unique class for the message and use theme for color */}
                 {message && (
                     <p className={`mt-3 text-center signup-form-message ${message.includes("❌") ? 'error' : 'success'}`}>
                         {message}
@@ -203,8 +211,7 @@ const SignupForm = () => {
                 )}
             </Form>
 
-            {/* Verification Code Modal - Added unique className and theme */}
-            <Modal show={showModal} onHide={() => setShowModal(false)} className={`signup-verification-modal ${theme}`}>
+            <Modal show={showModal} onHide={() => setShowModal(false)} centered className={`signup-verification-modal ${theme}`}>
                 <Modal.Header closeButton>
                     <Modal.Title>Email Verification</Modal.Title>
                 </Modal.Header>
@@ -222,7 +229,7 @@ const SignupForm = () => {
                     />
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button variant="primary" onClick={handleVerification} className="gradient-btn">
+                    <Button variant="primary" onClick={handleVerification} className="gradient-btn-signup">
                         Verify
                     </Button>
                 </Modal.Footer>

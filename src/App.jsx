@@ -1,5 +1,6 @@
 import React, { useContext, useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import 'bootstrap-icons/font/bootstrap-icons.css';
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
 import ForgotPassword from "./pages/ForgotPassword";

@@ -89,7 +89,7 @@ const LoginForm = ({ onLoginSuccess, onLoginFailure, termsChecked, setTermsCheck
         />
       </Form.Group>
 
-      <Button type="submit" variant="primary" className="gradient-btn " disabled={!termsChecked}>
+      <Button type="submit" variant="primary" className="gradient-button-login " disabled={!termsChecked}>
         Login
       </Button>
 

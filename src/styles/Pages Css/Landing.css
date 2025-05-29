@@ -143,6 +143,7 @@ body::-webkit-scrollbar {
   transition: color var(--transition-speed);
   animation: fadeIn 1.5s ease-in-out;
   font-family: 'poppins';
+  text-align: justify;
 }
 
 .hero-btn-contact {
@@ -229,6 +230,7 @@ body::-webkit-scrollbar {
   margin-top: 10px;
   max-width: 600px;
   font-family: 'poppins';
+  text-align: justify;
 }
 
 .about-btn-learn-more {
@@ -292,6 +294,7 @@ body::-webkit-scrollbar {
   margin-top: 10px;
   max-width: 500px;
   font-family: 'poppins';
+    text-align: justify;
 }
 
 .services-btn-view-all {
@@ -347,6 +350,7 @@ body::-webkit-scrollbar {
   color: var(--color-text-secondary); /* Use variable */
   margin-top: 5px;
   font-family: 'poppins';
+text-align: start;
 }
 
 /* Contact Section */

@@ -10,6 +10,7 @@ import "./styles/ForgotPassword/ForgotPasswordForm.css";
 import "./styles/Components Css/AdminAccountForm.css";
 import "./styles/Components Css/AccountManagementTable.css";
 import "./styles/ForgotPassword/ResetPassword.css";
+import "./styles/Login/Login.css";
 
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 

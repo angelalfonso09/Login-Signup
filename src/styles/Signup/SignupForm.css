@@ -77,8 +77,8 @@
 
 .signup-verification-modal .modal-title {
     font-size: 1.25rem;
-    font-weight: 600;
-    color: #007bff;
+    color: #000;
+    font-family: 'montserrat';
 }
 
 /* Dark theme specific title color (matched to .signup-verification-modal.dark) */
@@ -94,6 +94,7 @@
     font-size: 1rem;
     margin-bottom: 1rem;
     color: #343a40;
+    font-family: 'poppins';
 }
 
 /* Dark theme specific body text color (matched to .signup-verification-modal.dark) */
@@ -111,6 +112,8 @@
     padding: 0.5rem 0.75rem;
     background-color: #ffffff;
     color: #212529;
+    font-family: 'poppins';
+
 }
 
 /* Dark theme specific form control (matched to .signup-verification-modal.dark and .input-field) */
@@ -179,4 +182,17 @@
 /* Dark theme specific close button (matched to .signup-verification-modal.dark) */
 .signup-verification-modal.dark .btn-close {
     color: var(--modal-close-color-dark); /* This variable is not defined in this pure translation, keep for context */
+}
+
+.gradient-btn-signup{
+    background: linear-gradient(45deg, #1B56FD, #1230AE); 
+    border: none;
+    padding: 10px 20px;
+    color: white;
+    font-weight: bold;
+    border-radius: 8px; 
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.3s ease-in-out;
+    font-family: 'poppins' !important;
 }

@@ -54,18 +54,18 @@
 
 /* --- Form Button --- */
 /* The image shows a pink-to-purple gradient. Let's create that. */
-.gradient-btn {
+.gradient-button-login {
     /* Updated gradient to match the image */
-    background: linear-gradient(45deg, #FF6B8B, #8E2DE2); /* Pink to purple gradient */
+    background: linear-gradient(45deg, #1B56FD, #1230AE); 
     border: none;
-    padding: 10px 20px; /* Added horizontal padding */
+    padding: 10px 20px;
     color: white;
     font-weight: bold;
-    border-radius: 8px; /* Matching input field border-radius */
+    border-radius: 8px; 
     cursor: pointer;
-    width: 100%; /* Make button full width as per image */
+    width: 100%;
     transition: all 0.3s ease-in-out;
-    font-family: 'poppins';
+    font-family: 'poppins' !important;
 }
 
 .gradient-btn:hover {

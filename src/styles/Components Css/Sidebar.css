@@ -146,21 +146,6 @@
   z-index: 1000; /* Ensure it's above other content */
 }
 
-.modal-content {
-  background-color: var(--background-color-light); /* Use theme variables for background */
-  color: var(--text-color); /* Use theme variables for text color */
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  text-align: center;
-  max-width: 400px;
-  width: 90%;
-}
-
-.modal-content h3 {
-  margin-top: 0;
-  color: var(--primary-color); /* Optional: use a primary color for heading */
-}
 
 .modal-actions {
   margin-top: 20px;

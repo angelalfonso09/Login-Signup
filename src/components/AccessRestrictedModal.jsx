@@ -6,7 +6,7 @@ const AccessRestrictedModal = ({ isOpen, onClose, onRequestSend }) => {
 
   return (
     <div className="modal-overlay">
-      <div className="modal-content">
+      <div className="modal-content-access">
         <h2 className="modal-title">Access Restricted</h2>
         {/* Simplified message to reflect the new persistent behavior */}
         <p className="modal-message">

@@ -3,6 +3,7 @@ import { Container, Card, Modal } from "react-bootstrap";
 import "../styles/ForgotPassword/ForgotPassword.css";
 import BackgroundLayout from '../components/BackgroundLayout';
 import { ThemeContext } from '../context/ThemeContext';
+import { FaEye, FaEyeSlash } from 'react-icons/fa'; // Import eye icons from Font Awesome
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
@@ -15,7 +16,10 @@ const ForgotPassword = () => {
   const [showResetModal, setShowResetModal] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const { theme } = useContext(ThemeContext); // Destructure theme from context
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const { theme } = useContext(ThemeContext);
 
   const handleSubmitEmail = async (e) => {
     e.preventDefault();
@@ -118,7 +122,7 @@ const ForgotPassword = () => {
       setStatus({ type: 'success', message: 'Password reset successful! You can now log in.' });
       setShowResetModal(false);
       alert('Password reset successful! Redirecting to login...');
-      window.location.href = '/login'; // redirect to login page
+      window.location.href = '/login';
     } catch (error) {
       setStatus({ type: 'error', message: 'Password reset failed. Please try again.' });
     } finally {
@@ -130,13 +134,11 @@ const ForgotPassword = () => {
 
   return (
     <BackgroundLayout variant="pink">
-      {/* Apply theme to the main container or card that wraps content */}
       <div className={`forgot-password-container ${theme}`}>
         <Container className="forgot-password-wrapper d-flex justify-content-center align-items-center p-5">
-          {/* Apply theme to Card.Body and other relevant elements */}
           <Card.Body className={`forgot-password-card-body ${theme}`}>
-            <h2 className="forgot-password-title text-left">Forgot Password?</h2> {/* Remove text-white if theme handles color */}
-            <p className="forgot-password-description text-left">Please enter your email.</p> {/* Remove text-white if theme handles color */}
+            <h2 className="forgot-password-title text-left">Forgot Password?</h2>
+            <p className="forgot-password-description text-left">Please enter your email.</p>
 
             <form onSubmit={handleSubmitEmail}>
               <div className="mb-3">
@@ -144,7 +146,6 @@ const ForgotPassword = () => {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  // className="form-control forgot-password-input" // Add a unique class for main form input
                   placeholder="Enter your email"
                   required
                   className={`input-field ${theme}`}
@@ -153,7 +154,7 @@ const ForgotPassword = () => {
 
               <button
                 type="submit"
-                className="btn btn-primary w-100 forgot-password-button" // Add a unique class for main form button
+                className="btn btn-primary w-100 forgot-password-button"
                 disabled={isLoading}
               >
                 {isLoading ? 'Sending OTP...' : 'Send OTP'}
@@ -167,8 +168,8 @@ const ForgotPassword = () => {
             </form>
 
             <div className="forgot-password-footer text-center mt-3">
-              <p className="forgot-password-login"> {/* Remove text-white if theme handles color */}
-                Don't have an account? <a href="/signup" className="forgot-password-link">Signup</a> {/* Remove text-white if theme handles color */}
+              <p className="forgot-password-login">
+                Don't have an account? <a href="/signup" className="forgot-password-link">Signup</a>
               </p>
             </div>
 
@@ -176,10 +177,8 @@ const ForgotPassword = () => {
         </Container>
       </div>
 
-      {/* OTP Verification Modal */}
-      {/* Apply theme to the Modal directly */}
       <Modal show={showOtpModal} onHide={() => setShowOtpModal(false)} centered className={`otp-verification-modal ${theme}`}>
-        <Modal.Header  className="otp-modal-header">
+        <Modal.Header className="otp-modal-header">
           <Modal.Title className="otp-modal-title">OTP Verification</Modal.Title>
         </Modal.Header>
         <Modal.Body className="otp-modal-body">
@@ -192,7 +191,7 @@ const ForgotPassword = () => {
                 onChange={(e) => setOtp(e.target.value)}
                 className={`input-field ${theme}`}
                 placeholder="Enter 6-digit code"
-                maxLength="6" 
+                maxLength="6"
                 required
               />
             </div>
@@ -215,37 +214,51 @@ const ForgotPassword = () => {
         </Modal.Body>
       </Modal>
 
-      {/* Reset Password Modal */}
-      {/* Apply theme to the Modal directly */}
       <Modal show={showResetModal} onHide={() => setShowResetModal(false)} centered className={`reset-password-modal ${theme}`}>
         <Modal.Header closeButton className="reset-modal-header">
           <Modal.Title className="reset-modal-title">Reset Password</Modal.Title>
         </Modal.Header>
         <Modal.Body className="reset-modal-body">
           <form onSubmit={handleResetPassword}>
-            <div className="mb-3">
+            <div className="mb-3 input-group">
               <input
-                type="password"
-                className={`input-field ${theme}`}// Add unique class for reset input
+                type={showNewPassword ? "text" : "password"}
+                className={`form-control input-field ${theme}`}
                 placeholder="New Password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 required
               />
+              <button
+                type="button"
+                className="btn btn-outline-secondary"
+                onClick={() => setShowNewPassword(!showNewPassword)}
+                aria-label={showNewPassword ? "Hide password" : "Show password"}
+              >
+                {showNewPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
             </div>
-            <div className="mb-3">
+            <div className="mb-3 input-group">
               <input
-                type="password"
-                className={`input-field ${theme}`} // Add unique class for reset input
+                type={showConfirmPassword ? "text" : "password"}
+                className={`form-control input-field ${theme}`}
                 placeholder="Confirm Password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
               />
+              <button
+                type="button"
+                className="btn btn-outline-secondary"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
+              >
+                {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
             </div>
             <button
               type="submit"
-              className="btn btn-success w-100 reset-password-button" // Add unique class for reset button
+              className="w-100 reset-pass-btn"
               disabled={isLoading}
             >
               {isLoading ? 'Resetting...' : 'Reset Password'}
