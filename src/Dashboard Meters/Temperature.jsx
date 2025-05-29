@@ -8,7 +8,7 @@ import socket from "./socket";
 const Temperature = () => {
   const { theme } = useContext(ThemeContext);
   const [isConnected, setIsConnected] = useState(socket.connected);
-  const [temperature, setTemperature] = useState(28); // Default initial temperature value
+  const [temperature, setTemperature] = useState(0); // Default initial temperature value
 
   useEffect(() => {
     const handleConnect = () => setIsConnected(true);

@@ -7,7 +7,7 @@ import socket from "./socket";
 const Ph = () => {
   const { theme } = useContext(ThemeContext);
   const [isConnected, setIsConnected] = useState(socket.connected);
-  const [phValue, setPhValue] = useState(7.0); // Default neutral pH
+  const [phValue, setPhValue] = useState(0); // Default neutral pH
 
   useEffect(() => {
     const handleConnect = () => setIsConnected(true);
