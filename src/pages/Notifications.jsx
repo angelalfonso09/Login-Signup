@@ -1,31 +1,13 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
-import { Bell, CheckCircle, AlertTriangle, XCircle, Trash2, UserCheck, Check, X } from 'lucide-react'; // Changed 'Cross' to 'X' as 'Cross' is not a standard Lucide icon
+import { Bell, CheckCircle, AlertTriangle, XCircle, Trash2, UserCheck, Check, X, CalendarCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 import '../styles/Pages Css/Notifications.css';
 import Sidebar from '../components/Sidebar';
 import { ThemeContext } from '../context/ThemeContext';
 
-// --- Helper Functions for Super Admin Notifications ---
-const loadSuperAdminNotifications = () => {
-    try {
-        const storedNotifications = localStorage.getItem('superAdminNotifications');
-        return storedNotifications ? JSON.parse(storedNotifications) : [];
-    } catch (error) {
-        console.error("Frontend: Failed to parse Super Admin notifications from localStorage:", error);
-        return [];
-    }
-};
-
-const saveSuperAdminNotifications = (notifications) => {
-    try {
-        localStorage.setItem('superAdminNotifications', JSON.stringify(notifications));
-    } catch (error) {
-        console.error("Frontend: Failed to save Super Admin notifications to localStorage:", error);
-    }
-};
-
-// --- Helper Functions for User Notifications (copied for direct manipulation) ---
+// --- Helper Functions for User Notifications (kept outside as they might be used elsewhere) ---
+// If these are *also* only used within NotificationsPage, consider moving them inside as well.
 const getUserNotificationsKey = (userId) => `userNotifications_${userId}`;
 
 const loadUserNotifications = (userId) => {
@@ -43,6 +25,14 @@ const saveUserNotifications = (userId, notifications) => {
 // --- NotificationIcon component ---
 const NotificationIcon = ({ type }) => {
     switch (type) {
+        case 'sensor':
+            return <AlertTriangle className="icon-warning" />;
+        case 'request':
+            return <UserCheck className="icon-info" />;
+        case 'new_user':
+            return <UserCheck className="icon-info" />;
+        case 'schedule':
+            return <CalendarCheck className="icon-info" />; // Using CalendarCheck icon for scheduled events
         case 'success':
             return <CheckCircle className="icon-success" />;
         case 'warning':
@@ -51,8 +41,6 @@ const NotificationIcon = ({ type }) => {
             return <XCircle className="icon-error" />;
         case 'info':
             return <Bell className="icon-info" />;
-        case 'access_request':
-            return <UserCheck className="icon-info" />;
         default:
             return <Bell className="icon-default" />;
     }
@@ -61,6 +49,17 @@ const NotificationIcon = ({ type }) => {
 // --- NotificationCard component ---
 const NotificationCard = ({ notification, onMarkAsRead, onDelete, onApproveRequest, onDeclineRequest }) => {
     const { theme } = useContext(ThemeContext);
+
+    // Function to format the display type for readability
+    const getDisplayType = (type) => {
+        switch (type) {
+            case 'request': return 'Access Request';
+            case 'new_user': return 'New User';
+            case 'sensor': return 'Sensor Alert';
+            case 'schedule': return 'Scheduled Event';
+            default: return type.charAt(0).toUpperCase() + type.slice(1).replace('_', ' ');
+        }
+    };
 
     return (
         <motion.div
@@ -77,12 +76,13 @@ const NotificationCard = ({ notification, onMarkAsRead, onDelete, onApproveReque
                         </div>
                         <div>
                             <h4 className={`notification-type ${notification.read ? 'read' : 'unread'}`}>
-                                {notification.type.charAt(0).toUpperCase() + notification.type.slice(1).replace('_', ' ')}
+                                {getDisplayType(notification.type)}
                             </h4>
                             <p className={`notification-message ${notification.read ? 'read' : 'unread'}`}>
                                 {notification.message}
                             </p>
-                            {notification.type === 'access_request' && notification.status && (
+                            {/* Display status only for 'request' type */}
+                            {notification.type === 'request' && notification.status && (
                                 <p className={`notification-status status-${notification.status}`}>
                                     Status: {notification.status.charAt(0).toUpperCase() + notification.status.slice(1)}
                                 </p>
@@ -90,7 +90,8 @@ const NotificationCard = ({ notification, onMarkAsRead, onDelete, onApproveReque
                         </div>
                     </div>
                     <div className="notification-actions">
-                        {!notification.read && notification.type !== 'access_request' && (
+                        {/* Mark as Read button (not for access requests, and optionally not for schedule) */}
+                        {!notification.read && notification.type !== 'request' && notification.type !== 'schedule' && (
                             <button
                                 onClick={() => onMarkAsRead(notification.id)}
                                 className={`notification-action-button mark-read-button`}
@@ -100,21 +101,22 @@ const NotificationCard = ({ notification, onMarkAsRead, onDelete, onApproveReque
                             </button>
                         )}
 
-                        {notification.type === 'access_request' && notification.status === 'pending' && (
+                        {/* Approval/Decline buttons for 'request' type and 'pending' status */}
+                        {notification.type === 'request' && notification.status === 'pending' && (
                             <>
                                 <button
                                     onClick={() => onApproveRequest(notification.id, notification.fromUserId)}
                                     className={`notification-action-button approve-button`}
                                     title="Approve Request"
                                 >
-                                    <Check className="approve-request-icon" /> {/* Changed to Check */}
+                                    <Check className="approve-request-icon" />
                                 </button>
                                 <button
                                     onClick={() => onDeclineRequest(notification.id, notification.fromUserId)}
                                     className={`notification-action-button decline-button`}
                                     title="Decline Request"
                                 >
-                                    <X className="decline-request-icon" /> {/* Changed to X */}
+                                    <X className="decline-request-icon" />
                                 </button>
                             </>
                         )}
@@ -142,26 +144,79 @@ const NotificationsPage = () => {
     const [loading, setLoading] = useState(true);
     const { theme } = useContext(ThemeContext);
 
-    // Define your API base URL
     const API_BASE_URL = "http://localhost:5000";
 
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setNotifications(loadSuperAdminNotifications());
-            setLoading(false);
-            console.log("Frontend (Super Admin): Notifications loaded from localStorage.");
-        }, 500);
-        return () => clearTimeout(timer);
+    // --- Helper Functions for Super Admin Notifications (MOVED INSIDE COMPONENT) ---
+    // Wrapped with useCallback to ensure stable function references for dependency arrays.
+    const loadSuperAdminNotifications = useCallback(() => {
+        try {
+            const storedNotifications = localStorage.getItem('superAdminNotifications');
+            return storedNotifications ? JSON.parse(storedNotifications) : [];
+        } catch (error) {
+            console.error("Frontend: Failed to parse Super Admin notifications from localStorage:", error);
+            return [];
+        }
     }, []);
 
+    const saveSuperAdminNotifications = useCallback((notificationsToSave) => {
+        try {
+            localStorage.setItem('superAdminNotifications', JSON.stringify(notificationsToSave));
+        } catch (error) {
+            console.error("Frontend: Failed to save Super Admin notifications to localStorage:", error);
+        }
+    }, []);
+
+    // --- Function to fetch notifications and events from the backend ---
+    const fetchNotifications = useCallback(async () => {
+        setLoading(true);
+        try {
+            const token = localStorage.getItem('token'); // Get admin's token
+            if (!token) {
+                console.warn("No authentication token found for admin. Cannot fetch notifications.");
+                setNotifications(loadSuperAdminNotifications()); // Fallback to localStorage
+                setLoading(false);
+                return;
+            }
+
+            const response = await axios.get(`${API_BASE_URL}/api/admin/notifications`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            if (response.data.success) {
+                setNotifications(response.data.notifications);
+                saveSuperAdminNotifications(response.data.notifications); // Update localStorage cache
+                console.log("Frontend (Super Admin): Notifications and Events fetched from database.");
+            } else {
+                console.error("Failed to fetch notifications and events:", response.data.message);
+                setNotifications(loadSuperAdminNotifications()); // Fallback on backend error
+            }
+        } catch (error) {
+            console.error("Error fetching notifications and events from backend:", error);
+            setNotifications(loadSuperAdminNotifications()); // Fallback on network error
+        } finally {
+            setLoading(false);
+        }
+    }, [API_BASE_URL, loadSuperAdminNotifications, saveSuperAdminNotifications]); // Dependencies for fetchNotifications
+
+    // Effect hook to fetch data on component mount and set up polling
     useEffect(() => {
-        if (!loading) {
+        fetchNotifications();
+        const pollInterval = setInterval(fetchNotifications, 30000); // Poll every 30 seconds
+        return () => clearInterval(pollInterval); // Cleanup on unmount
+    }, [fetchNotifications]); // Re-run if fetchNotifications changes (controlled by useCallback)
+
+    // Effect hook to save notifications to localStorage whenever 'notifications' state changes
+    useEffect(() => {
+        if (!loading) { // Only save once loading is complete
             saveSuperAdminNotifications(notifications);
             console.log("Frontend (Super Admin): Notifications saved to localStorage.");
         }
-    }, [notifications, loading]);
+    }, [notifications, loading, saveSuperAdminNotifications]); // Dependencies for saving
 
     const markAsRead = (id) => {
+        // TODO: In a real app, this should also make a backend API call to update `is_read` status in the DB
         setNotifications(prevNotifications => {
             const updated = prevNotifications.map(n => n.id === id ? { ...n, read: true } : n);
             console.log("Frontend (Super Admin): Marked notification as read:", id);
@@ -170,6 +225,8 @@ const NotificationsPage = () => {
     };
 
     const deleteNotification = (id) => {
+        // TODO: In a real app, this should also make a backend API call to delete the notification from the DB.
+        // For events (prefixed with 'event_'), you'd need a separate endpoint like /api/admin/events/:id.
         setNotifications(prevNotifications => {
             const updated = prevNotifications.filter(n => n.id !== id);
             console.log("Frontend (Super Admin): Deleted notification:", id);
@@ -178,6 +235,7 @@ const NotificationsPage = () => {
     };
 
     const markAllAsRead = () => {
+        // TODO: Backend API call needed for this too
         setNotifications(prevNotifications => {
             const updated = prevNotifications.map(n => ({ ...n, read: true }));
             console.log("Frontend (Super Admin): Marked all notifications as read.");
@@ -186,17 +244,17 @@ const NotificationsPage = () => {
     };
 
     const deleteAllNotifications = () => {
+        // TODO: Backend API call needed for this too
         setNotifications([]);
         console.log("Frontend (Super Admin): Deleted all notifications.");
     };
 
-    // --- RE-MODIFIED: handleApproveRequest to include backend API call ---
+    // --- handleApproveRequest with backend API call ---
     const handleApproveRequest = async (notificationId, userId) => {
         console.log("Frontend (Super Admin): Approving request for user:", userId);
 
         try {
-            // Step 1: Send approval request to the backend API
-            const token = localStorage.getItem('token'); // Assuming you store the token in localStorage
+            const token = localStorage.getItem('token');
             if (!token) {
                 alert("Authentication token not found. Please log in again.");
                 return;
@@ -204,7 +262,7 @@ const NotificationsPage = () => {
 
             const response = await axios.post(
                 `${API_BASE_URL}/api/admin/approve-user-access`,
-                { userId, notificationId }, // Send both userId and notificationId
+                { userId, notificationId },
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -215,7 +273,7 @@ const NotificationsPage = () => {
             if (response.status === 200) {
                 console.log("Backend response for approval:", response.data);
 
-                // Step 2: Update the Super Admin's local notification status (frontend display)
+                // Update the Super Admin's local notification status (frontend display)
                 setNotifications(prevNotifications => {
                     const updatedNotifications = prevNotifications.map(n =>
                         n.id === notificationId
@@ -225,14 +283,12 @@ const NotificationsPage = () => {
                     return updatedNotifications;
                 });
 
-                // Step 3: (For immediate frontend feedback/simulation) Update the target user's 'isVerified' status in their localStorage 'user' object
-                // In a real application, the user would likely refresh their page or re-authenticate to get the updated status from the backend.
-                // This localStorage manipulation is for immediate UI reflection in a single-browser testing scenario.
+                // (Simulated localStorage update for target user's isVerified status and notification)
+                // In a full system, the user's frontend would fetch their updated status and notifications from the backend upon login/refresh.
                 let targetUserString = localStorage.getItem('user');
                 if (targetUserString) {
                     try {
                         let targetUser = JSON.parse(targetUserString);
-                        // Make sure we're updating the correct user's local storage if multiple users exist
                         if (targetUser.id === userId) {
                             targetUser.isVerified = true;
                             localStorage.setItem('user', JSON.stringify(targetUser));
@@ -247,9 +303,6 @@ const NotificationsPage = () => {
                     console.warn("Frontend (Super Admin): No 'user' object found in localStorage to update verification status.");
                 }
 
-                // Step 4: (For immediate frontend feedback/simulation) Add a success notification to the target user's specific notification list in localStorage
-                // This is specifically for making the UserNotif.js component show the notification instantly.
-                // In a real system, the backend would typically create this notification in the DB, and the user's frontend would fetch it.
                 const userNotifications = loadUserNotifications(userId);
                 const newUserNotification = {
                     id: `approved_${Date.now()}`,
@@ -263,7 +316,7 @@ const NotificationsPage = () => {
                     n => n.type === 'success' && n.message.includes('access request has been approved')
                 );
 
-                if (!hasExistingVerifiedNotif) { // Avoid adding duplicate notifications
+                if (!hasExistingVerifiedNotif) {
                     const updatedUserNotifications = [newUserNotification, ...userNotifications];
                     saveUserNotifications(userId, updatedUserNotifications);
                     console.log(`Frontend (Super Admin): Success notification added to user ${userId}'s localStorage.`);
@@ -272,13 +325,13 @@ const NotificationsPage = () => {
                 }
 
                 alert("User access approved successfully!");
-
+                fetchNotifications(); // Refresh notifications from DB after action
             } else {
                 alert(`Approval failed: ${response.data.message || 'Unknown error'}`);
             }
         } catch (error) {
             console.error("Frontend (Super Admin): Error during user approval process:", error);
-            if (error.response) {
+            if (axios.isAxiosError(error) && error.response) {
                 console.error("Error response data:", error.response.data);
                 alert(`Failed to approve user: ${error.response.data.message || error.response.statusText}`);
             } else {
@@ -287,35 +340,67 @@ const NotificationsPage = () => {
         }
     };
 
-    // --- handleDeclineRequest (unchanged for simplicity, but could be modified to also use backend) ---
-    const handleDeclineRequest = (notificationId, userId) => {
-        console.log("Frontend (Super Admin): Declining request directly for user:", userId);
+    // --- handleDeclineRequest with backend API call ---
+    const handleDeclineRequest = async (notificationId, userId) => {
+        console.log("Frontend (Super Admin): Declining request for user:", userId);
 
-        // 1. Update the Super Admin's local notification status
-        setNotifications(prevNotifications => {
-            const updatedNotifications = prevNotifications.map(n =>
-                n.id === notificationId
-                    ? { ...n, status: 'declined', read: true, actionTakenAt: new Date().toISOString() }
-                    : n
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert("Authentication token not found. Please log in again.");
+                return;
+            }
+
+            // You'll need a backend endpoint for declining requests too.
+            const response = await axios.post(
+                `${API_BASE_URL}/api/admin/decline-user-access`, // This endpoint needs to be created in your server.js
+                { userId, notificationId },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
             );
-            return updatedNotifications;
-        });
 
-        // 2. Add a decline notification to the target user's specific notification list in localStorage
-        const userNotifications = loadUserNotifications(userId);
-        const newUserNotification = {
-            id: `declined_${Date.now()}`,
-            type: 'error', // Or 'info', 'warning'
-            message: 'Your access request has been declined. Please contact support for more information.',
-            read: false,
-            createdAt: new Date().toISOString(),
-        };
+            if (response.status === 200) {
+                 // 1. Update the Super Admin's local notification status
+                setNotifications(prevNotifications => {
+                    const updatedNotifications = prevNotifications.map(n =>
+                        n.id === notificationId
+                            ? { ...n, status: 'declined', read: true, actionTakenAt: new Date().toISOString() }
+                            : n
+                    );
+                    return updatedNotifications;
+                });
 
-        const updatedUserNotifications = [newUserNotification, ...userNotifications];
-        saveUserNotifications(userId, updatedUserNotifications);
-        console.log(`Frontend (Super Admin): Decline notification added to user ${userId}'s localStorage.`);
+                // 2. Add a decline notification to the target user's specific notification list in localStorage
+                const userNotifications = loadUserNotifications(userId);
+                const newUserNotification = {
+                    id: `declined_${Date.now()}`,
+                    type: 'error',
+                    message: 'Your access request has been declined. Please contact support for more information.',
+                    read: false,
+                    createdAt: new Date().toISOString(),
+                };
 
-        alert("User access declined and notification sent to user's page!");
+                const updatedUserNotifications = [newUserNotification, ...userNotifications];
+                saveUserNotifications(userId, updatedUserNotifications);
+                console.log(`Frontend (Super Admin): Decline notification added to user ${userId}'s localStorage.`);
+
+                alert("User access declined and notification sent to user's page!");
+                fetchNotifications(); // Refresh notifications from DB after action
+            } else {
+                 alert(`Decline failed: ${response.data.message || 'Unknown error'}`);
+            }
+
+        } catch (error) {
+            console.error("Frontend (Super Admin): Error during user decline process:", error);
+            if (axios.isAxiosError(error) && error.response) {
+                alert(`Failed to decline user: ${error.response.data.message || error.response.statusText}`);
+            } else {
+                alert("Failed to decline user due to a network or server error.");
+            }
+        }
     };
 
 
@@ -349,9 +434,9 @@ const NotificationsPage = () => {
                 </div>
 
                 {loading ? (
-                    <div className={`loading-text text-${theme}-secondary-text`}>Loading notifications...</div>
+                    <div className={`loading-text text-${theme}-secondary-text`}>Loading notifications and events from database...</div>
                 ) : notifications.length === 0 ? (
-                    <div className={`no-notifications-text text-${theme}-secondary-text italic`}>No notifications available.</div>
+                    <div className={`no-notifications-text text-${theme}-secondary-text italic`}>No notifications or events available.</div>
                 ) : (
                     <AnimatePresence>
                         {notifications.map(notification => (

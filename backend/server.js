@@ -27,6 +27,25 @@ const saltRounds = 10;
 const otpGenerator = require('otp-generator');
 // const users = [];
 
+let superAdminNotifications = [];
+
+const authenticateAdmin = (req, res, next) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ success: false, message: 'Authorization token not provided or malformed.' });
+    }
+    const token = authHeader.split(' ')[1];
+
+    // For demonstration: a very basic token check. Replace with JWT verification.
+    // Example: jwt.verify(token, process.env.JWT_SECRET, (err, user) => { ... });
+    if (token && token.length > 10) { // Just checking if token seems present
+        // In a real app, you'd attach user info from the token to req.user
+        req.user = { id: 'admin_mock_id', role: 'super_admin' }; // Mock user for now
+        next();
+    } else {
+        return res.status(403).json({ success: false, message: 'Invalid or expired token.' });
+    }
+};
 
 // Middleware
 app.use(cors({
@@ -968,6 +987,169 @@ app.delete('/api/events/:id', async (req, res) => {
   }
 });
 
+// --- Notification Endpoints ---
+
+// 1. POST endpoint to receive new Super Admin notifications (from SignupForm)
+app.post('/api/notifications/superadmin', async (req, res) => {
+    // Destructure all expected fields.
+    // Ensure all variables that correspond to placeholders are defined.
+    // Default optional fields to null if they might be missing from the request body.
+    const {
+        type,
+        title,
+        message,
+        user_id = null, // user_id can be null if not associated with a specific user, or if the user's ID isn't immediately available. It's often present for 'new_user' type.
+        related_id = null, // related_id should be null for a new user signup notification
+        priority = 'normal', // Default priority if not provided by frontend
+        status = 'active'    // Default status for a new user signup notification
+    } = req.body;
+
+    if (!type || !title || !message) {
+        return res.status(400).json({ success: false, message: 'Missing required notification fields.' });
+    }
+
+    const validTypes = ['sensor', 'request', 'new_user', 'schedule']; // From your notifications table ENUM
+    if (!validTypes.includes(type)) {
+        return res.status(400).json({ success: false, message: 'Invalid notification type provided.' });
+    }
+
+    try {
+        const connection = await pool.getConnection();
+        try {
+            // Updated INSERT statement and values array
+            // Make sure the number of '?' matches the number of elements in the array
+            const [result] = await connection.execute(
+                `INSERT INTO notif (type, title, message, user_id, related_id, timestamp, is_read, priority, status)
+                 VALUES (?, ?, ?, ?, ?, NOW(), FALSE, ?, ?)`, // 7 placeholders
+                [type, title, message, user_id, related_id, priority, status] // 7 values in this order
+            );
+            res.status(201).json({ success: true, message: 'Notification added successfully.', notificationId: result.insertId });
+        } finally {
+            connection.release();
+        }
+    } catch (error) {
+        console.error('Error adding new user notification:', error);
+        // More descriptive error message for debugging
+        res.status(500).json({ success: false, message: 'Server error while adding notification. Please check server logs for details.' });
+    }
+});
+
+// notif
+app.post('/api/access-requests', async (req, res) => {
+    const { fromUser, fromUserId } = req.body; // Expecting these from the frontend
+
+    if (!fromUser || !fromUserId) {
+        return res.status(400).json({ success: false, message: 'Missing user information.' });
+    }
+
+    try {
+        const connection = await pool.getConnection(); // Get a connection from the pool
+
+        try {
+            // 1. Check if a pending request already exists for this user
+            // Assuming 'status' column still exists for tracking 'pending' requests.
+            // If 'status' is removed, you'd need a different way to track pending state,
+            // perhaps by using the 'priority' column or adding a new boolean flag.
+            const [existingRequests] = await connection.execute(
+                'SELECT id FROM notif WHERE user_id = ? AND type = ? AND status = ?',
+                [fromUserId, 'request', 'pending'] // 'type' is now 'request'
+            );
+
+            if (existingRequests.length > 0) {
+                return res.status(409).json({ success: false, message: 'You already have a pending access request. Please wait for the Super Admin\'s review.' });
+            }
+
+            // 2. Insert the new access request into the 'notifications' table
+            const title = 'Access Request';
+            const message = `User '${fromUser}' (ID: ${fromUserId}) has requested access to restricted features.`;
+            // timestamp and is_read will use their default values in the table
+            const status = 'pending'; // This column is crucial for the logic
+            const priority = 'normal'; // As per the new ENUM for priority
+
+            const [result] = await connection.execute(
+                'INSERT INTO notif (type, title, message, user_id, related_id, priority, status) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                ['request', title, message, fromUserId, null, priority, status] // 'type' is 'request', 'status' is 'pending', 'priority' is 'normal'
+            );
+
+            if (result.affectedRows === 1) {
+                res.status(201).json({ success: true, message: 'Your access request has been sent to the Super Admin for review.', requestId: result.insertId });
+            } else {
+                res.status(500).json({ success: false, message: 'Failed to send access request.' });
+            }
+
+        } finally {
+            connection.release(); // Release the connection back to the pool
+        }
+    } catch (error) {
+        console.error('Error in /api/access-requests:', error);
+        res.status(500).json({ success: false, message: 'Server error while processing your request.' });
+    }
+});
+
+app.get('/api/admin/notifications', authenticateAdmin, async (req, res) => {
+    try {
+        const connection = await pool.getConnection();
+        try {
+            // 1. Fetch actual notifications
+            const [notificationsRows] = await connection.execute(
+                `SELECT
+                    id,
+                    type,
+                    title,
+                    message,
+                    timestamp AS createdAt,
+                    is_read AS \`read\`,
+                    user_id AS fromUserId,
+                    related_id,
+                    priority,
+                    status
+                FROM notif
+                ORDER BY timestamp DESC`
+            );
+
+            // 2. Fetch scheduled events
+            const [eventsRows] = await connection.execute(
+                `SELECT
+                    id,
+                    title,
+                    time,        -- time of event
+                    description,
+                    event_date,  -- date of event
+                    created_at   -- when the event record was created
+                FROM events
+                ORDER BY event_date DESC, time DESC` // Order by date, then time
+            );
+
+            // 3. Map events to a notification-like structure
+            const mappedEventsAsNotifications = eventsRows.map(event => ({
+                id: `event_${event.id}`, // Prefix ID to avoid conflicts with actual notification IDs
+                type: 'schedule', // This will map to 'schedule' in your ENUM
+                title: `Scheduled Event: ${event.title}`,
+                message: `Date: ${new Date(event.event_date).toLocaleDateString()} ${event.time ? `at ${event.time}` : ''}. Details: ${event.description || 'No description.'}`,
+                createdAt: event.created_at, // Use event's created_at for timestamp
+                read: false, // Events are not 'read' in the same way, can be set to true if viewed
+                fromUserId: null, // No specific user associated unless you add 'user_id' to events table
+                related_id: event.id, // Link back to the original event ID
+                priority: 'normal', // Default priority for events
+                status: 'active' // You might want a status for events, e.g., 'active', 'completed', 'cancelled'
+            }));
+
+            // 4. Combine all fetched data
+            // Combine notifications and events, then sort them by their 'createdAt' timestamp
+            const combinedNotifications = [...notificationsRows, ...mappedEventsAsNotifications].sort((a, b) => {
+                return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(); // Newest first
+            });
+
+            res.status(200).json({ success: true, notifications: combinedNotifications });
+
+        } finally {
+            connection.release();
+        }
+    } catch (error) {
+        console.error('Error fetching admin notifications and events:', error);
+        res.status(500).json({ success: false, message: 'Server error while fetching notifications and events.' });
+    }
+});
 
 // // --- NEW API ENDPOINT FOR DECLINING USER ACCESS ---
 // app.post("/api/admin/decline-user-access", verifyToken, authorizeSuperAdmin, (req, res) => {
