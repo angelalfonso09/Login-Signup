@@ -1,13 +1,21 @@
-import React, { useEffect, useState, useContext } from "react"; // Import useContext
+import React, { useEffect, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/Pages Css/landing.css";
-import { ThemeContext } from "../context/ThemeContext"; // Adjust path as needed
-
+import { ThemeContext } from "../context/ThemeContext";
 
 const AquaSense = () => {
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState("home");
-  const { theme } = useContext(ThemeContext); // Access the theme from context
+  const { theme } = useContext(ThemeContext);
+
+  // State for contact form fields
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    message: "",
+  });
+  // State for form submission status
+  const [submitStatus, setSubmitStatus] = useState(null); // 'success', 'error', 'submitting'
 
   const handleLoginClick = () => {
     navigate("/login");
@@ -49,14 +57,52 @@ const AquaSense = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Apply the theme class to the body and main container
   useEffect(() => {
-    document.body.className = theme; // Apply to body for global background/text
+    document.body.className = theme;
   }, [theme]);
 
+  // Handle input changes for the contact form
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
+
+  // Handle contact form submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSubmitStatus("submitting");
+
+    try {
+      // Replace with your actual backend API URL
+      const response = await fetch("http://localhost:5000/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (response.ok) {
+        setSubmitStatus("success");
+        setFormData({ name: "", email: "", message: "" }); // Clear form
+        alert("Message sent successfully!");
+      } else {
+        const errorData = await response.json();
+        setSubmitStatus("error");
+        alert(`Failed to send message: ${errorData.message || "Unknown error"}`);
+      }
+    } catch (error) {
+      setSubmitStatus("error");
+      alert("An error occurred while sending the message. Please try again later.");
+      console.error("Error submitting contact form:", error);
+    }
+  };
 
   return (
-    <div className={`aquasense-main-container ${theme}`}> {/* Apply theme class here */}
+    <div className={`aquasense-main-container ${theme}`}>
       {/* Navbar */}
       <nav className="aquasense-navbar">
         <h1 className="aquasense-brand">AQUASENSE</h1>
@@ -122,7 +168,7 @@ const AquaSense = () => {
             <p className="about-subtitle">ABOUT US</p>
             <h3 className="about-heading">When It Comes To H2O, We Don’t Go With The Flow</h3>
             <p className="about-description">
-             AquaSense is developed to support sustainable water monitoring and public health protection. We empower the Environment and Sanitary Office of the City Health Office of General Trias Cavite by providing real-time data, alerts, and visual insights that help their staff detect fluctuations in water quality, enabling timely and informed decisions. Our goal is to strengthen local efforts in ensuring clean and safe water for every community.
+              AquaSense is developed to support sustainable water monitoring and public health protection. We empower the Environment and Sanitary Office of the City Health Office of General Trias Cavite by providing real-time data, alerts, and visual insights that help their staff detect fluctuations in water quality, enabling timely and informed decisions. Our goal is to strengthen local efforts in ensuring clean and safe water for every community.
             </p>
             <button className="about-btn-learn-more">Read More</button>
           </div>
@@ -146,9 +192,9 @@ const AquaSense = () => {
           <div className="service-card sanitation">
             <h4 className="service-title">Water Sanitation</h4>
             <p className="service-description">Track vital indicators to support water safety and sanitation efforts.<br></br>
-→ Real-time detection of contaminants<br></br>
-→ Data logging for traceability<br></br>
-→ Support for regulatory compliance</p>
+              → Real-time detection of contaminants<br></br>
+              → Data logging for traceability<br></br>
+              → Support for regulatory compliance</p>
           </div>
           <div className="service-card monitoring">
             <h4 className="service-title">Real-Time Monitoring</h4>
@@ -165,7 +211,7 @@ const AquaSense = () => {
             </h2>
             <hr className="contact-divider" />
             <p className="contact-description">
-City Health Office - General Trias City: <br></br>The main mover & excellent provider of quality health services with 41 Health Stations under 33 brgys
+              City Health Office - General Trias City: <br></br>The main mover & excellent provider of quality health services with 41 Health Stations under 33 brgys
             </p>
 
             <div className="contact-details">
@@ -197,17 +243,43 @@ City Health Office - General Trias City: <br></br>The main mover & excellent pro
 
           {/* Right Side - Form */}
           <div className="contact-form">
-            <form>
-              <label>Your Name</label>
-              <input type="text" placeholder="Enter your name" />
+            <form onSubmit={handleSubmit}>
+              <label htmlFor="name">Your Name</label>
+              <input
+                type="text"
+                id="name"
+                name="name"
+                placeholder="Enter your name"
+                value={formData.name}
+                onChange={handleInputChange}
+                required
+              />
 
-              <label>Your Email</label>
-              <input type="email" placeholder="Enter your email" />
+              <label htmlFor="email">Your Email</label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                placeholder="Enter your email"
+                value={formData.email}
+                onChange={handleInputChange}
+                required
+              />
 
-              <label>Your Message</label>
-              <textarea placeholder="Enter your message"></textarea>
+              <label htmlFor="message">Your Message</label>
+              <textarea
+                id="message"
+                name="message"
+                placeholder="Enter your message"
+                value={formData.message}
+                onChange={handleInputChange}
+                required
+              ></textarea>
 
-              <button className="btn-submit" type="submit">Send Message</button>
+              <button className="btn-submit" type="submit" disabled={submitStatus === "submitting"}>
+                {submitStatus === "submitting" ? "Sending..." : "Send Message"}
+              </button>
+              {submitStatus === "error" && <p className="error-message">Failed to send message. Please try again.</p>}
             </form>
           </div>
         </div>
@@ -216,7 +288,7 @@ City Health Office - General Trias City: <br></br>The main mover & excellent pro
       <footer className="footer">
         <h2 className="footer-title">AQUASENSE</h2>
         <p className="footer-text">
-
+          {/* Add any footer text here if needed */}
         </p>
         <div className="footer-socials">
           <a href="#"><img src="/src/assets/facebook.png" alt="Facebook" /></a>

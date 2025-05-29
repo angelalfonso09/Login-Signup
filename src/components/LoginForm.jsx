@@ -4,13 +4,20 @@ import axios from "axios";
 import '../styles/Login/LoginForm.css';
 import '../styles/Login/LoginFormCustom.css'; // Make sure this CSS also handles theme if needed
 import { useTheme } from '../context/ThemeContext'; // Import useTheme hook
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 
 const LoginForm = ({ onLoginSuccess, onLoginFailure, termsChecked, setTermsChecked, loginError }) => {
   const { theme } = useTheme(); // Use the theme from the ThemeContext
-  const [formData, setFormData] = useState({ username: "", password: "" });
+  const [formData, setFormData] = useState({ username: "", password: "" }); // Removed confirmPassword
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const togglePasswordVisibility = () => { // Simplified as only one password field
+    setShowPassword(!showPassword);
   };
 
   const handleLogin = async (e) => {
@@ -60,16 +67,23 @@ const LoginForm = ({ onLoginSuccess, onLoginFailure, termsChecked, setTermsCheck
         />
       </Form.Group>
 
-      <Form.Group className="mb-3">
+      {/* Password Field - Modified to include the eye icon */}
+      <Form.Group className="mb-3 password-input-container"> {/* Added password-input-container */}
         <Form.Control
-          type="password"
+          type={showPassword ? "text" : "password"}
           name="password"
           placeholder="Password"
-          className={`input-field ${theme}`} // Apply theme class
+          className={`input-field ${theme} password-with-icon`} // Added password-with-icon
           value={formData.password}
           onChange={handleChange}
           required
         />
+        <span
+          className={`password-toggle-icon ${theme}`} // Applied theme class
+          onClick={togglePasswordVisibility}
+        >
+          <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+        </span>
       </Form.Group>
 
       <Form.Group className="mb-3">
@@ -94,7 +108,7 @@ const LoginForm = ({ onLoginSuccess, onLoginFailure, termsChecked, setTermsCheck
       </Button>
 
       {loginError && (
-        <p className={`mt-3 text-center ${theme === 'dark' ? 'text-danger-dark' : 'text-danger'}`}>
+        <p className='danger'>
           {loginError}
         </p>
       )}

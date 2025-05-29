@@ -1,10 +1,18 @@
 /* Base styles for input fields - adaptable to both themes */
+.light{
+--danger-color:black;
+}
+
+.dark{
+--danger-color:white;
+}
 .input-field {
     border-radius: 8px; /* Consistent rounded corners */
     padding: 10px 15px;
     font-size: 1rem;
     width: 100%; /* Ensure inputs take full width */
     transition: all 0.3s ease-in-out; /* Smooth transitions for theme changes and focus */
+    min-height: 45px; /* Ensure a consistent height for input fields, helps with icon alignment */
 }
 
 /* Light Theme Input Field Styles (matching the provided image) */
@@ -26,22 +34,22 @@
     color: #6c757d; /* Muted grey placeholder */
 }
 
-/* Dark Theme Input Field Styles (contrast to light theme) */
+/* Dark Theme Input Field Styles (Contrast to light theme, matching image's dark input) */
 .input-field.dark {
-    background-color: rgba(255, 255, 255, 0.1); /* Slightly transparent white/dark background */
-    border: 1px solid rgba(255, 255, 255, 0.3); /* Lighter border for dark theme */
+    background-color: #363636; /* Solid dark background as seen in image */
+    border: 1px solid #555555; /* Slightly darker border for contrast */
     color: #f8f9fa; /* Light text for dark theme */
 }
 
 .input-field.dark:focus {
-    background-color: rgba(255, 255, 255, 0.15); /* Slightly less transparent on focus *//* A purple tone for dark theme focus */
+    background-color: #444444; /* Slightly lighter dark on focus */
     color: #f8f9fa;
-/* Purple focus shadow */
 }
 
 /* Placeholder text styling for dark theme */
 .input-field.dark::placeholder {
-    color: rgba(255, 255, 255, 0.6); /* Slightly lighter placeholder */
+    color: #aaaaaa; /* Lighter grey for placeholders in dark theme */
+    opacity: 1; /* Ensure placeholder is not transparent */
 }
 
 /* Disabled or readonly fields - applies to both themes */
@@ -56,48 +64,52 @@
 /* The image shows a pink-to-purple gradient. Let's create that. */
 .gradient-button-login {
     /* Updated gradient to match the image */
-    background: linear-gradient(45deg, #1B56FD, #1230AE); 
+    background: linear-gradient(45deg, #1B56FD, #1230AE);
     border: none;
     padding: 10px 20px;
     color: white;
     font-weight: bold;
-    border-radius: 8px; 
+    border-radius: 8px;
     cursor: pointer;
     width: 100%;
     transition: all 0.3s ease-in-out;
     font-family: 'poppins' !important;
 }
 
-.gradient-btn:hover {
+.gradient-btn:hover { /* Note: your jsx uses gradient-button-login, ensure consistency if you use this class name */
     opacity: 0.9; /* Slight dim on hover */
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Subtle shadow on hover */
 }
 
-.gradient-btn:active {
+.gradient-btn:active { /* Note: your jsx uses gradient-button-login, ensure consistency if you use this class name */
     opacity: 0.8; /* Further dim on click */
-    transform: translateY(1px); /* Slight press effect */
+    transform: translateY(1px);
 }
 
-/* --- Form Checkbox and Label Styling --- */
-/* You'll likely need to target the Bootstrap Form.Check component */
+
 .form-check-label {
     font-size: 0.95rem;
     cursor: pointer;
 }
 
-/* Styles for the actual checkbox input (hidden, if custom styled) */
+
 .form-check-input {
-    /* You might want to custom style this more if Bootstrap's default isn't enough */
+    /* Add any custom styling for the checkbox itself here if needed */
 }
 
-
-/* --- General Utility Classes (Keep these) --- */
 .text-center {
     text-align: center;
 }
 
+.danger{
+    color: var(--danger-color);
+    margin-top: 0.75rem;
+    text-align: center;
+    font-family: 'poppins';
+}
+
 .mb-3 {
-    margin-bottom: 1.5rem !important; 
+    margin-bottom: 1.5rem !important;
     font-family: 'poppins';
 }
 .mt-3 {
@@ -111,9 +123,58 @@
 
 /* New: For the checkbox text */
 .form-check-label.light {
-    color: #333333; /* Dark text for light theme checkbox label */
+    color: #333333;
 }
 
 .form-check-label.dark {
-    color: #f8f9fa; /* Light text for dark theme checkbox label */
+    color: #f8f9fa;
+}
+
+
+/* --- Password Input Specific Styles (Modified) --- */
+
+/* Renamed to `password-input-container` for better semantic clarity */
+.password-input-container {
+    position: relative;
+    /* Ensure no extra padding or margin from parent `mb-3` interferes here */
+}
+
+/* Adjust padding for the input field when an icon is present */
+/* The input field itself should be targeted by the `password-with-icon` class */
+.password-input-container .input-field.password-with-icon {
+    padding-right: 45px; /* Make space for the icon */
+    /* border-radius and other base styles inherited from .input-field */
+}
+
+/* Positioning and styling for the eye icon */
+.password-toggle-icon {
+    position: absolute;
+    top: 50%;
+    right: 15px; /* Adjust as needed to position the icon from the right edge */
+    transform: translateY(-50%);
+    cursor: pointer;
+    font-size: 1.1rem; /* Slightly larger icon */
+    z-index: 2; /* Ensure icon is above the input */
+    display: flex; /* Helps with centering */
+    align-items: center; /* Vertically align icon */
+    justify-content: center; /* Horizontally align icon */
+    height: 100%; /* Take full height of parent for better click target */
+}
+
+/* Default (light theme) icon color */
+.password-toggle-icon.light {
+    color: #6c757d; /* Muted grey for light theme */
+}
+
+.password-toggle-icon.light:hover {
+    color: #007bff; /* Bootstrap primary blue on hover for light theme */
+}
+
+/* Dark theme icon color */
+.password-toggle-icon.dark {
+    color: #aaaaaa; /* Lighter grey to match dark background */
+}
+
+.password-toggle-icon.dark:hover {
+    color: #f8f9fa; /* White on hover for dark theme, for prominence */
 }

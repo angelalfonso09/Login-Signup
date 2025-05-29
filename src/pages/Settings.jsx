@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { ThemeContext } from '../context/ThemeContext';
 import Sidebar from '../components/Sidebar';
-import { ChevronRight, ChevronDown, User, Lock, Bell, Sun, Moon, History, Save, Edit, KeyRound } from 'lucide-react'; // Updated icons
+import { ChevronRight, ChevronDown, User, Lock, Bell, Sun, Moon, History, Save, Edit, KeyRound, LogIn, LogOut } from 'lucide-react'; // Added LogIn and LogOut icons
 import axios from 'axios';
 
 // Import the new CSS file
@@ -18,11 +18,12 @@ const SettingsPage = () => {
   const [receiveNotifications, setReceiveNotifications] = useState(true);
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState(''); // 'success' or 'error'
+  const [sessionHistory, setSessionHistory] = useState([]); // New state for session history
 
   // State to manage open/closed status of each section
   const [openSection, setOpenSection] = useState(null); // 'profile', 'appearance', 'session'
 
-  // Load user data from localStorage on component mount
+  // Load user data and session history from localStorage on component mount
   useEffect(() => {
     const userString = localStorage.getItem('user');
     if (userString) {
@@ -36,7 +37,59 @@ const SettingsPage = () => {
         console.error("Error parsing user data from localStorage:", e);
       }
     }
+
+    // Load session history
+    const storedSessionHistory = localStorage.getItem('sessionHistory');
+    if (storedSessionHistory) {
+      try {
+        setSessionHistory(JSON.parse(storedSessionHistory));
+      } catch (e) {
+        console.error("Error parsing session history from localStorage:", e);
+      }
+    }
   }, []);
+
+  // Function to save session history to localStorage
+  const saveSessionHistory = (history) => {
+    localStorage.setItem('sessionHistory', JSON.stringify(history));
+    setSessionHistory(history);
+  };
+
+  // Function to log a session event (login/logout)
+  const logSessionEvent = (type, username) => {
+    const newEntry = {
+      id: Date.now(), // Unique ID for the entry
+      username: username,
+      type: type, // 'login' or 'logout'
+      timestamp: new Date().toLocaleString(),
+      device: "Mock Device (e.g., Desktop Chrome)", // You can try to get actual device info
+      ipAddress: "Mock IP (e.g., 192.168.1.1)" // You can try to get actual IP (requires backend)
+    };
+    const updatedHistory = [...sessionHistory, newEntry];
+    saveSessionHistory(updatedHistory);
+  };
+
+  // Example: Call logSessionEvent on initial load for a "mock login" if a user is present
+  useEffect(() => {
+    const userString = localStorage.getItem('user');
+    if (userString && username) { // Only log if user data is loaded and username is set
+      logSessionEvent('login', username);
+    }
+  }, [username]); // Depend on username to ensure it's loaded
+
+  // Function to simulate user logout
+  const handleLogout = () => {
+    if (username) {
+      logSessionEvent('logout', username);
+      // In a real app, you'd clear user session, redirect to login, etc.
+      localStorage.removeItem('user');
+      setUsername('');
+      setEmail('');
+      setPhone('');
+      setMessage('You have been logged out (mock).');
+      setMessageType('success');
+    }
+  };
 
   // Function to toggle section visibility
   const toggleSection = (sectionName) => {
@@ -279,7 +332,7 @@ const SettingsPage = () => {
                   </label>
                 </div>
                 {/* Notification Preference Item */}
-                 <div className="settings-page-list-item settings-page-toggle-item">
+                <div className="settings-page-list-item settings-page-toggle-item">
                   <div className="settings-page-item-content">
                     <Bell size={20} className="settings-page-item-icon" />
                     <span className="settings-page-item-text">Receive Notifications</span>
@@ -305,23 +358,34 @@ const SettingsPage = () => {
               Session History
               {openSection === 'session' ? <ChevronDown size={20} className="settings-page-toggle-icon" /> : <ChevronRight size={20} className="settings-page-toggle-icon" />}
             </h2>
-            <p className="settings-page-category-description">View and manage your login sessions.</p>
+            <p className="settings-page-category-description">View your login and logout sessions.</p>
             {openSection === 'session' && (
               <div className="settings-page-form-wrapper">
-                {/* Example Session History Item */}
-                <div className="settings-page-list-item">
-                  <div className="settings-page-item-content">
-                    <span className="settings-page-item-text">Last Login: May 29, 2025, 10:30 AM (Mock)</span>
+                {sessionHistory.length > 0 ? (
+                  sessionHistory.map((session) => (
+                    <div key={session.id} className="settings-page-list-item">
+                      <div className="settings-page-item-content">
+                        {session.type === 'login' ? (
+                          <LogIn size={20} className="settings-page-item-icon settings-page-login-icon" />
+                        ) : (
+                          <LogOut size={20} className="settings-page-item-icon settings-page-logout-icon" />
+                        )}
+                        <span className="settings-page-item-text">
+                          **{session.username}** {session.type === 'login' ? 'logged in' : 'logged out'} on {session.timestamp} from {session.device} (IP: {session.ipAddress})
+                        </span>
+                      </div>
+                      {/* You might not need an arrow here unless there's more detail to show */}
+                      {/* <ChevronRight size={20} className="settings-page-item-arrow" /> */}
+                    </div>
+                  ))
+                ) : (
+                  <div className="settings-page-list-item">
+                    <div className="settings-page-item-content">
+                      <span className="settings-page-item-text">No session history available.</span>
+                    </div>
                   </div>
-                  <ChevronRight size={20} className="settings-page-item-arrow" />
-                </div>
-                <div className="settings-page-list-item">
-                  <div className="settings-page-item-content">
-                    <span className="settings-page-item-text">Device: Desktop Chrome (Mock)</span>
-                  </div>
-                  <ChevronRight size={20} className="settings-page-item-arrow" />
-                </div>
-                {/* Add more session history items here if needed */}
+                )}
+
               </div>
             )}
           </section>

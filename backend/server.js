@@ -1424,6 +1424,27 @@ app.post('/api/user/notifications/delete-all', authenticateUser, async (req, res
     }
 });
 
+// API endpoint to handle contact form submissions
+app.post('/api/contact', async (req, res) => {
+    const { name, email, message } = req.body;
+
+    // Basic validation
+    if (!name || !email || !message) {
+        return res.status(400).json({ message: 'All fields are required.' });
+    }
+
+    try {
+        const [rows] = await pool.execute(
+            'INSERT INTO landing_table (your_name, your_email, your_message) VALUES (?, ?, ?)',
+            [name, email, message]
+        );
+        res.status(201).json({ message: 'Message sent successfully!', insertedId: rows.insertId });
+    } catch (error) {
+        console.error('Error inserting message into database:', error);
+        res.status(500).json({ message: 'Server error. Could not send message.' });
+    }
+});
+
 
 // // --- NEW API ENDPOINT FOR DECLINING USER ACCESS ---
 // app.post("/api/admin/decline-user-access", verifyToken, authorizeSuperAdmin, (req, res) => {

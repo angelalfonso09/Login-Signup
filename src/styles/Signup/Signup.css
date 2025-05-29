@@ -17,6 +17,7 @@
 
 .or2 {
   font-family: 'poppins';
+  color: var(--or-color);
 }
 
 .signup-body {
