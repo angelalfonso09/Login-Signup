@@ -1,627 +1,855 @@
 :root {
-    /* Title */
-    --acctbl-title-font-size: 22px;
-    --acctbl-title-font-weight: 600;
-    --acctbl-title-margin-bottom: 15px;
-    --acctbl-title-color-light: #000;
-    --acctbl-title-color-dark: #f8f9fa;
+  /* Title */
+  --acctbl-title-font-size: 22px;
+  --acctbl-title-font-weight: 600;
+  --acctbl-title-margin-bottom: 15px;
+  --acctbl-title-color-light: #000;
+  --acctbl-title-color-dark: #f8f9fa;
 
-    /* Borders */
-    --acctbl-border-light: #ddd;
-    --acctbl-border-dark: #1e1f21;
-    --acctbl-border-dark-new: #1e1f21; /* Duplicate, consider merging if same */
+  /* Borders */
+  --acctbl-border-light: #ddd;
+  --acctbl-border-dark: #1e1f21;
+  --acctbl-border-dark-new: #1e1f21;
 
-    /* Controls (Search & Filter) */
-    --acctbl-controls-gap: 10px;
-    --acctbl-controls-margin-bottom: 15px;
-    --acctbl-controls-height: 40px;
-    --acctbl-controls-bg-light: #f8f9fa;
-    --acctbl-controls-bg-dark: transparent;
+  /* Controls (Search & Filter) */
+  --acctbl-controls-gap: 10px;
+  --acctbl-controls-margin-bottom: 15px;
+  --acctbl-controls-height: 40px;
+  --acctbl-controls-bg-light: #f8f9fa;
+  --acctbl-controls-bg-dark: transparent;
 
-    /* Inputs */
-    --acctbl-input-padding: 8px; /* Original, consider if new is sufficient */
-    --acctbl-input-radius: 5px; /* Original, consider if new is sufficient */
-    --acctbl-input-padding-new: 8px 12px;
-    --acctbl-input-radius-new: 8px;
+  /* Inputs */
+  --acctbl-input-padding: 8px;
+  --acctbl-input-radius: 5px;
+  --acctbl-input-padding-new: 8px 12px;
+  --acctbl-input-radius-new: 8px;
 
-    /* Table */
-    --acctbl-table-border: 1px solid;
-    --acctbl-table-padding: 10px;
-    --acctbl-table-text-align: center; /* This might be redundant with specific td text-align */
-    --acctbl-table-bg-light: #ffffff;
-    --acctbl-th-bg-light: #f1f1f1;
-    --acctbl-td-bg-light: #ffffff;
-    --acctbl-table-bg-dark-new: #20202e;
-    --acctbl-th-bg-dark-new: #2f2f31;
-    --acctbl-td-bg-dark-new: #2f2f31;
+  /* Table */
+  --acctbl-table-border: 1px solid;
+  --acctbl-table-padding: 10px;
+  --acctbl-table-text-align: center;
+  --acctbl-table-bg-light: #ffffff;
+  --acctbl-th-bg-light: #f1f1f1;
+  --acctbl-td-bg-light: #ffffff;
+  --acctbl-table-bg-dark-new: #20202e;
+  --acctbl-th-bg-dark-new: #2f2f31;
+  --acctbl-td-bg-dark-new: #2f2f31;
 
-    /* Buttons */
-    --acctbl-btn-padding: 8px 12px; /* Original, consider if new is sufficient */
-    --acctbl-btn-radius: 5px; /* Original, consider if new is sufficient */
-    --acctbl-btn-cursor: pointer;
-    --acctbl-btn-padding-new: 8px 16px;
-    --acctbl-btn-radius-new: 8px;
-    --acctbl-btn-font-size-new: 0.9rem;
-    --acctbl-btn-transition-new: all 0.2s ease-in-out;
+  /* Buttons */
+  --acctbl-btn-padding: 8px 12px;
+  --acctbl-btn-radius: 5px;
+  --acctbl-btn-cursor: pointer;
+  --acctbl-btn-padding-new: 8px 16px;
+  --acctbl-btn-radius-new: 8px;
+  --acctbl-btn-font-size-new: 0.9rem;
+  --acctbl-btn-transition-new: all 0.2s ease-in-out;
 
-    --acctbl-button-hover-dark: #1230AE;
-    --acctbl-button-bg-dark: #2f2f31;
-    --acctbl-edit-btn-dark: #2f2f31;
-    --acctbl-edit-btn-hover-dark: #388e3c;
-    --acctbl-delete-btn-dark: #2f2f31;
-    --acctbl-delete-btn-hover-dark: #e53935;
-    --acctbl-button-hover-light: #218838;
-    --acctbl-edit-btn-light: #28a745;
-    --acctbl-delete-btn-light: #dc3545;
+  --acctbl-button-hover-dark: #1230AE;
+  --acctbl-button-bg-dark: #2f2f31;
+  --acctbl-edit-btn-dark: #2f2f31;
+  --acctbl-edit-btn-hover-dark: #388e3c;
+  --acctbl-delete-btn-dark: #2f2f31;
+  --acctbl-delete-btn-hover-dark: #e53935;
+  --acctbl-button-hover-light: #218838;
+  --acctbl-edit-btn-light: #28a745;
+  --acctbl-delete-btn-light: #dc3545;
 
-    /* Container & Shadow */
-    --acctbl-container-radius: 10px;
-    --acctbl-shadow-dark: 0 4px 8px rgba(0, 0, 0, 0.2);
-    --acctbl-shadow-light: 0 2px 4px rgba(0, 0, 0, 0.1);
+  /* Container & Shadow */
+  --acctbl-container-radius: 10px;
+  --acctbl-shadow-dark: 0 4px 8px rgba(0, 0, 0, 0.2);
+  --acctbl-shadow-light: 0 2px 4px rgba(0, 0, 0, 0.1);
 
-    /* Modals */
-    --modal-bg-light: #ffffff;
-    --modal-bg-dark: #2f2f31;
-    --modal-header-border-light: #dee2e6;
-    --modal-header-border-dark: #4a4a60;
-    --modal-close-color-light: #000;
-    --modal-close-color-dark: #f8f9fa;
-    --modal-create-btn-bg: #1B56FD; /* Reused for Save Changes */
-    --modal-create-btn-hover: #1230AE; /* Reused for Save Changes Hover */
-    --modal-cancel-btn-bg: #dc3545; /* Reused for Cancel */
-    --modal-cancel-btn-hover: #c82333; /* Reused for Cancel Hover */
+  /* Modals */
+  --modal-bg-light: #ffffff;
+  --modal-bg-dark: #2f2f31;
+  --modal-header-border-light: #dee2e6;
+  --modal-header-border-dark: #4a4a60;
+  --modal-close-color-light: #000;
+  --modal-close-color-dark: #f8f9fa;
+  --modal-create-btn-bg: #1B56FD;
+  --modal-create-btn-hover: #1230AE;
+  --modal-cancel-btn-bg: #dc3545;
+  --modal-cancel-btn-hover: #c82333;
+}
+
+/* --- Responsiveness for Root Variables --- */
+
+/* For screens smaller than 768px (e.g., tablets and mobile) */
+@media (max-width: 768px) {
+  :root {
+    --acctbl-title-font-size: 20px; /* Slightly smaller title on smaller screens */
+    --acctbl-controls-height: 35px; /* Adjust control height */
+    --acctbl-input-padding-new: 6px 10px; /* Smaller input padding */
+    --acctbl-btn-padding-new: 6px 12px; /* Smaller button padding */
+    --acctbl-btn-font-size-new: 0.85rem; /* Smaller button font size */
+    --acctbl-table-padding: 8px; /* Reduce table padding */
+  }
+}
+
+/* For screens smaller than 480px (e.g., mobile phones) */
+@media (max-width: 480px) {
+  :root {
+    --acctbl-title-font-size: 18px; /* Even smaller title on mobile */
+    --acctbl-controls-height: 30px; /* Further adjust control height */
+    --acctbl-input-padding-new: 5px 8px; /* Further smaller input padding */
+    --acctbl-btn-padding-new: 5px 10px; /* Further smaller button padding */
+    --acctbl-btn-font-size-new: 0.8rem; /* Further smaller button font size */
+    --acctbl-table-padding: 6px; /* Further reduce table padding */
+  }
 }
 
 /* ------------------------------------------- */
-/* GLOBAL & CONTAINER                          */
+/* GLOBAL & CONTAINER                            */
 /* ------------------------------------------- */
 .acctbl-container {
-    padding: 30px;
-    box-sizing: border-box;
-    border-radius: var(--acctbl-container-radius);
-    transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
-    height: fit-content;
-    margin-top: 50px;
+  padding: 30px;
+  box-sizing: border-box;
+  border-radius: var(--acctbl-container-radius);
+  transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+  height: fit-content;
+  margin-top: 50px;
 }
 
 .acctbl-container.light {
-    background-color: #FFFDF6;
-    color: #000;
-    box-shadow: var(--acctbl-shadow-light);
+  background-color: #FFFDF6;
+  color: #000;
+  box-shadow: var(--acctbl-shadow-light);
 }
 
 .acctbl-container.dark {
-    background: #2f2f31;
-    color: var(--acctbl-title-color-dark);
-    box-shadow: var(--acctbl-shadow-dark);
+  background: #2f2f31;
+  color: var(--acctbl-title-color-dark);
+  box-shadow: var(--acctbl-shadow-dark);
+}
+
+/* --- Responsiveness for Container --- */
+@media (max-width: 768px) {
+  .acctbl-container {
+    padding: 20px; /* Reduce padding on smaller screens */
+    margin-top: 20px; /* Adjust margin */
+  }
+}
+
+@media (max-width: 480px) {
+  .acctbl-container {
+    padding: 15px; /* Further reduce padding on mobile */
+    margin-top: 15px; /* Further adjust margin */
+  }
 }
 
 /* ------------------------------------------- */
-/* HEADER                                      */
+/* HEADER                                        */
 /* ------------------------------------------- */
-.acctbl-header { /* New class */
-    width: 100%;
-    margin-bottom: 30px;
-    font-family: 'monrse', sans-serif;
+.acctbl-header {
+  width: 100%;
+  margin-bottom: 30px;
+  font-family: 'monrse', sans-serif;
 }
 
-.acctbl-title-main { /* Renamed from .Table-title */
-    font-size: 2rem;
-    font-weight: 700;
-    color: inherit;
-    margin-left: 10px;
+.acctbl-title-main {
+  font-size: 2rem;
+  font-weight: 700;
+  color: inherit;
+  margin-left: 10px;
 }
 
-.acctbl-title { /* Kept as a general title style if needed, but not directly used by h1 anymore */
-    text-align: center;
-    font-size: var(--acctbl-title-font-size);
-    font-weight: var(--acctbl-title-font-weight);
-    margin-bottom: var(--acctbl-title-margin-bottom);
-    color: var(--acctbl-title-color-light);
+/* --- Responsiveness for Header Title --- */
+@media (max-width: 768px) {
+  .acctbl-title-main {
+    font-size: 1.7rem; /* Adjust font size on smaller screens */
+    margin-left: 5px;
+  }
+}
+
+@media (max-width: 480px) {
+  .acctbl-title-main {
+    font-size: 1.4rem; /* Further adjust font size on mobile */
+    text-align: center; /* Center the title on very small screens */
+    margin-left: 0;
+  }
+}
+
+.acctbl-title {
+  text-align: center;
+  font-size: var(--acctbl-title-font-size);
+  font-weight: var(--acctbl-title-font-weight);
+  margin-bottom: var(--acctbl-title-margin-bottom);
+  color: var(--acctbl-title-color-light);
 }
 
 .acctbl-container.dark .acctbl-title {
-    color: var(--acctbl-title-color-dark);
+  color: var(--acctbl-title-color-dark);
 }
 
 /* ------------------------------------------- */
-/* CONTROLS (SEARCH & FILTER)                  */
+/* CONTROLS (SEARCH & FILTER)                    */
 /* ------------------------------------------- */
 .acctbl-controls {
-    display: flex;
-    justify-content: space-between;
-    gap: var(--acctbl-controls-gap);
-    margin-bottom: 20px;
-    height: var(--acctbl-controls-height);
-    background: var(--acctbl-controls-bg-light);
-    border-radius: var(--acctbl-input-radius-new);
-    align-items: center;
-    padding: 0 10px;
-    box-shadow: var(--acctbl-shadow-light);
-    font-family: 'montserrat', sans-serif;
+  display: flex;
+  justify-content: space-between;
+  gap: var(--acctbl-controls-gap);
+  margin-bottom: 20px;
+  height: var(--acctbl-controls-height);
+  background: var(--acctbl-controls-bg-light);
+  border-radius: var(--acctbl-input-radius-new);
+  align-items: center;
+  padding: 0 10px;
+  box-shadow: var(--acctbl-shadow-light);
+  font-family: 'montserrat', sans-serif;
+}
+
+/* --- Responsiveness for Controls --- */
+@media (max-width: 768px) {
+  .acctbl-controls {
+    flex-direction: column; /* Stack controls vertically on smaller screens */
+    height: auto; /* Allow height to adjust */
+    padding: 10px;
+    margin-bottom: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .acctbl-controls {
+    gap: 8px; /* Slightly smaller gap on mobile */
+    padding: 8px;
+    margin-bottom: 10px;
+  }
 }
 
 .acctbl-container.dark .acctbl-controls {
-    background: var(--acctbl-controls-bg-dark);
-    box-shadow: var(--acctbl-shadow-dark);
+  background: var(--acctbl-controls-bg-dark);
+  box-shadow: var(--acctbl-shadow-dark);
 }
 
-.acctbl-search-input, /* Renamed from .acctbl-search */
-.acctbl-filter-select { /* Renamed from .acctbl-filter */
-    flex: 1;
-    padding: var(--acctbl-input-padding-new);
-    border-radius: var(--acctbl-input-radius-new);
-    background: var(--acctbl-table-bg-light) !important;
-    color: var(--acctbl-title-color-light);
-    border: 1px solid var(--acctbl-border-light);
-    font-size: 0.95rem;
-    outline: none;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+.acctbl-search-input,
+.acctbl-filter-select {
+  flex: 1;
+  padding: var(--acctbl-input-padding-new);
+  border-radius: var(--acctbl-input-radius-new);
+  background: var(--acctbl-table-bg-light);
+  color: var(--acctbl-title-color-light);
+  border: 1px solid var(--acctbl-border-light);
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* --- Responsiveness for Search and Filter Inputs --- */
+@media (max-width: 768px) {
+  .acctbl-search-input,
+  .acctbl-filter-select {
+    width: 100%; /* Take full width when stacked */
+    flex: none; /* Remove flex sizing when stacked */
+  }
 }
 
 .acctbl-container.dark .acctbl-search-input,
 .acctbl-container.dark .acctbl-filter-select {
-    background: #2a2a2a;
-    color: var(--acctbl-title-color-dark);
-    border: 1px solid var(--acctbl-border-dark-new);
+  background: #2a2a2a;
+  color: var(--acctbl-title-color-dark);
+  border: 1px solid var(--acctbl-border-dark-new);
 }
 
 .acctbl-search-input:focus,
 .acctbl-filter-select:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
 }
 
 .acctbl-container.dark .acctbl-search-input:focus,
 .acctbl-container.dark .acctbl-filter-select:focus {
-    border-color: #6a92ed;
-    box-shadow: 0 0 0 0.2rem rgba(106, 146, 237, 0.25);
+  border-color: #6a92ed;
+  box-shadow: 0 0 0 0.2rem rgba(106, 146, 237, 0.25);
 }
 
 .acctbl-search-input::placeholder,
 .acctbl-filter-select::placeholder {
-    color: #6c757d;
-    opacity: 1;
+  color: #6c757d;
+  opacity: 1;
 }
 
 .acctbl-container.dark .acctbl-search-input::placeholder,
 .acctbl-container.dark .acctbl-filter-select::placeholder {
-    color: #b0b3b8;
-    opacity: 1;
+  color: #b0b3b8;
+  opacity: 1;
 }
 
-.acctbl-add-btn { /* Renamed from .acctbl-create-btn for the Add Admin button */
-    border: none;
-    padding: var(--acctbl-btn-padding-new);
-    border-radius: var(--acctbl-btn-radius-new);
-    cursor: var(--acctbl-btn-cursor);
-    font-size: var(--acctbl-btn-font-size-new);
-    transition: var(--acctbl-btn-transition-new);
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    background-color: var(--acctbl-edit-btn-light); /* Assuming it uses a similar light theme green */
-    color: white; /* Assuming white text for light theme add button */
+.acctbl-add-btn {
+  border: none;
+  padding: var(--acctbl-btn-padding-new);
+  border-radius: var(--acctbl-btn-radius-new);
+  cursor: var(--acctbl-btn-cursor);
+  font-size: var(--acctbl-btn-font-size-new);
+  transition: var(--acctbl-btn-transition-new);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background-color: var(--acctbl-edit-btn-light);
+  color: white;
+}
+
+/* --- Responsiveness for Add Button --- */
+@media (max-width: 768px) {
+  .acctbl-add-btn {
+    width: 100%; /* Make button full width when stacked */
+    justify-content: center; /* Center content in button */
+  }
 }
 
 .acctbl-container.dark .acctbl-add-btn {
-    background: var(--acctbl-button-bg-dark);
-    color: white;
-    box-shadow: var(--acctbl-shadow-dark);
-    border: none;
+  background: var(--acctbl-button-bg-dark);
+  color: white;
+  box-shadow: var(--acctbl-shadow-dark);
+  border: none;
 }
 
 .acctbl-container.dark .acctbl-add-btn:hover {
-    background: var(--acctbl-button-hover-dark);
+  background: var(--acctbl-button-hover-dark);
 }
 
 /* ------------------------------------------- */
-/* TABLE                                       */
+/* TABLE                                         */
 /* ------------------------------------------- */
 .acctbl-table-scroll-wrapper {
-    max-height: 500px;
-    overflow-y: auto;
-    border-radius: 0.25rem;
-    margin-bottom: 1rem;
+  max-height: 500px;
+  overflow-y: auto;
+  border-radius: 0.25rem;
+  margin-bottom: 1rem;
+}
+
+/* --- Responsiveness for Table Scroll Wrapper --- */
+@media (max-width: 768px) {
+  .acctbl-table-scroll-wrapper {
+    max-height: 400px; /* Adjust max height for smaller screens */
+  }
+}
+
+@media (max-width: 480px) {
+  .acctbl-table-scroll-wrapper {
+    max-height: 300px; /* Further adjust max height for mobile */
+  }
 }
 
 .acctbl-table-scroll-wrapper::-webkit-scrollbar {
-    width: 8px;
+  width: 8px;
 }
 
 .acctbl-table-scroll-wrapper::-webkit-scrollbar-thumb:hover {
-    background-color: #555;
+  background-color: #555;
 }
 
-.acctbl-data-table { /* Renamed from .acctbl-table */
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-    border-radius: var(--acctbl-container-radius);
-    box-shadow: var(--acctbl-shadow-light);
-    background: var(--acctbl-table-bg-light);
-    color: var(--acctbl-title-color-light);
-    height: fit-content;
-    margin-bottom: 0;
+.acctbl-data-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: var(--acctbl-container-radius);
+  box-shadow: var(--acctbl-shadow-light);
+  background: var(--acctbl-table-bg-light);
+  color: var(--acctbl-title-color-light);
+  height: fit-content;
+  margin-bottom: 0;
 }
 
 .acctbl-container.dark .acctbl-data-table {
-    background: var(--acctbl-table-bg-dark-new);
-    color: var(--acctbl-title-color-dark);
-    box-shadow: var(--acctbl-shadow-dark);
+  background: var(--acctbl-table-bg-dark-new);
+  color: var(--acctbl-title-color-dark);
+  box-shadow: var(--acctbl-shadow-dark);
 }
 
 .acctbl-data-table thead {
-    position: sticky;
-    top: 0;
-    background-color: inherit;
-    z-index: 1;
-    font-family: 'montserrat', sans-serif;
+  position: sticky;
+  top: 0;
+  background-color: inherit;
+  z-index: 1;
+  font-family: 'montserrat', sans-serif;
 }
 
 .light .acctbl-data-table thead {
-    background-color: var(--acctbl-th-bg-light);
-    color: var(--acctbl-title-color-light);
+  background-color: var(--acctbl-th-bg-light);
+  color: var(--acctbl-title-color-light);
 }
 
 .dark .acctbl-data-table thead {
-    background-color: var(--acctbl-th-bg-dark-new);
-    color: var(--acctbl-title-color-dark);
+  background-color: var(--acctbl-th-bg-dark-new);
+  color: var(--acctbl-title-color-dark);
 }
 
 .acctbl-data-table th,
 .acctbl-data-table td {
-    padding: var(--acctbl-table-padding);
-    text-align: left;
-    border-bottom: var(--acctbl-table-border) var(--acctbl-border-light);
-    transition: background-color 0.2s ease;
+  padding: var(--acctbl-table-padding);
+  text-align: left;
+  border-bottom: var(--acctbl-table-border) var(--acctbl-border-light);
+  transition: background-color 0.2s ease;
 }
 
+/* --- Responsiveness for Table Cells (th, td) --- */
+@media (max-width: 768px) {
+  .acctbl-data-table th,
+  .acctbl-data-table td {
+    font-size: 0.9rem; /* Smaller font size for table content */
+    padding: 6px; /* Reduced padding */
+  }
+}
+
+@media (max-width: 480px) {
+  .acctbl-data-table th,
+  .acctbl-data-table td {
+    font-size: 0.8rem; /* Even smaller font size for mobile */
+    padding: 5px; /* Further reduced padding */
+    word-break: break-word; /* Prevent long words from breaking layout */
+  }
+}
+
+
 .acctbl-data-table th {
-    background: var(--acctbl-th-bg-light);
-    color: var(--acctbl-title-color-light);
-    font-weight: 600;
-    position: sticky;
-    top: 0;
-    z-index: 1;
+  background: var(--acctbl-th-bg-light);
+  color: var(--acctbl-title-color-light);
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 
 .acctbl-container.dark .acctbl-data-table th {
-    background: var(--acctbl-th-bg-dark-new);
-    color: var(--acctbl-title-color-dark);
-    border: 1px solid var(--acctbl-border-dark);
+  background: var(--acctbl-th-bg-dark-new);
+  color: var(--acctbl-title-color-dark);
+  border: 1px solid var(--acctbl-border-dark);
 }
 
 .acctbl-data-table td {
-    background: var(--acctbl-td-bg-light);
-    color: var(--acctbl-title-color-light);
-    text-align: center;
+  background: var(--acctbl-td-bg-light);
+  color: var(--acctbl-title-color-light);
+  text-align: center;
 }
 
 .acctbl-container.dark .acctbl-data-table td {
-    background: var(--acctbl-td-bg-dark-new);
-    color: var(--acctbl-title-color-dark);
-    border: 1px solid var(--acctbl-border-dark-new);
+  background: var(--acctbl-td-bg-dark-new);
+  color: var(--acctbl-title-color-dark);
+  border: 1px solid var(--acctbl-border-dark-new);
 }
 
 .acctbl-data-table tbody tr:last-child td {
-    border-bottom: none;
+  border-bottom: none;
 }
 
 .acctbl-data-table tbody tr {
-    font-family: 'poppins', sans-serif;
+  font-family: 'poppins', sans-serif;
 }
 
 .acctbl-data-table tbody tr:hover {
-    background-color: rgba(0, 0, 0, 0.03);
+  background-color: rgba(0, 0, 0, 0.03);
 }
 
 .acctbl-container.dark .acctbl-data-table tbody tr:hover {
-    background-color: rgba(255, 255, 255, 0.05);
+  background-color: rgba(255, 255, 255, 0.05);
 }
 
-.acctbl-actions-cell { /* New class for the actions cell */
-    text-align: center; /* Adjust as needed */
+.acctbl-actions-cell {
+  text-align: center;
 }
 
-.acctbl-no-data { /* New class for the 'No users found' cell */
-    text-align: center; /* Adjust as needed */
+.acctbl-no-data {
+  text-align: center;
 }
 
 /* ------------------------------------------- */
-/* BUTTONS (Table Row Actions)                             */
+/* BUTTONS (Table Row Actions)                     */
 /* ------------------------------------------- */
-.acctbl-edit-btn, /* New class for Edit button in table */
-.acctbl-delete-btn { /* Already existed, but ensuring it's for table rows */
-    border: none;
-    padding: 6px 10px; /* Specific padding for table row buttons */
-    border-radius: var(--acctbl-btn-radius-new);
-    cursor: var(--acctbl-btn-cursor);
-    font-size: var(--acctbl-btn-font-size-new);
-    transition: var(--acctbl-btn-transition-new);
-    display: inline-flex; /* Use inline-flex for side-by-side icons and text */
-    align-items: center;
-    gap: 5px;
-    margin: 0 5px; /* Spacing between buttons */
-    justify-content: center;
+.acctbl-edit-btn,
+.acctbl-delete-btn {
+  border: none;
+  padding: 6px 10px;
+  border-radius: var(--acctbl-btn-radius-new);
+  cursor: var(--acctbl-btn-cursor);
+  font-size: var(--acctbl-btn-font-size-new);
+  transition: var(--acctbl-btn-transition-new);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0 5px;
+  justify-content: center;
+}
+
+/* --- Responsiveness for Table Action Buttons --- */
+@media (max-width: 480px) {
+  .acctbl-edit-btn,
+  .acctbl-delete-btn {
+    padding: 4px 8px; /* Smaller padding on mobile */
+    font-size: 0.75rem; /* Smaller font size */
+    margin: 0 3px; /* Smaller margin between buttons */
+  }
 }
 
 .acctbl-edit-btn {
-    background-color: var(--acctbl-edit-btn-light);
-    color: white; /* Default text color for light theme */
+  background-color: var(--acctbl-edit-btn-light);
+  color: white;
 }
 
 .acctbl-container.light .acctbl-edit-btn {
-    color: white; /* Ensure text color is white for light theme */
+  color: white;
 }
 
 .acctbl-edit-btn:hover {
-    background-color: var(--acctbl-button-hover-light); /* Or a specific edit hover light color */
+  background-color: var(--acctbl-button-hover-light);
 }
 
 .acctbl-delete-btn {
-    background-color: var(--acctbl-delete-btn-light);
-    color: white; /* Default text color for light theme */
+  background-color: var(--acctbl-delete-btn-light);
+  color: white;
 }
 
 .acctbl-container.dark .acctbl-edit-btn {
-    background: var(--acctbl-edit-btn-dark);
-    color: white;
+  background: var(--acctbl-edit-btn-dark);
+  color: white;
 }
 
 .acctbl-container.dark .acctbl-edit-btn:hover {
-    background: var(--acctbl-edit-btn-hover-dark);
+  background: var(--acctbl-edit-btn-hover-dark);
 }
 
 .acctbl-container.dark .acctbl-delete-btn {
-    background: var(--acctbl-delete-btn-dark);
-    color: white;
+  background: var(--acctbl-delete-btn-dark);
+  color: white;
 }
 
 .acctbl-container.dark .acctbl-delete-btn:hover {
-    background: var(--acctbl-delete-btn-hover-dark);
+  background: var(--acctbl-delete-btn-hover-dark);
 }
 
 /* ------------------------------------------- */
-/* SPINNER & ALERT                             */
+/* SPINNER & ALERT                               */
 /* ------------------------------------------- */
-.acctbl-spinner { /* New class */
-    color: #007bff;
-    margin: 20px auto;
-    display: block;
+.acctbl-spinner {
+  color: #007bff;
+  margin: 20px auto;
+  display: block;
 }
 
 .acctbl-container.dark .acctbl-spinner {
-    color: #6a92ed;
+  color: #6a92ed;
 }
 
-.acctbl-error-alert { /* New class */
-    margin-top: 20px;
-    padding: 15px;
-    border-radius: var(--acctbl-input-radius-new);
-    font-weight: 500;
-    background-color: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
+.acctbl-error-alert {
+  margin-top: 20px;
+  padding: 15px;
+  border-radius: var(--acctbl-input-radius-new);
+  font-weight: 500;
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+/* --- Responsiveness for Alerts --- */
+@media (max-width: 480px) {
+  .acctbl-error-alert {
+    padding: 10px; /* Smaller padding for alerts on mobile */
+    font-size: 0.85rem; /* Smaller font size for alerts */
+  }
 }
 
 .acctbl-container.dark .acctbl-error-alert {
-    background-color: #4e2b30;
-    color: #f7a7ab;
-    border: 1px solid #7c3f46;
+  background-color: #4e2b30;
+  color: #f7a7ab;
+  border: 1px solid #7c3f46;
 }
 
 /* ------------------------------------------- */
-/* MODALS                                      */
+/* MODALS                                        */
 /* ------------------------------------------- */
 
 /* Base modal styles */
-.acctbl-add-admin-modal .modal-content, /* Specific modal classes */
+.acctbl-add-admin-modal .modal-content,
 .acctbl-edit-user-modal .modal-content {
-    border-radius: var(--acctbl-container-radius);
-    background-color: var(--modal-bg-light);
-    color: var(--acctbl-title-color-light);
-    transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
-    border: none;
+  border-radius: var(--acctbl-container-radius);
+  background-color: var(--modal-bg-light);
+  color: var(--acctbl-title-color-light);
+  transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+  border: none;
+}
+
+/* --- Responsiveness for Modal Content --- */
+@media (max-width: 768px) {
+  .acctbl-add-admin-modal .modal-content,
+  .acctbl-edit-user-modal .modal-content {
+    margin: 10px; /* Add some margin around the modal on smaller screens */
+    width: auto; /* Allow content to dictate width */
+  }
+}
+
+@media (max-width: 480px) {
+  .acctbl-add-admin-modal .modal-content,
+  .acctbl-edit-user-modal .modal-content {
+    margin: 5px; /* Smaller margin on mobile */
+  }
 }
 
 body.dark .acctbl-add-admin-modal .modal-content,
 body.dark .acctbl-edit-user-modal .modal-content {
-    background-color: var(--modal-bg-dark);
-    color: var(--acctbl-title-color-dark);
-    box-shadow: var(--acctbl-shadow-dark);
+  background-color: var(--modal-bg-dark);
+  color: var(--acctbl-title-color-dark);
+  box-shadow: var(--acctbl-shadow-dark);
 }
 
 .acctbl-add-admin-modal .modal-header,
 .acctbl-edit-user-modal .modal-header {
-    border-bottom: 1px solid var(--modal-header-border-light);
-    padding: 15px 20px;
-    font-family: 'montserrat', sans-serif;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  border-bottom: 1px solid var(--modal-header-border-light);
+  padding: 15px 20px;
+  font-family: 'montserrat', sans-serif;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* --- Responsiveness for Modal Header --- */
+@media (max-width: 480px) {
+  .acctbl-add-admin-modal .modal-header,
+  .acctbl-edit-user-modal .modal-header {
+    padding: 10px 15px; /* Smaller padding on mobile */
+  }
 }
 
 body.dark .acctbl-add-admin-modal .modal-header,
 body.dark .acctbl-edit-user-modal .modal-header {
-    border-bottom: 1px solid var(--modal-header-border-dark);
+  border-bottom: 1px solid var(--modal-header-border-dark);
 }
 
 .acctbl-add-admin-modal .modal-title,
 .acctbl-edit-user-modal .modal-title {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: inherit;
-    flex-grow: 1;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: inherit;
+  flex-grow: 1;
 }
 
-/* Ensure these are specific if the base Bootstrap class is causing issues */
+/* --- Responsiveness for Modal Title --- */
+@media (max-width: 480px) {
+  .acctbl-add-admin-modal .modal-title,
+  .acctbl-edit-user-modal .modal-title {
+    font-size: 1.2rem; /* Smaller font size for modal title on mobile */
+  }
+}
+
+
 .acctbl-add-admin-modal .modal-header .btn-close,
 .acctbl-edit-user-modal .modal-header .btn-close {
-    background: transparent url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23000'%3e%3cpath d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414z'/%3e%3c/svg%3e") center / 1em auto no-repeat;
-    opacity: 0.7;
-    transition: opacity 0.2s ease;
-    border: 0;
-    border-radius: .25rem;
-    padding: .5rem;
-    margin: -.5rem -.5rem -.5rem auto;
-    color: var(--modal-close-color-light);
+  background: transparent url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23000'%3e%3cpath d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414z'/%3e%3c/svg%3e") center / 1em auto no-repeat;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+  border: 0;
+  border-radius: .25rem;
+  padding: .5rem;
+  margin: -.5rem -.5rem -.5rem auto;
+  color: var(--modal-close-color-light);
 }
 
 .acctbl-add-admin-modal .modal-header .btn-close:hover,
 .acctbl-edit-user-modal .modal-header .btn-close:hover {
-    opacity: 1;
+  opacity: 1;
 }
 
 body.dark .acctbl-add-admin-modal .modal-header .btn-close,
 body.dark .acctbl-edit-user-modal .modal-header .btn-close {
-    background: transparent url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23f8f9fa'%3e%3cpath d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414z'/%3e%3c/svg%3e") center / 1em auto no-repeat;
-    color: var(--modal-close-color-dark);
+  background: transparent url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23f8f9fa'%3e%3cpath d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414z'/%3e%3c/svg%3e") center / 1em auto no-repeat;
+  color: var(--modal-close-color-dark);
 }
 
 .acctbl-add-admin-modal .modal-body,
 .acctbl-edit-user-modal .modal-body {
-    padding: 20px;
+  padding: 20px;
 }
 
-.acctbl-add-admin-modal .mb-3.acctbl-form-group, /* Specific form group for modals */
+/* --- Responsiveness for Modal Body --- */
+@media (max-width: 480px) {
+  .acctbl-add-admin-modal .modal-body,
+  .acctbl-edit-user-modal .modal-body {
+    padding: 15px; /* Smaller padding on mobile */
+  }
+}
+
+.acctbl-add-admin-modal .mb-3.acctbl-form-group,
 .acctbl-edit-user-modal .mb-3.acctbl-form-group {
-    margin-bottom: 15px;
+  margin-bottom: 15px;
 }
 
 .acctbl-add-admin-modal .acctbl-form-label,
 .acctbl-edit-user-modal .acctbl-form-label {
-    font-weight: 500;
-    margin-bottom: 8px;
-    display: flex;
-    justify-content: start;
-    color: inherit;
-    font-family: 'montserrat', sans-serif;
+  font-weight: 500;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: start;
+  color: inherit;
+  font-family: 'montserrat', sans-serif;
+}
+
+/* --- Responsiveness for Form Labels --- */
+@media (max-width: 480px) {
+  .acctbl-add-admin-modal .acctbl-form-label,
+  .acctbl-edit-user-modal .acctbl-form-label {
+    font-size: 0.9rem; /* Smaller font for labels on mobile */
+  }
 }
 
 .acctbl-add-admin-modal .acctbl-form-control,
 .acctbl-edit-user-modal .acctbl-form-control {
-    width: 100%;
-    padding: var(--acctbl-input-padding-new);
-    border-radius: var(--acctbl-input-radius-new);
-    border: 1px solid var(--acctbl-border-light);
-    background-color: #f8f9fa;
-    color: var(--acctbl-title-color-light);
-    outline: none;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  width: 100%;
+  padding: var(--acctbl-input-padding-new);
+  border-radius: var(--acctbl-input-radius-new);
+  border: 1px solid var(--acctbl-border-light);
+  background-color: #f8f9fa;
+  color: var(--acctbl-title-color-light);
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* --- Responsiveness for Form Controls (Inputs) --- */
+@media (max-width: 480px) {
+  .acctbl-add-admin-modal .acctbl-form-control,
+  .acctbl-edit-user-modal .acctbl-form-control {
+    font-size: 0.9rem; /* Smaller font size for inputs on mobile */
+  }
 }
 
 body.dark .acctbl-add-admin-modal .acctbl-form-control,
 body.dark .acctbl-edit-user-modal .acctbl-form-control {
-    background-color: #2a2a2a;
-    color: var(--acctbl-title-color-dark);
-    border: 1px solid var(--acctbl-border-dark-new);
-    font-family: 'poppins', sans-serif;
+  background-color: #2a2a2a;
+  color: var(--acctbl-title-color-dark);
+  border: 1px solid var(--acctbl-border-dark-new);
+  font-family: 'poppins', sans-serif;
 }
 
 body.dark .acctbl-add-admin-modal .acctbl-form-control::placeholder,
 body.dark .acctbl-edit-user-modal .acctbl-form-control::placeholder {
-    color: #b0b3b8;
-    opacity: 1;
-    font-family: 'montserrat', sans-serif;
+  color: #b0b3b8;
+  opacity: 1;
+  font-family: 'montserrat', sans-serif;
 }
 
 .acctbl-add-admin-modal .acctbl-form-control:focus,
 .acctbl-edit-user-modal .acctbl-form-control:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
 }
 
 body.dark .acctbl-add-admin-modal .acctbl-form-control:focus,
 body.dark .acctbl-edit-user-modal .acctbl-form-control:focus {
-    border-color: #6a92ed;
-    box-shadow: 0 0 0 0.2rem rgba(106, 146, 237, 0.25);
+  border-color: #6a92ed;
+  box-shadow: 0 0 0 0.2rem rgba(106, 146, 237, 0.25);
 }
 
-.acctbl-edit-error-alert { /* New class for the edit error alert */
-    margin-top: 15px; /* Adjust spacing */
-    padding: 15px;
-    border-radius: var(--acctbl-input-radius-new);
-    font-weight: 500;
-    background-color: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
+.acctbl-edit-error-alert {
+  margin-top: 15px;
+  padding: 15px;
+  border-radius: var(--acctbl-input-radius-new);
+  font-weight: 500;
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+/* --- Responsiveness for Edit Error Alert --- */
+@media (max-width: 480px) {
+  .acctbl-edit-error-alert {
+    padding: 10px;
+    font-size: 0.85rem;
+  }
 }
 
 .acctbl-container.dark .acctbl-edit-error-alert {
-    background-color: #4e2b30;
-    color: #f7a7ab;
-    border: 1px solid #7c3f46;
+  background-color: #4e2b30;
+  color: #f7a7ab;
+  border: 1px solid #7c3f46;
 }
 
-
-.acctbl-add-admin-modal .acctbl-modal-footer, /* Specific modal footer classes */
+.acctbl-add-admin-modal .acctbl-modal-footer,
 .acctbl-edit-user-modal .acctbl-modal-footer {
-    border-top: 1px solid var(--modal-header-border-light);
-    padding: 15px 20px;
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
+  border-top: 1px solid var(--modal-header-border-light);
+  padding: 15px 20px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* --- Responsiveness for Modal Footer --- */
+@media (max-width: 480px) {
+  .acctbl-add-admin-modal .acctbl-modal-footer,
+  .acctbl-edit-user-modal .acctbl-modal-footer {
+    flex-direction: column; /* Stack buttons vertically on mobile */
+    gap: 8px; /* Adjust gap */
+    padding: 10px 15px;
+  }
 }
 
 body.dark .acctbl-add-admin-modal .acctbl-modal-footer,
 body.dark .acctbl-edit-user-modal .acctbl-modal-footer {
-    border-top: 1px solid var(--modal-header-border-dark); /* Corrected variable name */
+  border-top: 1px solid var(--modal-header-border-dark);
 }
 
 /* Buttons within Modal Footer */
-.acctbl-add-admin-modal .acctbl-save-changes-btn, /* Specific button classes */
+.acctbl-add-admin-modal .acctbl-save-changes-btn,
 .acctbl-edit-user-modal .acctbl-save-changes-btn {
-    padding: var(--acctbl-btn-padding-new);
-    border-radius: var(--acctbl-btn-radius-new);
-    font-size: var(--acctbl-btn-font-size-new);
-    cursor: pointer;
-    transition: var(--acctbl-btn-transition-new);
-    border: none;
-    background-color: var(--modal-create-btn-bg);
-    color: white;
-    box-shadow: var(--acctbl-shadow-light);
-    font-family: 'poppins', sans-serif;
+  padding: var(--acctbl-btn-padding-new);
+  border-radius: var(--acctbl-btn-radius-new);
+  font-size: var(--acctbl-btn-font-size-new);
+  cursor: pointer;
+  transition: var(--acctbl-btn-transition-new);
+  border: none;
+  background-color: var(--modal-create-btn-bg);
+  color: white;
+  box-shadow: var(--acctbl-shadow-light);
+  font-family: 'poppins', sans-serif;
+}
+
+/* --- Responsiveness for Modal Footer Buttons --- */
+@media (max-width: 480px) {
+  .acctbl-add-admin-modal .acctbl-save-changes-btn,
+  .acctbl-edit-user-modal .acctbl-save-changes-btn,
+  .acctbl-add-admin-modal .acctbl-cancel-btn,
+  .acctbl-edit-user-modal .acctbl-cancel-btn {
+    width: 100%; /* Make buttons full width when stacked */
+    justify-content: center; /* Center text in buttons */
+    padding: 10px 12px; /* Adjust padding */
+    font-size: 0.85rem; /* Smaller font size */
+  }
 }
 
 .acctbl-add-admin-modal .acctbl-save-changes-btn:hover,
 .acctbl-edit-user-modal .acctbl-save-changes-btn:hover {
-    background-color: var(--modal-create-btn-hover);
+  background-color: var(--modal-create-btn-hover);
 }
 
 body.dark .acctbl-add-admin-modal .acctbl-save-changes-btn,
 body.dark .acctbl-edit-user-modal .acctbl-save-changes-btn {
-    background-color: var(--modal-create-btn-bg);
-    color: white;
-    box-shadow: var(--acctbl-shadow-dark);
+  background-color: var(--modal-create-btn-bg);
+  color: white;
+  box-shadow: var(--acctbl-shadow-dark);
 }
 
 body.dark .acctbl-add-admin-modal .acctbl-save-changes-btn:hover,
 body.dark .acctbl-edit-user-modal .acctbl-save-changes-btn:hover {
-    background-color: var(--modal-create-btn-hover);
+  background-color: var(--modal-create-btn-hover);
 }
 
 .acctbl-add-admin-modal .acctbl-cancel-btn,
 .acctbl-edit-user-modal .acctbl-cancel-btn {
-    background-color: var(--modal-cancel-btn-bg);
-    color: white;
-    box-shadow: var(--acctbl-shadow-light);
-    font-family: 'poppins', sans-serif;
+  background-color: var(--modal-cancel-btn-bg);
+  color: white;
+  box-shadow: var(--acctbl-shadow-light);
+  font-family: 'poppins', sans-serif;
 }
 
 .acctbl-add-admin-modal .acctbl-cancel-btn:hover,
 .acctbl-edit-user-modal .acctbl-cancel-btn:hover {
-    background-color: var(--modal-cancel-btn-hover);
+  background-color: var(--modal-cancel-btn-hover);
 }
 
 body.dark .acctbl-add-admin-modal .acctbl-cancel-btn,
 body.dark .acctbl-edit-user-modal .acctbl-cancel-btn {
-    background-color: var(--modal-cancel-btn-bg);
-    color: white;
-    box-shadow: var(--acctbl-shadow-dark);
+  background-color: var(--modal-cancel-btn-bg);
+  color: white;
+  box-shadow: var(--acctbl-shadow-dark);
 }
 
 body.dark .acctbl-add-admin-modal .acctbl-cancel-btn:hover,
 body.dark .acctbl-edit-user-modal .acctbl-cancel-btn:hover {
-    background-color: var(--modal-cancel-btn-hover);
+  background-color: var(--modal-cancel-btn-hover);
 }

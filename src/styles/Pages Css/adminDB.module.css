@@ -179,6 +179,10 @@
   overflow-y: scroll;
 }
 
+.calendarSection::-webkit-scrollbar {
+  display: none;
+}
+
 .establishmentSection {
   background-color: var(--card-bg);
   border-radius: 12px;

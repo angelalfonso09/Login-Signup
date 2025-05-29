@@ -130,6 +130,7 @@ const UserAdminTable = () => {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="acctbl-search-input" // Unique classname
+          
         />
         <Form.Select
           value={filterRole}

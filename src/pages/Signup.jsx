@@ -34,9 +34,6 @@ const Signup = () => {
                   <Link to="/login" className="or2">Login</Link>
                 </p>
               </div>
-              <div className="text-center text-muted small">
-                <a href="#">Terms & Conditions</a> | <a href="#">Support</a> | <a href="#">Customer Care</a>
-              </div>
             </Card.Body>
           </Container>
         </div>

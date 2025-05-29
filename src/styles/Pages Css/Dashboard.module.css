@@ -56,7 +56,11 @@
 .dbContainer {
   display: flex;
   flex: 1;
-  overflow: hidden; /* Ensures no extra scrollbars from content outside */
+  overflow-y: scroll; /* Ensures no extra scrollbars from content outside */
+}
+
+.dbContainer::-webkit-scrollbar{
+  display: none;
 }
 
 .dbContents {
@@ -65,7 +69,7 @@
   flex-direction: column;
   gap: 25px; /* Increased gap for better separation */
   padding: 25px 20px; /* Uniform padding */
-  overflow-y: auto; /* Enable scrolling for the main content area */
+  overflow-y: scroll; /* Enable scrolling for the main content area */
   max-height: 100vh; /* Ensure it takes full height */
 }
 

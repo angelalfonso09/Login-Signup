@@ -11,7 +11,8 @@ import AdminDB from "./pages/adminDB";
 import UserDB from "./pages/userDB";
 import Notifications from "./pages/Notifications"; 
 import UserNotif from "./pages/UserNotif";     
-import AdminNotif from "./pages/AdminNotif";     
+import AdminNotif from "./pages/AdminNotif"; 
+import SettingsPage from "./pages/Settings";    
 
 import { ThemeProvider, ThemeContext } from "./context/ThemeContext";
 import "./styles/common/App.css";
@@ -87,6 +88,7 @@ const ThemedApp = () => {
                     <Route path="/adminDB" element={<ProtectedRoute element={<AdminDB />} allowedRoles={["Admin"]} />} />
                     <Route path="/accountmanagement" element={<ProtectedRoute element={<AccountManagement />} allowedRoles={["Super Admin"]} />} />
                     <Route path="/history" element={<ProtectedRoute element={<History />} allowedRoles={["Super Admin", "User", "Admin"]} />} />
+                    <Route path="/settings" element={<ProtectedRoute element={<SettingsPage />} allowedRoles={["Super Admin", "User", "Admin"]} />} />
 
                     {/* Notification Routes for each role */}
                     {/* Super Admin Notifications */}
