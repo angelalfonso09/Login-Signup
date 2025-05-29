@@ -27,7 +27,7 @@ const saltRounds = 10;
 const otpGenerator = require('otp-generator');
 // const users = [];
 
-let superAdminNotifications = [];
+const authenticateUser = require('../backend/middleware/authenticateUser');
 
 const authenticateAdmin = (req, res, next) => {
     const authHeader = req.headers.authorization;
@@ -1087,11 +1087,188 @@ app.post('/api/access-requests', async (req, res) => {
 });
 
 app.get('/api/admin/notifications', authenticateAdmin, async (req, res) => {
+    const { type: filterType } = req.query; // Get the optional 'type' query parameter
+
     try {
         const connection = await pool.getConnection();
         try {
-            // 1. Fetch actual notifications
-            const [notificationsRows] = await connection.execute(
+            let combinedNotifications = [];
+
+            if (filterType === 'schedule') {
+                // Fetch ONLY scheduled events if filterType is 'schedule'
+                const [eventsRows] = await connection.execute(
+                    `SELECT
+                        id,
+                        title,
+                        time,
+                        description,
+                        event_date,
+                        created_at
+                    FROM events
+                    ORDER BY event_date DESC, time DESC`
+                );
+
+                // Map events to a notification-like structure
+                const mappedEventsAsNotifications = eventsRows.map(event => ({
+                    id: `event_${event.id}`, // Prefix ID to avoid conflicts
+                    type: 'schedule',
+                    title: `Scheduled Event: ${event.title}`,
+                    message: `Date: ${new Date(event.event_date).toLocaleDateString()} ${event.time ? `at ${event.time}` : ''}. Details: ${event.description || 'No description.'}`,
+                    createdAt: event.created_at,
+                    read: false, // Events are not 'read' in the same way, can be set to true if viewed
+                    fromUserId: null,
+                    related_id: event.id,
+                    priority: 'normal',
+                    status: 'active'
+                }));
+                combinedNotifications = mappedEventsAsNotifications;
+
+            } else {
+                // Fetch actual notifications (all types)
+                const [notificationsRows] = await connection.execute(
+                    `SELECT
+                        id,
+                        type,
+                        title,
+                        message,
+                        timestamp AS createdAt,
+                        is_read AS \`read\`,
+                        user_id AS fromUserId,
+                        related_id,
+                        priority,
+                        status
+                    FROM notif
+                    ORDER BY timestamp DESC`
+                );
+
+                // Fetch scheduled events
+                const [eventsRows] = await connection.execute(
+                    `SELECT
+                        id,
+                        title,
+                        time,
+                        description,
+                        event_date,
+                        created_at
+                    FROM events
+                    ORDER BY event_date DESC, time DESC`
+                );
+
+                // Map events to a notification-like structure
+                const mappedEventsAsNotifications = eventsRows.map(event => ({
+                    id: `event_${event.id}`,
+                    type: 'schedule',
+                    title: `Scheduled Event: ${event.title}`,
+                    message: `Date: ${new Date(event.event_date).toLocaleDateString()} ${event.time ? `at ${event.time}` : ''}. Details: ${event.description || 'No description.'}`,
+                    createdAt: event.created_at,
+                    read: false,
+                    fromUserId: null,
+                    related_id: event.id,
+                    priority: 'normal',
+                    status: 'active'
+                }));
+
+                // Combine all fetched data and sort
+                combinedNotifications = [...notificationsRows, ...mappedEventsAsNotifications].sort((a, b) => {
+                    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(); // Newest first
+                });
+            }
+
+            res.status(200).json({ success: true, notifications: combinedNotifications });
+
+        } finally {
+            connection.release();
+        }
+    } catch (error) {
+        console.error('Error fetching admin notifications and events:', error);
+        res.status(500).json({ success: false, message: 'Server error while fetching notifications and events.' });
+    }
+});
+
+
+/**
+ * API Endpoint: DELETE /api/admin/events/:id
+ * Deletes a single event from the 'events' table.
+ * Requires authentication via Bearer token.
+ */
+app.delete('/api/admin/events/:id', authenticateAdmin, async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const connection = await pool.getConnection();
+        try {
+            const [result] = await connection.execute(
+                `DELETE FROM events WHERE id = ?`,
+                [id]
+            );
+
+            if (result.affectedRows === 0) {
+                return res.status(404).json({ success: false, message: 'Event not found.' });
+            }
+            res.status(200).json({ success: true, message: 'Event deleted successfully.' });
+        } finally {
+            connection.release();
+        }
+    } catch (error) {
+        console.error('Error deleting event:', error);
+        res.status(500).json({ success: false, message: 'Server error while deleting event.' });
+    }
+});
+
+/**
+ * API Endpoint: POST /api/admin/events/delete-multiple
+ * Deletes multiple events from the 'events' table based on an array of IDs.
+ * This is useful for 'Delete All' functionality on the frontend.
+ * Requires authentication via Bearer token.
+ */
+app.post('/api/admin/events/delete-multiple', authenticateAdmin, async (req, res) => {
+    const { eventIds } = req.body;
+
+    if (!Array.isArray(eventIds) || eventIds.length === 0) {
+        return res.status(400).json({ success: false, message: 'No event IDs provided for deletion.' });
+    }
+
+    // Convert IDs to numbers to ensure they are valid for SQL IN clause
+    const numericEventIds = eventIds.map(Number).filter(id => !isNaN(id));
+
+    if (numericEventIds.length === 0) {
+        return res.status(400).json({ success: false, message: 'Invalid event IDs provided for deletion.' });
+    }
+
+    // Create a string of placeholders for the IN clause (e.g., '?, ?, ?')
+    const placeholders = numericEventIds.map(() => '?').join(',');
+
+    try {
+        const connection = await pool.getConnection();
+        try {
+            const [result] = await connection.execute(
+                `DELETE FROM events WHERE id IN (${placeholders})`,
+                numericEventIds // Pass the array of IDs directly
+            );
+
+            res.status(200).json({ success: true, message: `${result.affectedRows} events deleted successfully.` });
+        } finally {
+            connection.release();
+        }
+    } catch (error) {
+        console.error('Error deleting multiple events:', error);
+        res.status(500).json({ success: false, message: 'Server error while deleting multiple events.' });
+    }
+});
+
+
+app.get('/api/user/notifications', authenticateUser, async (req, res) => {
+    const userId = req.user.id; // Get the authenticated user's ID from the token
+
+    if (!userId) {
+        return res.status(401).json({ success: false, message: 'User ID not found in token.' });
+    }
+
+    try {
+        const connection = await pool.getConnection();
+        try {
+            // 1. Fetch notifications for the specific user_id
+            const [userNotificationsRows] = await connection.execute(
                 `SELECT
                     id,
                     type,
@@ -1104,18 +1281,20 @@ app.get('/api/admin/notifications', authenticateAdmin, async (req, res) => {
                     priority,
                     status
                 FROM notif
-                ORDER BY timestamp DESC`
+                WHERE user_id = ?
+                ORDER BY timestamp DESC`,
+                [userId]
             );
 
-            // 2. Fetch scheduled events
+            // 2. Fetch all scheduled events (since they are not user-specific)
             const [eventsRows] = await connection.execute(
                 `SELECT
                     id,
                     title,
-                    time,        -- time of event
+                    time,
                     description,
-                    event_date,  -- date of event
-                    created_at   -- when the event record was created
+                    event_date,
+                    created_at
                 FROM events
                 ORDER BY event_date DESC, time DESC` // Order by date, then time
             );
@@ -1134,9 +1313,8 @@ app.get('/api/admin/notifications', authenticateAdmin, async (req, res) => {
                 status: 'active' // You might want a status for events, e.g., 'active', 'completed', 'cancelled'
             }));
 
-            // 4. Combine all fetched data
-            // Combine notifications and events, then sort them by their 'createdAt' timestamp
-            const combinedNotifications = [...notificationsRows, ...mappedEventsAsNotifications].sort((a, b) => {
+            // 4. Combine all fetched data and sort by timestamp
+            const combinedNotifications = [...userNotificationsRows, ...mappedEventsAsNotifications].sort((a, b) => {
                 return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(); // Newest first
             });
 
@@ -1146,10 +1324,106 @@ app.get('/api/admin/notifications', authenticateAdmin, async (req, res) => {
             connection.release();
         }
     } catch (error) {
-        console.error('Error fetching admin notifications and events:', error);
-        res.status(500).json({ success: false, message: 'Server error while fetching notifications and events.' });
+        console.error(`Error fetching notifications and events for user ${userId}:`, error);
+        res.status(500).json({ success: false, message: 'Server error while fetching user notifications and events.' });
     }
 });
+
+/**
+ * API Endpoint: POST /api/user/notifications/mark-read
+ * Marks one or more user notifications as read in the database.
+ * Requires authentication via Bearer token.
+ */
+app.post('/api/user/notifications/mark-read', authenticateUser, async (req, res) => {
+    const userId = req.user.id;
+    const { notificationIds } = req.body; // Can be a single ID or an array of IDs
+
+    if (!notificationIds || (Array.isArray(notificationIds) && notificationIds.length === 0)) {
+        return res.status(400).json({ success: false, message: 'No notification IDs provided.' });
+    }
+
+    // Ensure notificationIds is an array
+    const idsToMark = Array.isArray(notificationIds) ? notificationIds : [notificationIds];
+
+    try {
+        const connection = await pool.getConnection();
+        try {
+            // Use IN clause for multiple updates
+            const placeholders = idsToMark.map(() => '?').join(',');
+            const [result] = await connection.execute(
+                `UPDATE notif SET is_read = TRUE WHERE id IN (${placeholders}) AND user_id = ?`,
+                [...idsToMark, userId] // Add userId to ensure only their notifications are marked
+            );
+
+            if (result.affectedRows === 0) {
+                return res.status(404).json({ success: false, message: 'No matching notifications found for this user.' });
+            }
+            res.status(200).json({ success: true, message: `${result.affectedRows} notifications marked as read.` });
+        } finally {
+            connection.release();
+        }
+    } catch (error) {
+        console.error('Error marking user notifications as read:', error);
+        res.status(500).json({ success: false, message: 'Server error while marking notifications as read.' });
+    }
+});
+
+/**
+ * API Endpoint: DELETE /api/user/notifications/:id
+ * Deletes a single user notification from the database.
+ * Requires authentication via Bearer token.
+ */
+app.delete('/api/user/notifications/:id', authenticateUser, async (req, res) => {
+    const userId = req.user.id;
+    const notificationId = req.params.id;
+
+    try {
+        const connection = await pool.getConnection();
+        try {
+            const [result] = await connection.execute(
+                `DELETE FROM notif WHERE id = ? AND user_id = ?`,
+                [notificationId, userId] // Ensure only their notification is deleted
+            );
+
+            if (result.affectedRows === 0) {
+                return res.status(404).json({ success: false, message: 'Notification not found or does not belong to this user.' });
+            }
+            res.status(200).json({ success: true, message: 'Notification deleted successfully.' });
+        } finally {
+            connection.release();
+        }
+    } catch (error) {
+        console.error('Error deleting user notification:', error);
+        res.status(500).json({ success: false, message: 'Server error while deleting user notification.' });
+    }
+});
+
+
+/**
+ * API Endpoint: POST /api/user/notifications/delete-all
+ * Deletes all notifications for the authenticated user from the database.
+ * Requires authentication via Bearer token.
+ */
+app.post('/api/user/notifications/delete-all', authenticateUser, async (req, res) => {
+    const userId = req.user.id;
+
+    try {
+        const connection = await pool.getConnection();
+        try {
+            const [result] = await connection.execute(
+                `DELETE FROM notif WHERE user_id = ?`,
+                [userId]
+            );
+            res.status(200).json({ success: true, message: `${result.affectedRows} notifications deleted.` });
+        } finally {
+            connection.release();
+        }
+    } catch (error) {
+        console.error('Error deleting all user notifications:', error);
+        res.status(500).json({ success: false, message: 'Server error while deleting all user notifications.' });
+    }
+});
+
 
 // // --- NEW API ENDPOINT FOR DECLINING USER ACCESS ---
 // app.post("/api/admin/decline-user-access", verifyToken, authorizeSuperAdmin, (req, res) => {
