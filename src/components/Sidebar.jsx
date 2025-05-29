@@ -85,7 +85,7 @@ const Sidebar = () => {
     } catch (error) {
       console.error("Error during logout:", error);
       // Even if logout fails on the server, we should still clear client-side token
-      localStorage.removeItem("authToken");
+      localStorage.valueOf("authToken");
       localStorage.removeItem("userRole");
       setToken(null);
       setUsername("");
@@ -117,8 +117,28 @@ const Sidebar = () => {
     return "/"; // Default or fallback
   };
 
+  // --- Function for allowed role in settings ---
+  const handleSettingsNavigation = () => {
+    if (userRole === "Super Admin" || userRole === "Admin") {
+      navigate("/settings");
+    } else if (userRole === "User") {
+      navigate("/user-settings");
+    }
+  };
+
+  // --- Determine active path for Settings link ---
+  const getSettingsActivePath = () => {
+    if (userRole === "Super Admin" || userRole === "Admin") {
+      return "/settings";
+    } else if (userRole === "User") {
+      return "/user-settings";
+    }
+    return ""; // No active path if role is not recognized
+  };
+
   const currentDashboardPath = getDashboardPath();
   const currentNotificationsPath = getNotificationsPath();
+  const activeSettingsPath = getSettingsActivePath();
 
   return (
     <div className={`sidebar ${theme}`}>
@@ -174,6 +194,17 @@ const Sidebar = () => {
           <span>Notifications</span>
         </div>
 
+        {/* Settings (Dynamic based on role) */}
+        <div
+          className={`menu-item ${
+            location.pathname === activeSettingsPath ? "active" : ""
+          }`}
+          onClick={handleSettingsNavigation} 
+        >
+          <FaGears className="icon" />
+          <span>Settings</span>
+        </div>
+
         {/* Theme Toggle
         <div className="menu-item theme-toggle" onClick={toggleTheme}>
           {theme === "dark" ? (
@@ -187,16 +218,6 @@ const Sidebar = () => {
 
       {/* Logout */}
       <div className="logout">
-        <div
-          className={`menu-item ${
-            location.pathname === "/settings" ? "active" : ""
-          }`}
-          onClick={() => navigate("/settings")}
-        >
-          <FaGears className="icon" />
-          <span>Settings</span>
-        </div>
-
         <div className="menu-item" onClick={handleLogout}>
           <FaPowerOff className="icon" />
           <span>Log out</span>
