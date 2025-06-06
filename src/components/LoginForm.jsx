@@ -1,22 +1,25 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react"; // Import useContext
 import { Form, Button, FormCheck } from "react-bootstrap";
 import axios from "axios";
 import '../styles/Login/LoginForm.css';
-import '../styles/Login/LoginFormCustom.css'; // Make sure this CSS also handles theme if needed
-import { useTheme } from '../context/ThemeContext'; // Import useTheme hook
+import '../styles/Login/LoginFormCustom.css';
+import { useTheme } from '../context/ThemeContext';
+import { AuthContext } from '../context/AuthContext'; // Import AuthContext
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 
 const LoginForm = ({ onLoginSuccess, onLoginFailure, termsChecked, setTermsChecked, loginError }) => {
-  const { theme } = useTheme(); // Use the theme from the ThemeContext
-  const [formData, setFormData] = useState({ username: "", password: "" }); // Removed confirmPassword
+  const { theme } = useTheme();
+  const { login } = useContext(AuthContext); // Destructure the login function from AuthContext
+
+  const [formData, setFormData] = useState({ username: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const togglePasswordVisibility = () => { // Simplified as only one password field
+  const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
 
@@ -41,10 +44,17 @@ const LoginForm = ({ onLoginSuccess, onLoginFailure, termsChecked, setTermsCheck
 
       const { user, token, role } = response.data;
 
-      localStorage.setItem("user", JSON.stringify(user));
-      localStorage.setItem("token", token);
-      localStorage.setItem("userRole", role);
+      // *** THIS IS THE KEY CHANGE ***
+      // Instead of directly setting localStorage, call the login function from AuthContext
+      // The user object received from the backend is the userData needed by AuthContext.
+      login(user, token); // Pass the user object and the token
 
+      // localStorage.setItem("user", JSON.stringify(user)); // Remove or comment out this line
+      // localStorage.setItem("token", token);             // AuthContext handles this
+      // localStorage.setItem("userRole", role);           // AuthContext handles this if user object contains role
+
+      // Your onLoginSuccess might need to be adjusted depending on how you use it.
+      // If it's just for navigation, it can remain.
       onLoginSuccess(role);
 
     } catch (error) {
@@ -60,7 +70,7 @@ const LoginForm = ({ onLoginSuccess, onLoginFailure, termsChecked, setTermsCheck
           type="text"
           name="username"
           placeholder="Username"
-          className={`input-field ${theme}`} // Apply theme class
+          className={`input-field ${theme}`}
           value={formData.username}
           onChange={handleChange}
           required
@@ -68,18 +78,18 @@ const LoginForm = ({ onLoginSuccess, onLoginFailure, termsChecked, setTermsCheck
       </Form.Group>
 
       {/* Password Field - Modified to include the eye icon */}
-      <Form.Group className="mb-3 password-input-container"> {/* Added password-input-container */}
+      <Form.Group className="mb-3 password-input-container">
         <Form.Control
           type={showPassword ? "text" : "password"}
           name="password"
           placeholder="Password"
-          className={`input-field ${theme} password-with-icon`} // Added password-with-icon
+          className={`input-field ${theme} password-with-icon`}
           value={formData.password}
           onChange={handleChange}
           required
         />
         <span
-          className={`password-toggle-icon ${theme}`} // Applied theme class
+          className={`password-toggle-icon ${theme}`}
           onClick={togglePasswordVisibility}
         >
           <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
@@ -94,12 +104,10 @@ const LoginForm = ({ onLoginSuccess, onLoginFailure, termsChecked, setTermsCheck
             <span className={`form-check-label ${theme}`}>
               I agree to the Terms and Conditions
             </span>
-          } // Apply theme class to the label text
+          }
           checked={termsChecked}
           onChange={(e) => setTermsChecked(e.target.checked)}
           required
-          // Consider adding a custom-checkbox class and theme class if you're heavily styling the checkbox itself
-          // className={`custom-checkbox ${theme}`}
         />
       </Form.Group>
 

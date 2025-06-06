@@ -164,8 +164,12 @@
   box-shadow: 0px 4px 15px var(--shadow-color);
   display: flex;
   flex-direction: column;
-  overflow: hidden; /* Hide overflow of content within this section */
+  overflow-y: scroll;
   min-height: 400px; /* Ensure a minimum height */
+}
+
+.establishmentSection::-webkit-scrollbar {
+  display: none; /* Hide scrollbar for a cleaner look */
 }
 
 .addEstablishmentButton {
@@ -194,6 +198,7 @@
   flex-direction: column;
   gap: 15px;
   box-shadow: inset 0 1px 3px rgba(0,0,0,0.2); /* Inner shadow for depth */
+  font-family: 'poppins';
 }
 
 .addEstablishmentForm input {

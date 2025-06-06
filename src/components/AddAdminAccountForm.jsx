@@ -1,7 +1,7 @@
-import React, { useState } from "react";
-import { Form, Button, Container, Card, Alert } from "react-bootstrap"; // Import Alert for messages
+import React, { useState, useEffect, useContext } from "react";
+import { Form, Button, Container, Card, Alert } from "react-bootstrap";
 import axios from "axios";
-import "../styles/Components Css/AdminAccountForm.css"; // Assuming this path is correct
+import "../styles/Components Css/AdminAccountForm.css";
 
 const AdminCreationForm = ({ onClose, onAddAdmin }) => {
   const [adminData, setAdminData] = useState({
@@ -9,39 +9,80 @@ const AdminCreationForm = ({ onClose, onAddAdmin }) => {
     email: "",
     password: "",
     confirmPassword: "",
-    role: "Admin",
+    role: "Admin", // Default to 'Admin' so checkboxes show initially
+    establishmentIds: [],
   });
 
   const [otp, setOtp] = useState("");
   const [showOtpInput, setShowOtpInput] = useState(false);
-  const [isOtpSent, setIsOtpSent] = useState(false); // This will now be true after /admin call
+  const [isOtpSent, setIsOtpSent] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-  const [emailForOtp, setEmailForOtp] = useState(""); // Stores the email for OTP
+  const [emailForOtp, setEmailForOtp] = useState("");
+  const [establishments, setEstablishments] = useState([]); // State to store fetched establishments
+  const [isLoadingEstablishments, setIsLoadingEstablishments] = useState(false);
+  const [establishmentError, setEstablishmentError] = useState("");
+
+  // Fetch establishments on component mount
+  useEffect(() => {
+    const fetchEstablishments = async () => {
+      setIsLoadingEstablishments(true);
+      setEstablishmentError("");
+      try {
+        // --- FIX APPLIED HERE: Added '/api' prefix to the URL ---
+        const response = await axios.get("http://localhost:5000/api/admin/establishments-for-creation");
+        setEstablishments(response.data);
+      } catch (error) {
+        console.error("Error fetching establishments:", error.response?.data || error);
+        setEstablishmentError("Failed to load establishments. Please try again.");
+      } finally {
+        setIsLoadingEstablishments(false);
+      }
+    };
+    fetchEstablishments();
+  }, []); // Empty dependency array means this runs once on mount
 
   const handleChange = (e) => {
-    setAdminData({ ...adminData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setAdminData((prevData) => {
+      const newData = { ...prevData, [name]: value };
+
+      // If the role changes from Admin to Super Admin, clear establishmentIds
+      if (name === "role" && value === "Super Admin") {
+        newData.establishmentIds = [];
+      }
+      return newData;
+    });
+  };
+
+  const handleEstablishmentChange = (e) => {
+    const { value, checked } = e.target;
+    setAdminData((prevData) => {
+      const newEstablishmentIds = checked
+        ? [...prevData.establishmentIds, parseInt(value)]
+        : prevData.establishmentIds.filter((id) => id !== parseInt(value));
+      return {
+        ...prevData,
+        establishmentIds: newEstablishmentIds,
+      };
+    });
   };
 
   const handleOtpChange = (e) => {
     setOtp(e.target.value);
   };
 
-  // Function to validate password
   const validatePassword = (password) => {
-    // Password must be at least 8 characters long
     if (password.length < 8) {
       return "Password must be at least 8 characters long.";
     }
-    // Password must contain at least one number
     if (!/\d/.test(password)) {
       return "Password must contain at least one number.";
     }
-    // Password must contain at least one special character
     if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/.test(password)) {
       return "Password must contain at least one special character.";
     }
-    return null; // Password is valid
+    return null;
   };
 
   const verifyOtp = async () => {
@@ -53,47 +94,34 @@ const AdminCreationForm = ({ onClose, onAddAdmin }) => {
       return;
     }
 
-    // --- ADDED FOR DEBUGGING ---
-    console.log("Attempting to verify OTP for Admin...");
-    console.log("Email being sent for verification:", emailForOtp);
-    console.log("OTP being sent for verification:", otp);
-    // --- END DEBUGGING ---
-
     try {
-      // Call the NEW admin-specific OTP verification endpoint
       const response = await axios.post("http://localhost:5000/admin/verify-otp", {
-        email: emailForOtp, // Use the stored email for verification
-        code: otp, // Send as 'code' to match backend
+        email: emailForOtp,
+        code: otp,
       });
 
       setSuccessMessage(response.data.message || "OTP verified successfully!");
-      // Proceed with admin creation (which is now just a final success state or redirect)
-      // If createAdminAccount was meant to finalize something after OTP, keep it.
-      // Otherwise, you might just close the modal and indicate success.
-      // For this flow, we'll assume createAdminAccount is now just handling cleanup/redirection.
-      await createAdminAccount(); // This will now just handle cleanup/success state
-
+      await createAdminAccountFinalize();
     } catch (error) {
       console.error("Error verifying OTP:", error.response?.data || error);
       setErrorMessage(error.response?.data?.error || "Failed to verify OTP. Please try again.");
     }
   };
 
-  const createAdminAccount = async () => {
-    // This function is now primarily for handling post-OTP-verification success/cleanup
-    // The actual admin creation (INSERT into DB) happens in the /admin endpoint on the backend.
+  const createAdminAccountFinalize = async () => {
     setErrorMessage("");
     setSuccessMessage("");
 
-    // Assuming OTP verification was successful and the admin is now 'email_verified=1' in DB.
-    // This function will now just handle UI cleanup and notification.
-
     setSuccessMessage("✅ Admin account fully created and email verified!");
-    // You might want to fetch the updated admin list here or redirect
-    onAddAdmin({ username: adminData.username, email: adminData.email, role: adminData.role }); // Update parent component
+    onAddAdmin({
+      username: adminData.username,
+      email: adminData.email,
+      role: adminData.role,
+      establishmentIds: adminData.establishmentIds,
+    });
 
     setTimeout(() => {
-      setAdminData({ username: "", email: "", password: "", confirmPassword: "", role: "Admin" });
+      setAdminData({ username: "", email: "", password: "", confirmPassword: "", role: "Admin", establishmentIds: [] });
       setOtp("");
       setShowOtpInput(false);
       setIsOtpSent(false);
@@ -104,14 +132,19 @@ const AdminCreationForm = ({ onClose, onAddAdmin }) => {
     }, 1000);
   };
 
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage("");
     setSuccessMessage("");
 
+    // Conditional validation for establishmentIds based on role
     if (!adminData.username || !adminData.email || !adminData.password || !adminData.confirmPassword) {
       setErrorMessage("All fields are required.");
+      return;
+    }
+
+    if (adminData.role === "Admin" && adminData.establishmentIds.length === 0) {
+      setErrorMessage("Please assign at least one establishment for an 'Admin' role.");
       return;
     }
 
@@ -120,42 +153,38 @@ const AdminCreationForm = ({ onClose, onAddAdmin }) => {
       return;
     }
 
-    // Validate password using the new function
     const passwordError = validatePassword(adminData.password);
     if (passwordError) {
       setErrorMessage(`❌ ${passwordError}`);
       return;
     }
 
-    // If OTP is not yet sent (i.e., we are submitting the initial form)
     if (!isOtpSent) {
       try {
-        // Call the /admin endpoint directly.
-        // This endpoint on the backend will handle user creation AND OTP sending.
         const response = await axios.post("http://localhost:5000/admin", {
           username: adminData.username,
           email: adminData.email,
           password: adminData.password,
           confirmPassword: adminData.confirmPassword,
           role: adminData.role,
+          // Only send establishmentIds if role is 'Admin'
+          establishmentIds: adminData.role === 'Admin' ? adminData.establishmentIds : [],
         }, {
           headers: { "Content-Type": "application/json" }
         });
 
         console.log("Admin creation response from /admin endpoint:", response.data);
-        setSuccessMessage(response.data.message); // Display message from backend (e.g., "Please verify your email...")
+        setSuccessMessage(response.data.message);
 
-        // After successful creation and OTP send from backend, show OTP input
-        setEmailForOtp(adminData.email); // Store email for verification
-        setShowOtpInput(true); // Show the OTP input field
-        setIsOtpSent(true); // Indicate that OTP has been sent and we are in verification phase
+        setEmailForOtp(adminData.email);
+        setShowOtpInput(true);
+        setIsOtpSent(true);
 
       } catch (error) {
         console.error("Admin creation error (from /admin endpoint):", error.response?.data || error);
         setErrorMessage(error.response?.data?.error || "Failed to create admin.");
       }
     } else {
-      // If OTP is already sent (i.e., we are submitting the OTP)
       verifyOtp();
     }
   };
@@ -164,6 +193,7 @@ const AdminCreationForm = ({ onClose, onAddAdmin }) => {
     <Container>
       <Card.Body>
         <Form onSubmit={handleSubmit}>
+          {/* Admin Username, Email, Password, Confirm Password - remain unchanged */}
           <Form.Group className="admin-form-group">
             <Form.Label className="admin-form-label">Admin Username</Form.Label>
             <Form.Control
@@ -173,7 +203,7 @@ const AdminCreationForm = ({ onClose, onAddAdmin }) => {
               onChange={handleChange}
               placeholder="Enter admin username"
               required
-              disabled={isOtpSent} // Disable after OTP is sent to prevent changes
+              disabled={isOtpSent}
             />
           </Form.Group>
 
@@ -186,7 +216,7 @@ const AdminCreationForm = ({ onClose, onAddAdmin }) => {
               onChange={handleChange}
               placeholder="Enter email"
               required
-              disabled={isOtpSent} // Disable after OTP is sent to prevent changes
+              disabled={isOtpSent}
             />
           </Form.Group>
 
@@ -199,7 +229,7 @@ const AdminCreationForm = ({ onClose, onAddAdmin }) => {
               onChange={handleChange}
               placeholder="Enter password"
               required
-              disabled={isOtpSent} // Disable after OTP is sent to prevent changes
+              disabled={isOtpSent}
             />
           </Form.Group>
 
@@ -212,25 +242,58 @@ const AdminCreationForm = ({ onClose, onAddAdmin }) => {
               onChange={handleChange}
               placeholder="Confirm password"
               required
-              disabled={isOtpSent} // Disable after OTP is sent to prevent changes
+              disabled={isOtpSent}
             />
           </Form.Group>
 
+          {/* Role Dropdown */}
           <Form.Group className="admin-form-group">
             <Form.Label className="admin-form-label">Role</Form.Label>
             <Form.Control
               as="select"
               name="role"
               value={adminData.role}
-              onChange={handleChange}
+              onChange={handleChange} // This handleChange will now also handle role change
               required
-              disabled={isOtpSent} // Disable after OTP is sent to prevent changes
+              disabled={isOtpSent}
             >
               <option value="Admin">Admin</option>
               <option value="Super Admin">Super Admin</option>
             </Form.Control>
           </Form.Group>
 
+          {/* Conditional Rendering for Establishment Assignment */}
+          {adminData.role === "Admin" && ( // ONLY SHOW THIS GROUP IF ROLE IS 'Admin'
+            <Form.Group className="admin-form-group">
+              <Form.Label className="admin-form-label">Assign to Establishments</Form.Label>
+              {isLoadingEstablishments ? (
+                <p>Loading establishments...</p>
+              ) : establishmentError ? (
+                <Alert variant="danger">{establishmentError}</Alert>
+              ) : establishments.length > 0 ? (
+                <div>
+                  {establishments.map((establishment) => (
+                    <Form.Check
+                      key={establishment.id}
+                      type="checkbox"
+                      id={`establishment-${establishment.id}`}
+                      label={establishment.estab_name}
+                      value={establishment.id}
+                      checked={adminData.establishmentIds.includes(establishment.id)}
+                      onChange={handleEstablishmentChange}
+                      disabled={isOtpSent}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <Alert variant="info" className="mt-2">
+                  No establishments found. Please add establishments first.
+                </Alert>
+              )}
+            </Form.Group>
+          )}
+
+          {/* OTP Input Field - remains unchanged */}
           {showOtpInput && (
             <Form.Group className="admin-form-group mt-3">
               <Form.Label className="admin-form-label">OTP</Form.Label>
@@ -241,18 +304,20 @@ const AdminCreationForm = ({ onClose, onAddAdmin }) => {
                 onChange={handleOtpChange}
                 placeholder="Enter OTP"
                 required
-              />
+                />
             </Form.Group>
           )}
 
+          {/* Messages - remain unchanged */}
           {errorMessage && <Alert variant="danger" className="mt-3">{errorMessage}</Alert>}
           {successMessage && <Alert variant="success" className="mt-3">{successMessage}</Alert>}
 
+          {/* Buttons - remain unchanged */}
           <div className="admin-form-buttons">
             {!isOtpSent ? (
-              <Button type="submit"> Send OTP</Button> // Changed button text
+              <Button type="submit"> Send OTP</Button>
             ) : (
-              <Button type="submit">Verify OTP & Finalize Admin</Button> // Changed button text
+              <Button type="submit">Verify OTP & Finalize Admin</Button>
             )}
             <Button onClick={onClose} variant="secondary">Cancel</Button>
           </div>

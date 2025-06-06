@@ -25,25 +25,81 @@ const app = express();
 const port = 5000;
 const saltRounds = 10;
 const otpGenerator = require('otp-generator');
+const JWT_SECRET = process.env.JWT_SECRET;
 // const users = [];
 
 const authenticateUser = require('../backend/middleware/authenticateUser');
 
-const authenticateAdmin = (req, res, next) => {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return res.status(401).json({ success: false, message: 'Authorization token not provided or malformed.' });
-    }
-    const token = authHeader.split(' ')[1];
+const authMiddleware = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1]; // Expected format: "Bearer TOKEN"
 
-    // For demonstration: a very basic token check. Replace with JWT verification.
-    // Example: jwt.verify(token, process.env.JWT_SECRET, (err, user) => { ... });
-    if (token && token.length > 10) { // Just checking if token seems present
-        // In a real app, you'd attach user info from the token to req.user
-        req.user = { id: 'admin_mock_id', role: 'super_admin' }; // Mock user for now
-        next();
-    } else {
-        return res.status(403).json({ success: false, message: 'Invalid or expired token.' });
+    if (!token) {
+        return res.status(401).json({ message: 'Access Denied: No token provided.' });
+    }
+
+    try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        req.userId = decoded.id; // Set req.userId from the JWT payload
+        req.userRole = decoded.role; // Also set user role if needed for other checks
+        req.isVerified = decoded.isVerified; // Set isVerified from JWT
+        req.emailVerified = decoded.emailVerified; // Set emailVerified from JWT
+        next(); // Proceed to the next middleware/route handler
+    } catch (error) {
+        console.error('JWT verification error:', error);
+        // Log the error for debugging, but be generic to the client
+        return res.status(403).json({ message: 'Invalid or expired token.' });
+    }
+};
+
+// --- Authentication Middleware (for protected routes) ---
+const authenticateAdminRoute = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1]; // Expected format: "Bearer TOKEN"
+
+    console.log('\n--- AUTHENTICATION MIDDLEWARE START ---');
+    console.log('1. Authorization Header Received:', authHeader);
+    console.log('2. Extracted Token (first 30 chars):', token ? token.substring(0, 30) + '...' : 'No token found');
+
+    if (!token) {
+        console.log('3. Result: No token provided, sending 401.');
+        return res.status(401).json({ message: 'Access Denied: No token provided.' });
+    }
+
+    try {
+        // Log the JWT secret being used (FOR DEBUGGING ONLY - REMOVE IN PRODUCTION!)
+        console.log('4. JWT_SECRET from process.env:', process.env.JWT_SECRET ? '***** (present)' : '!!! JWT_SECRET is MISSING in .env !!!');
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        console.log('5. Decoded JWT Payload:', decoded); // CRITICAL: Inspect this payload!
+        
+        // Ensure that 'id' exists in the decoded payload
+        if (!decoded || typeof decoded.id === 'undefined' || decoded.id === null) {
+            console.error('6. CRITICAL: Decoded JWT payload does not contain "id" property or is invalid.');
+            return res.status(403).json({ message: 'Invalid token payload: User ID missing or malformed.' });
+        }
+
+        req.userId = decoded.id; // This is where userId is set
+        req.userRole = decoded.role; // This is where userRole is set
+
+        console.log('7. req.userId set to:', req.userId);
+        console.log('8. req.userRole set to:', req.userRole);
+
+        // Optional: Check if the role is 'Admin' or 'Super Admin' if this middleware
+        // is specifically for admin routes.
+        if (req.userRole !== 'Admin' && req.userRole !== 'Super Admin') {
+            console.log('9. Result: User role not Admin/Super Admin, sending 403.');
+            return res.status(403).json({ message: 'Access Denied: Requires Admin or Super Admin role.' });
+        }
+        console.log('10. Authentication SUCCESS. Proceeding to next.');
+        next(); // Proceed to the next middleware/route handler
+    } catch (error) {
+        console.error('Middleware: JWT verification FAILED:', error.message); // Log specific error message
+        // This catch block handles 'JsonWebTokenError' (e.g., secret mismatch, malformed token)
+        // and 'TokenExpiredError' (expired token).
+        return res.status(403).json({ message: `Invalid or expired token: ${error.message}` });
+    } finally {
+        console.log('--- AUTHENTICATION MIDDLEWARE END ---\n');
     }
 };
 
@@ -208,7 +264,7 @@ app.post("/verify-code", async (req, res) => {
   }
 });
 
-// --- NEW API Endpoint: Verify Admin/Super Admin OTP ---
+// --- Route: Verify Admin/Super Admin OTP ---
 app.post("/admin/verify-otp", async (req, res) => {
     console.log("Received admin/super admin verification request:", req.body);
     const { email, code } = req.body;
@@ -219,38 +275,63 @@ app.post("/admin/verify-otp", async (req, res) => {
             .json({ error: "Email and verification code are required." });
     }
 
+    let connection; // Declare connection here for try/catch/finally scope
     try {
+        connection = await db.getConnection(); // Get a connection from the pool
+
         // Query the database to find the user (admin/super admin)
-        // You might want to add a WHERE clause for role if you have specific admin tables or roles
-        const [results] = await db.query("SELECT * FROM users WHERE email = ?", [email]);
+        // IMPORTANT: Added role check AND `email_verified = FALSE` to ensure we only verify unverified admin accounts
+        const [results] = await connection.execute(
+            "SELECT id, verification_code, otp_expires, email_verified FROM users WHERE email = ? AND (role = ? OR role = ?) AND email_verified = FALSE",
+            [email, 'Admin', 'Super Admin']
+        );
         console.log("Database query results for admin verification:", results);
 
         if (results.length === 0) {
-            return res.status(404).json({ error: "Admin/Super Admin user not found." });
+            // User not found, or not an unverified admin, or already verified
+            return res.status(404).json({ error: "Admin/Super Admin user not found or already verified." });
         }
 
         const user = results[0];
         console.log("Admin user found in DB for verification:", user);
         console.log("Stored verification code in DB (admin):", user.verification_code);
         console.log("Code received from frontend (admin):", code);
+        console.log("Stored OTP Expiry (admin):", user.otp_expires); // Log expiry for debugging
 
-        // Check verification code
+        // 1. Check verification code
         if (user.verification_code !== code) {
             console.log("OTP Mismatch (admin): Stored:", user.verification_code, "Received:", code);
             return res.status(400).json({ error: "Invalid verification code." });
         }
 
-        // Update user to set them as email_verified and clear the verification code
-        const [updateResult] = await db.query("UPDATE users SET email_verified = 1, verification_code = NULL WHERE email = ?", [email]);
-        console.log("Admin user email verified and code cleared:", updateResult);
+        // 2. Check if OTP has expired
+        const currentDateTime = new Date();
+        const otpExpiryDateTime = new Date(user.otp_expires); // Convert DB datetime string to Date object
+
+        if (currentDateTime > otpExpiryDateTime) {
+            console.log("OTP Expired (admin): Current:", currentDateTime, "Expiry:", otpExpiryDateTime);
+            // Optionally clear the expired OTP to prevent re-attempts with old codes
+            await connection.execute('UPDATE users SET verification_code = NULL, otp_expires = NULL WHERE id = ?', [user.id]);
+            return res.status(400).json({ error: "Verification code has expired. Please request a new one." });
+        }
+
+        // All checks passed: Update user to set them as email_verified and clear the verification code and expiry
+        const [updateResult] = await connection.execute(
+            "UPDATE users SET email_verified = 1, verification_code = NULL, otp_expires = NULL WHERE id = ?", // Clear expiry too
+            [user.id] // Use user.id for safer update
+        );
+        console.log("Admin user email verified and code/expiry cleared:", updateResult);
 
         res.json({ success: true, message: "Admin/Super Admin email verification successful!" });
     } catch (err) {
         console.error("Database error during admin email verification:", err);
-        res.status(500).json({ error: "Database error during admin email verification." });
+        res.status(500).json({ error: "Server error during admin email verification." }); // More generic error message for client
+    } finally {
+        if (connection) {
+            connection.release(); // Release the connection back to the pool
+        }
     }
 });
-
 
 // Function to validate password (added)
 const validatePassword = (password) => {
@@ -420,52 +501,101 @@ app.post("/login", async (req, res) => {
 });
 
 // Create admin
+// --- Route: Create Admin Account (and assign to multiple establishments) ---
 app.post('/admin', async (req, res) => {
-    const { username, email, password, confirmPassword, role } = req.body;
+    const { username, email, password, confirmPassword, role, establishmentIds } = req.body; // Added establishmentIds
 
     // Basic validation
-    if (!username || !email || !password || !confirmPassword || !role) {
-        return res.status(400).json({ error: "All fields are required." });
+    if (!username || !email || !password || !confirmPassword || !role || !establishmentIds || !Array.isArray(establishmentIds) || establishmentIds.length === 0) {
+        return res.status(400).json({ error: "All fields are required, including at least one establishment." });
     }
     if (password !== confirmPassword) {
         return res.status(400).json({ error: "Passwords do not match." });
     }
 
-    try {
-        // 1. Hash the password before storing it
-        const hashedPassword = await bcrypt.hash(password, 10); // 10 is the salt rounds
+    // Role validation (ensure it's an admin role for this endpoint)
+    if (role !== 'Admin' && role !== 'Super Admin') {
+        return res.status(400).json({ error: "Invalid role specified. Must be 'Admin' or 'Super Admin'." });
+    }
 
-        // 2. Generate OTP for this new user
-        const otp = otpGenerator.generate(6, {
+    let connection; // Declare connection here for try/catch/finally scope
+    try {
+        connection = await db.getConnection(); // Get a connection from the pool
+        await connection.beginTransaction(); // Start a transaction
+
+        // 1. Check if user with this email already exists
+        const [existingUser] = await connection.execute('SELECT id FROM users WHERE email = ?', [email]);
+        if (existingUser.length > 0) {
+            await connection.rollback(); // Rollback transaction if user exists
+            return res.status(409).json({ error: "User with this email already exists." });
+        }
+
+        // 2. Validate Establishment IDs
+        for (const id of establishmentIds) {
+            if (typeof id !== 'number' && typeof id !== 'string' || isNaN(parseInt(id))) {
+                await connection.rollback();
+                return res.status(400).json({ error: `Invalid establishment ID type: ${id}` });
+            }
+            const [estCheck] = await connection.execute('SELECT id FROM estab WHERE id = ?', [id]);
+            if (estCheck.length === 0) {
+                await connection.rollback();
+                return res.status(400).json({ error: `Establishment with ID ${id} not found.` });
+            }
+        }
+
+        // 3. Hash the password
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // 4. Generate OTP and expiry time
+        const otpCode = otpGenerator.generate(6, {
             upperCaseAlphabets: false,
             lowerCaseAlphabets: false,
             specialChars: false,
         });
-        console.log("Generated OTP for new admin:", otp);
+        const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // OTP valid for 10 minutes
 
-        // 3. Insert the new admin into your database with email_verified = 0 and the OTP
-        const [insertResult] = await db.query(
-            "INSERT INTO users (username, email, password_hash, role, email_verified, verification_code) VALUES (?, ?, ?, ?, ?, ?)",
-            [username, email, hashedPassword, role, 0, otp] // Use hashedPassword here
+        // 5. Insert the new user into your database
+        const [insertResult] = await connection.execute( // Use connection.execute for transactions
+            "INSERT INTO users (username, email, password_hash, role, email_verified, verification_code, otp_expires) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            [username, email, hashedPassword, role, 0, otpCode, otpExpiresAt]
         );
-        console.log("New admin inserted into DB with OTP:", insertResult);
+        const userId = insertResult.insertId;
 
-        // 4. Send the OTP email to the newly created admin
+        // 6. Assign User (Admin) to Establishments
+        for (const establishmentId of establishmentIds) {
+            await connection.execute(
+                "INSERT INTO user_establishments (user_id, establishment_id) VALUES (?, ?)",
+                [userId, establishmentId]
+            );
+        }
+
+        // 7. Send the OTP email
         const subject = "Verify Your Admin Account Email";
-        const messageBody = `Your verification code for your Admin account is: ${otp}. Please use this code to complete your registration.`;
-        const uniqueSubject = `${subject} - ${new Date().toLocaleString()}`;
+        const messageBody = `Your verification code for your Admin account is: ${otpCode}. This code is valid for 10 minutes.`;
+        // Removed uniqueSubject suffix as OTP itself provides uniqueness in context
+        await sendEmail(email, subject, messageBody);
+        console.log(`OTP email sent to ${email}`);
 
-        await sendEmail(email, uniqueSubject, messageBody);
-        console.log(`OTP email sent to new admin ${email}`);
+        await connection.commit(); // Commit the transaction if all operations succeed
 
-        res.status(201).json({ message: 'Admin account created successfully! Please verify your email with the OTP sent.', adminId: insertResult.insertId });
+        res.status(201).json({
+            message: 'Admin account created successfully! Please verify your email with the OTP sent.',
+            userId: userId
+        });
 
     } catch (error) {
+        if (connection) {
+            await connection.rollback(); // Rollback transaction on error
+        }
         console.error("Admin creation error:", error);
         if (error.code === 'ER_DUP_ENTRY') {
             return res.status(409).json({ error: "Email or username already exists." });
         }
         res.status(500).json({ error: "Failed to create admin account." });
+    } finally {
+        if (connection) {
+            connection.release(); // Release the connection back to the pool
+        }
     }
 });
 
@@ -702,34 +832,351 @@ app.post("/api/reset-password", async (req, res) => { // 'async' is already ther
 });
 
 
-// GET route to fetch establishments
-app.get('/api/establishments', async (req, res) => { // Added 'async'
-  const sql = 'SELECT estab_name FROM estab';
-  try {
-    const [results] = await db.query(sql); // Use await db.query and destructure
-    // Extract the establishment names from the results
-    const estabNames = results.map(row => row.estab_name);
-    res.json(estabNames);
-  } catch (err) {
-    console.error('Error querying database:', err);
-    res.status(500).json({ error: 'Failed to fetch establishments' });
-  }
+app.get('/api/admin/establishments', async (req, res) => {
+    // In a real application, the user_id would come from an authenticated session
+    // (e.g., from a JWT token after login).
+    // For now, we'll expect it as a query parameter for demonstration.
+    const userId = req.query.user_id;
+
+    if (!userId) {
+        return res.status(400).json({ message: 'User ID is required to fetch establishments.' });
+    }
+
+    try {
+        const query = `
+            SELECT
+                e.id,
+                e.estab_name AS name, -- Alias estab_name to 'name' to match frontend expectation
+                COUNT(s.id) AS totalSensors -- Assuming a 'sensors' table or similar for total sensors
+            FROM
+                estab e
+            JOIN
+                user_establishments ue ON e.id = ue.establishment_id
+            LEFT JOIN
+                sensors s ON e.id = s.establishment_id -- Join with a hypothetical 'sensors' table
+            WHERE
+                ue.user_id = ?
+            GROUP BY
+                e.id, e.estab_name
+        `;
+        const [rows] = await pool.query(query, [userId]);
+
+        const establishments = rows.map(row => ({
+            id: row.id,
+            name: row.name, 
+            totalSensors: row.totalSensors || 0, 
+        }));
+
+        res.json(establishments);
+    } catch (error) {
+        console.error('Error fetching establishments:', error);
+        res.status(500).json({ message: 'Error fetching establishments from the database.' });
+    }
 });
 
-// POST route to add an establishment
-app.post('/api/establishments', async (req, res) => { // Added 'async'
-  const { name } = req.body;
-  const sql = 'INSERT INTO estab (estab_name) VALUES (?)';
-  try {
-    const [result] = await db.query(sql, [name]); // Use await db.query and destructure
-    console.log('Establishment added successfully', result);
-    res.status(201).json({ message: 'Establishment added successfully', insertId: result.insertId }); // Added insertId
-  } catch (err) {
-    console.error('Error inserting into database:', err);
-    res.status(500).json({ error: 'Failed to add establishment', details: err.message }); // Use err.message for details
-  }
+/**
+ * GET /api/establishments
+ * Returns a list of all existing establishment names.
+ */
+app.get('/api/establishments', async (req, res) => {
+    try {
+        // SQL query to get establishments and their associated sensors
+        // Use LEFT JOIN to include establishments that might not have any sensors yet.
+        // We select establishment ID and name, and sensor ID and name.
+        const [rows] = await pool.execute(`
+            SELECT
+                e.id AS establishmentId,
+                e.estab_name AS establishmentName,
+                s.id AS sensorId,
+                s.sensor_name AS sensorName
+            FROM
+                estab e
+            LEFT JOIN
+                establishment_sensors es ON e.id = es.establishment_id
+            LEFT JOIN
+                sensors s ON es.sensor_id = s.id
+            ORDER BY
+                e.estab_name ASC, s.sensor_name ASC;
+        `);
+
+        // Process the flat rows from the SQL query into a hierarchical structure.
+        // Multiple rows for the same establishment (each representing one of its sensors)
+        // are aggregated into a single establishment object containing an array of its sensors.
+        const establishmentsMap = new Map();
+
+        rows.forEach(row => {
+            const { establishmentId, establishmentName, sensorId, sensorName } = row;
+
+            // If the establishment has not been added to our map yet, add it.
+            if (!establishmentsMap.has(establishmentId)) {
+                establishmentsMap.set(establishmentId, {
+                    id: establishmentId,
+                    name: establishmentName,
+                    sensors: [] // Initialize an empty array for this establishment's sensors
+                });
+            }
+
+            // If there's an associated sensor (i.e., sensorId is not null from the LEFT JOIN),
+            // push it to the establishment's sensors array.
+            if (sensorId !== null) {
+                establishmentsMap.get(establishmentId).sensors.push({
+                    id: sensorId,
+                    name: sensorName
+                });
+            }
+        });
+
+        // Convert the Map values (the aggregated establishment objects) into an array
+        // to send as the JSON response to the frontend.
+        const formattedEstablishments = Array.from(establishmentsMap.values());
+        // Log the formatted data for debugging purposes on the backend console.
+        console.log('Fetched establishments with sensors:', JSON.stringify(formattedEstablishments, null, 2));
+        res.status(200).json(formattedEstablishments);
+    } catch (error) {
+        // Log any errors that occur during the database query or data processing.
+        console.error('Error fetching establishments:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
 });
 
+/**
+ * POST /api/establishments
+ * Adds a new establishment and associates selected sensors with it.
+ * Expects JSON body: {"name": "Establishment Name", "sensors": [sensor_id_1, sensor_id_2]}
+ */
+app.post('/api/establishments', async (req, res) => {
+    const { name, sensors } = req.body; // Destructure name and sensors from the request body
+
+    // Input validation for the establishment name.
+    if (!name || typeof name !== 'string' || name.trim() === '') {
+        return res.status(400).json({ error: 'Establishment name is required and must be a non-empty string.' });
+    }
+    // Ensure 'sensors' is an array; default to an empty array if not provided or invalid.
+    const selectedSensorIds = Array.isArray(sensors) ? sensors : [];
+
+    let connection; // Declare 'connection' here so it's accessible in the finally block.
+
+    try {
+        // Get a database connection from the pool.
+        connection = await pool.getConnection();
+        // Start a database transaction. This is crucial for multi-step operations
+        // to maintain data integrity.
+        await connection.beginTransaction();
+
+        // 1. Check if an establishment with the same name already exists to prevent duplicates.
+        const [existing] = await connection.execute(
+            'SELECT id FROM estab WHERE estab_name = ?',
+            [name.trim()]
+        );
+        if (existing.length > 0) {
+            await connection.rollback(); // Rollback the transaction if a duplicate is found.
+            return res.status(409).json({ error: `Establishment '${name.trim()}' already exists.` });
+        }
+
+        // 2. Insert the new establishment into the 'establishments' table.
+        const [result] = await connection.execute(
+            'INSERT INTO estab (estab_name) VALUES (?)',
+            [name.trim()]
+        );
+        // Get the auto-generated ID of the newly inserted establishment.
+        const newEstablishmentId = result.insertId;
+        console.log(`New establishment '${name.trim()}' added with ID: ${newEstablishmentId}`);
+
+        // 3. Associate selected sensors with the new establishment in the junction table.
+        if (selectedSensorIds.length > 0) {
+            // First, validate that all provided sensor IDs actually exist in the 'sensors' table.
+            const [validSensors] = await connection.execute(
+                `SELECT id FROM sensors WHERE id IN (${selectedSensorIds.map(() => '?').join(',')})`,
+                selectedSensorIds
+            );
+
+            // If the number of valid sensors found does not match the number of sensor IDs provided,
+            // it means some provided IDs were invalid or non-existent.
+            if (validSensors.length !== selectedSensorIds.length) {
+                await connection.rollback(); // Rollback the transaction.
+                return res.status(400).json({ error: 'One or more provided sensor IDs are invalid.' });
+            }
+
+            // Prepare the values for batch insertion into the 'establishment_sensors' junction table.
+            // Each element in 'sensorAssociationValues' will be an array like [establishment_id, sensor_id].
+            const sensorAssociationValues = selectedSensorIds.map(sensorId => [newEstablishmentId, sensorId]);
+
+            // Perform the batch insert. The '?' placeholder when used with an array of arrays
+            // indicates a multi-row insert.
+            const [assocResult] = await connection.query(
+                `INSERT INTO establishment_sensors (establishment_id, sensor_id) VALUES ?`,
+                [sensorAssociationValues]
+            );
+            console.log(`Associated ${assocResult.affectedRows} sensors with establishment ID ${newEstablishmentId}`);
+        } else {
+            console.log('No sensors selected for this establishment.');
+        }
+
+        // If all database operations within the transaction succeed, commit the transaction.
+        await connection.commit();
+        res.status(201).json({ message: 'Establishment added successfully', id: newEstablishmentId, name: name.trim() });
+
+    } catch (error) {
+        // If any error occurs, rollback the transaction to undo all changes made during the transaction.
+        if (connection) {
+            await connection.rollback();
+        }
+        console.error('Error adding establishment:', error);
+        res.status(500).json({ error: 'Internal Server Error', details: error.message });
+    } finally {
+        // Always release the database connection back to the pool, regardless of success or failure.
+        if (connection) {
+            connection.release();
+        }
+    }
+});
+
+/**
+ * GET /api/sensors
+ * Returns a list of all available sensors with their IDs and names.
+ */
+app.get('/api/sensors', async (req, res) => {
+    try {
+        // Execute a SELECT query to get all sensors from the 'sensors' table.
+        const [rows] = await pool.execute('SELECT id, sensor_name FROM sensors ORDER BY sensor_name ASC');
+        console.log('Fetched available sensors:', rows);
+        res.status(200).json(rows);
+    } catch (error) {
+        console.error('Error fetching available sensors:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+/**
+ * DELETE /api/establishments/:id
+ * Deletes an establishment by its ID.
+ * Due to ON DELETE CASCADE, associated entries in `establishment_sensors` table will also be deleted.
+ */
+app.delete('/api/establishments/:id', async (req, res) => {
+    const { id } = req.params; // Get the establishment ID from the URL parameter
+
+    // Input validation: Ensure ID is a valid number
+    const establishmentId = parseInt(id, 10);
+    if (isNaN(establishmentId)) {
+        return res.status(400).json({ error: 'Invalid establishment ID provided.' });
+    }
+
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        // Start a transaction for the delete operation.
+        await connection.beginTransaction();
+
+        // Perform the deletion.
+        // It's good practice to check if the establishment exists before attempting to delete,
+        // although DELETE WHERE will simply affect 0 rows if it doesn't exist.
+        const [result] = await connection.execute(
+            'DELETE FROM estab WHERE id = ?',
+            [establishmentId]
+        );
+
+        if (result.affectedRows === 0) {
+            await connection.rollback(); // Rollback if no rows were affected (establishment not found)
+            return res.status(404).json({ message: 'Establishment not found.' });
+        }
+
+        // Commit the transaction if the deletion was successful
+        await connection.commit();
+        console.log(`Establishment with ID ${establishmentId} deleted successfully.`);
+        res.status(200).json({ message: 'Establishment deleted successfully.' });
+
+    } catch (error) {
+        // Rollback transaction on error
+        if (connection) {
+            await connection.rollback();
+        }
+        console.error('Error deleting establishment:', error);
+        res.status(500).json({ error: 'Internal Server Error', details: error.message });
+    } finally {
+        // Release the connection back to the pool
+        if (connection) {
+            connection.release();
+        }
+    }
+});
+
+/**
+ * GET /api/admin/establishments-for-creation
+ * This endpoint fetches all establishments with a specific format suitable for the AdminCreationForm.
+ * It queries the `establishments` table and returns a list of establishments with 'id' and 'name' (aliased as estab_name).
+ * Removed the userId requirement as it's not needed for listing all establishments for new admin assignment.
+ */
+app.get('/api/admin/establishments-for-creation', async (req, res) => { // Updated endpoint name
+    try {
+        // Query the 'establishments' table to get all establishments.
+        // Alias 'name' column to 'estab_name' to match frontend's expectation in AdminCreationForm.
+        const [rows] = await pool.execute('SELECT id, estab_name AS estab_name FROM estab ORDER BY estab_name ASC');
+        console.log('Fetched admin establishments for creation:', rows); // Updated log message
+        res.status(200).json(rows);
+    } catch (error) {
+        console.error('Error fetching admin establishments for creation:', error); // Updated log message
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+// --- NEW API Endpoint: Get Establishments assigned to a specific User (Admin) ---
+// This endpoint requires authentication to ensure only authorized users access their data.
+app.get('/api/admin/assigned-establishments', authenticateAdminRoute, async (req, res) => {
+    const userId = req.userId; // Get user ID from JWT (set by authenticateAdminRoute middleware)
+
+    try {
+        // SQL query to get establishments assigned to the user, and all their associated sensors
+        const [rows] = await pool.execute(`
+            SELECT
+                e.id AS establishmentId,
+                e.estab_name AS establishmentName,
+                s.id AS sensorId,
+                s.sensor_name AS sensorName
+            FROM
+                estab e
+            JOIN
+                user_establishments ue ON e.id = ue.establishment_id
+            LEFT JOIN
+                establishment_sensors es ON e.id = es.establishment_id
+            LEFT JOIN
+                sensors s ON es.sensor_id = s.id
+            WHERE
+                ue.user_id = ?
+            ORDER BY
+                e.estab_name ASC, s.sensor_name ASC;
+        `, [userId]);
+
+        // Process the flat rows from the SQL query into a hierarchical structure
+        // This is similar to the main /api/establishments endpoint but filtered by user_id
+        const establishmentsMap = new Map();
+
+        rows.forEach(row => {
+            const { establishmentId, establishmentName, sensorId, sensorName } = row;
+
+            if (!establishmentsMap.has(establishmentId)) {
+                establishmentsMap.set(establishmentId, {
+                    id: establishmentId,
+                    name: establishmentName,
+                    sensors: [] // Initialize an empty array for this establishment's sensors
+                });
+            }
+
+            if (sensorId !== null) {
+                establishmentsMap.get(establishmentId).sensors.push({
+                    id: sensorId,
+                    name: sensorName
+                });
+            }
+        });
+
+        const formattedEstablishments = Array.from(establishmentsMap.values());
+        console.log(`Fetched assigned establishments with sensors for user ${userId}:`, JSON.stringify(formattedEstablishments, null, 2));
+        res.status(200).json(formattedEstablishments);
+    } catch (error) {
+        console.error(`Error fetching assigned establishments for user ${userId}:`, error);
+        res.status(500).json({ error: 'Internal Server Error', details: error.message });
+    }
+});
 
 // API endpoint to get total users
 app.get('/api/total-users', async (req, res) => { // Added 'async'
@@ -1086,7 +1533,7 @@ app.post('/api/access-requests', async (req, res) => {
     }
 });
 
-app.get('/api/admin/notifications', authenticateAdmin, async (req, res) => {
+app.get('/api/admin/notifications', authenticateAdminRoute, async (req, res) => {
     const { type: filterType } = req.query; // Get the optional 'type' query parameter
 
     try {
@@ -1191,7 +1638,7 @@ app.get('/api/admin/notifications', authenticateAdmin, async (req, res) => {
  * Deletes a single event from the 'events' table.
  * Requires authentication via Bearer token.
  */
-app.delete('/api/admin/events/:id', authenticateAdmin, async (req, res) => {
+app.delete('/api/admin/events/:id', authenticateAdminRoute, async (req, res) => {
     const { id } = req.params;
 
     try {
@@ -1221,7 +1668,7 @@ app.delete('/api/admin/events/:id', authenticateAdmin, async (req, res) => {
  * This is useful for 'Delete All' functionality on the frontend.
  * Requires authentication via Bearer token.
  */
-app.post('/api/admin/events/delete-multiple', authenticateAdmin, async (req, res) => {
+app.post('/api/admin/events/delete-multiple', authenticateAdminRoute, async (req, res) => {
     const { eventIds } = req.body;
 
     if (!Array.isArray(eventIds) || eventIds.length === 0) {

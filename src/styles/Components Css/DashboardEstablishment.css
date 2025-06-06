@@ -52,3 +52,42 @@
 .establishment-card:hover .establishment-arrow {
   opacity: 1; /* Arrow becomes more visible on hover */
 }
+
+/* styles/Components Css/Establishment.css */
+
+.estab-actions {
+    display: flex;
+    gap: 10px; /* Space between buttons/icons */
+    align-items: center;
+}
+
+.estab-details-button,
+.estab-delete-icon-button { /* Apply common button styles */
+    padding: 8px 15px; /* Adjust padding for icon if needed, or remove for icon-only */
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.2s ease, color 0.2s ease; /* Add color transition */
+}
+
+.estab-details-button {
+    background-color: #007bff;
+    color: white;
+}
+
+.estab-details-button:hover {
+    background-color: #0056b3;
+}
+
+.estab-delete-icon-button {
+    background-color: transparent; /* Make background transparent */
+    color: #dc3545; /* Red color for the icon */
+    padding: 8px; /* Adjust padding for icon-only button */
+    font-size: 1.2rem; /* Make icon larger */
+}
+
+.estab-delete-icon-button:hover {
+    color: #c82333; /* Darker red on hover */
+    background-color: rgba(220, 53, 69, 0.1); /* Slight background on hover */
+}

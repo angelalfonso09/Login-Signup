@@ -4,7 +4,7 @@ import "react-circular-progressbar/dist/styles.css";
 import { ThemeContext } from "../context/ThemeContext";
 import socket from "./socket";
 
-const NewSensor = () => {
+const ElectricalCon = () => { // Renamed from NewSensor to ElectricalCon
   const { theme } = useContext(ThemeContext);
   const [isConnected, setIsConnected] = useState(socket.connected);
   const [ecValue, setEcValue] = useState(0); // Electrical Conductivity value
@@ -24,7 +24,7 @@ const NewSensor = () => {
         if (!response.ok) throw new Error("No data found");
         const latestData = await response.json();
         // Assuming your backend sends 'electrical_conductivity'
-        setEcValue(latestData.electrical_conductivity); 
+        setEcValue(latestData.electrical_conductivity);
         console.log("📂 Fetched latest EC value:", latestData.electrical_conductivity);
       } catch (err) {
         console.warn("⚠️ Could not fetch latest EC data:", err.message);
@@ -54,7 +54,7 @@ const NewSensor = () => {
 
   // Calculate percentage out of 100
   // This ensures the progress bar visually represents the 0-100 scale.
-  const percentage = Math.min(Math.max(ecValue, 0), 100); 
+  const percentage = Math.min(Math.max(ecValue, 0), 100);
 
   // Determine path color based on safety ranges
   const getPathColor = () => {
@@ -96,9 +96,9 @@ const NewSensor = () => {
       <p className={`water-quality-text ${theme === "dark" ? "text-white" : "text-gray-600"}`}>
         Water Quality:{" "}
         <span className={`font-bold ${
-            getWaterQuality() === "Safe" ? "text-green-500" : 
-            getWaterQuality() === "Moderate" ? "text-yellow-400" : 
-            getWaterQuality() === "Not Safe" ? "text-red-500" : 
+            getWaterQuality() === "Safe" ? "text-green-500" :
+            getWaterQuality() === "Moderate" ? "text-yellow-400" :
+            getWaterQuality() === "Not Safe" ? "text-red-500" :
             "text-gray-500" // For critical or unknown
         }`}>
           {getWaterQuality()}
@@ -108,4 +108,4 @@ const NewSensor = () => {
   );
 };
 
-export default NewSensor;
+export default ElectricalCon; // Export as ElectricalCon

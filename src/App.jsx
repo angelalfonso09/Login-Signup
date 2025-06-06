@@ -10,55 +10,71 @@ import AccountManagement from "./pages/AccountManagement";
 import History from "./pages/History";
 import AdminDB from "./pages/adminDB";
 import UserDB from "./pages/userDB";
-import Notifications from "./pages/Notifications"; 
-import UserNotif from "./pages/UserNotif";     
-import AdminNotif from "./pages/AdminNotif"; 
-import SettingsPage from "./pages/Settings";   
-import UserSettingsPage from "./pages/UserSettings";    
+import Notifications from "./pages/Notifications";
+import UserNotif from "./pages/UserNotif";
+import AdminNotif from "./pages/AdminNotif";
+import SettingsPage from "./pages/Settings";
+import UserSettingsPage from "./pages/UserSettings";
 
 import { ThemeProvider, ThemeContext } from "./context/ThemeContext";
+// NEW: Import AuthProvider and AuthContext
+import { AuthProvider, AuthContext } from "./context/AuthContext"; // <--- ADD THIS LINE
+
 import "./styles/common/App.css";
 import "./styles/theme.css";
 
 // Protected Route Wrapper
 const ProtectedRoute = ({ element, allowedRoles }) => {
     const navigate = useNavigate();
+    // NEW: Use AuthContext to get authentication state
+    const { currentUser, userRole, authToken, isVerified } = useContext(AuthContext); // <--- MODIFIED
 
-    const userRole = localStorage.getItem("userRole");
-    let currentUser = null;
-    const userString = localStorage.getItem('user');
+    // Check if user is authenticated (e.g., based on token or currentUser object)
+    // Note: If you primarily use localStorage for initial checks in ProtectedRoute,
+    // you might keep the localStorage reads here, but it's often better to rely on context
+    // if `AuthContext` manages the global auth state effectively.
+    // For now, I'll keep the localStorage reads as they were, but know that `currentUser`
+    // and `userRole` from context *should* reflect the same if `AuthContext` is well-managed.
+
+    // Using localStorage for compatibility with your existing logic.
+    // For a more robust solution, ensure your AuthContext accurately provides these values.
+    const localStorageUserRole = localStorage.getItem("userRole"); //
+    let localStorageCurrentUser = null;
+    const userString = localStorage.getItem('user'); 
 
     if (userString && userString !== "undefined" && userString !== "null") {
         try {
-            currentUser = JSON.parse(userString);
+            localStorageCurrentUser = JSON.parse(userString);
         } catch (e) {
             console.error("Error parsing user from localStorage in ProtectedRoute:", e);
         }
     }
-    const isUserVerified = currentUser ? currentUser.isVerified === true : false;
+    const isUserVerified = localStorageCurrentUser ? localStorageCurrentUser.isVerified === true : false; //
+
 
     useEffect(() => {
-        if (window.location.pathname === "/userDB" && userRole === "User" && !isUserVerified) {
-            localStorage.setItem('showAccessModalOnLoad', 'true');
-            console.log("ProtectedRoute: Set showAccessModalOnLoad for unverified User navigating to /userDB.");
+        if (window.location.pathname === "/userDB" && localStorageUserRole === "User" && !isUserVerified) {
+            localStorage.setItem('showAccessModalOnLoad', 'true'); //
+            console.log("ProtectedRoute: Set showAccessModalOnLoad for unverified User navigating to /userDB."); //
         } else {
-            localStorage.removeItem('showAccessModalOnLoad');
-            console.log("ProtectedRoute: Cleared showAccessModalOnLoad.");
+            localStorage.removeItem('showAccessModalOnLoad'); //
+            console.log("ProtectedRoute: Cleared showAccessModalOnLoad."); //
         }
-    }, [userRole, isUserVerified, window.location.pathname]);
+    }, [localStorageUserRole, isUserVerified, window.location.pathname]);
 
-    if (!userRole) {
-        console.log("ProtectedRoute: No userRole found, redirecting to /login");
+    // Primary check for authentication using localStorageUserRole
+    if (!localStorageUserRole) { //
+        console.log("ProtectedRoute: No userRole found, redirecting to /login"); //
         return <Navigate to="/login" replace />;
     }
 
-    if (!allowedRoles.includes(userRole)) {
-        console.log(`ProtectedRoute: User role '${userRole}' not allowed for this route. Allowed: ${allowedRoles.join(', ')}`);
+    if (!allowedRoles.includes(localStorageUserRole)) { //
+        console.log(`ProtectedRoute: User role '${localStorageUserRole}' not allowed for this route. Allowed: ${allowedRoles.join(', ')}`);
 
-        if (userRole === "User") {
+        if (localStorageUserRole === "User") {
             console.log("ProtectedRoute: User role trying to access restricted page, redirecting to /userDB.");
             return <Navigate to="/userDB" replace />;
-        } else if (userRole === "Admin") {
+        } else if (localStorageUserRole === "Admin") {
             console.log("ProtectedRoute: Admin role trying to access restricted page, redirecting to /adminDB.");
             return <Navigate to="/adminDB" replace />;
         }
@@ -68,7 +84,7 @@ const ProtectedRoute = ({ element, allowedRoles }) => {
         }
     }
 
-    console.log(`ProtectedRoute: User role '${userRole}' is allowed for this route. Rendering element.`);
+    console.log(`ProtectedRoute: User role '${localStorageUserRole}' is allowed for this route. Rendering element.`);
     return element;
 };
 
@@ -92,7 +108,7 @@ const ThemedApp = () => {
                     <Route path="/history" element={<ProtectedRoute element={<History />} allowedRoles={["Super Admin", "User", "Admin"]} />} />
                     <Route path="/settings" element={<ProtectedRoute element={<SettingsPage />} allowedRoles={["Super Admin", "Admin"]} />} />
                     <Route path="/user-settings" element={<ProtectedRoute element={<UserSettingsPage />} allowedRoles={["User"]} />} />
-                    
+
                     {/* Notification Routes for each role */}
                     {/* Super Admin Notifications */}
                     <Route path="/notifications" element={<ProtectedRoute element={<Notifications />} allowedRoles={["Super Admin"]} />} />
@@ -112,7 +128,10 @@ const ThemedApp = () => {
 function App() {
     return (
         <ThemeProvider>
-            <ThemedApp />
+            {/* NEW: Wrap ThemedApp with AuthProvider */}
+            <AuthProvider> {/* <--- ADD THIS WRAPPER */}
+                <ThemedApp />
+            </AuthProvider>
         </ThemeProvider>
     );
 }
