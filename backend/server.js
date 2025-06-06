@@ -148,6 +148,17 @@ const authorizeSuperAdmin = (req, res, next) => {
     }
 };
 
+const authorizeAdmin = (req, res, next) => { // <--- CONSIDER RENAMING THIS FUNCTION
+    // req.user is set by verifyToken middleware
+    if (req.user && (req.user.role === 'Admin' || req.user.role === 'Super Admin')) { // <--- MODIFIED CONDITION
+        next(); // User is an Admin or Super Admin, proceed
+    } else {
+        console.log("Unauthorized access attempt. Role:", req.user ? req.user.role : 'None');
+        // <--- Consider updating the message to reflect the new allowed roles
+        return res.status(403).json({ message: "Access Denied: Requires Admin or Super Admin role" });
+    }
+};
+
 
 // Create HTTP server for Socket.IO
 const server = http.createServer(app);
@@ -1294,54 +1305,76 @@ app.get('/api/total-sensors', (req, res) => {
 });
 
 // --- NEW API ENDPOINT FOR APPROVING USER ACCESS ---
-app.post("/api/admin/approve-user-access", verifyToken, authorizeSuperAdmin, async (req, res) => {
-    const { userId, notificationId } = req.body;
+app.put("/api/admin/access-requests/:notificationId/approve", verifyToken, authorizeAdmin, async (req, res) => {
+    // Extract notificationId from URL parameters
+    const { notificationId } = req.params;
+    // Extract userId from the request body (as sent by the frontend)
+    const { userId } = req.body;
 
-    console.log("🟢 /api/admin/approve-user-access: Received request to approve user access.");
-    console.log("🟢 /api/admin/approve-user-access: Request Body:", { userId, notificationId });
+    console.log("🟢 /api/admin/access-requests/:notificationId/approve: Received request to approve user access.");
+    console.log("🟢 /api/admin/access-requests/:notificationId/approve: Params:", { notificationId });
+    console.log("🟢 /api/admin/access-requests/:notificationId/approve: Request Body:", { userId });
 
-    if (!userId) {
-        console.log("🔴 /api/admin/approve-user-access: User ID is missing in request body.");
-        return res.status(400).json({ message: "User ID is required for approval." });
+    if (!userId || !notificationId) {
+        console.log("🔴 /api/admin/access-requests/:notificationId/approve: Missing User ID or Notification ID in request.");
+        return res.status(400).json({ success: false, message: "User ID and Notification ID are required for approval." });
     }
 
-    let connection; // Declare connection here
+    let connection;
     try {
-        connection = await db.getConnection(); // <--- Get a connection from the pool
-        await connection.beginTransaction(); // <--- Use beginTransaction on the connection
+        connection = await db.getConnection();
+        await connection.beginTransaction();
 
-        console.log("🔵 /api/admin/approve-user-access: Transaction started.");
+        console.log("🔵 /api/admin/access-requests/:notificationId/approve: Transaction started.");
 
         // 1. Update the user's is_verified status in the database
         const updateUserSql = "UPDATE users SET is_verified = 1 WHERE id = ?";
-        console.log("🔵 /api/admin/approve-user-access: Executing SQL to update user verification:", updateUserSql, "with userId:", userId);
-        const [updateResult] = await connection.query(updateUserSql, [userId]); // <--- Use connection.query on the connection
+        console.log("🔵 /api/admin/access-requests/:notificationId/approve: Executing SQL to update user verification:", updateUserSql, "with userId:", userId);
+        const [updateUserResult] = await connection.query(updateUserSql, [userId]);
 
-        console.log("🔵 /api/admin/approve-user-access: User update SQL result:", updateResult);
-        if (updateResult.affectedRows === 0) {
-            console.log("🟠 /api/admin/approve-user-access: User not found or already verified. Affected rows: 0.");
+        console.log("🔵 /api/admin/access-requests/:notificationId/approve: User update SQL result:", updateUserResult);
+        if (updateUserResult.affectedRows === 0) {
+            console.log("🟠 /api/admin/access-requests/:notificationId/approve: User not found or already verified. Affected rows: 0.");
             await connection.rollback();
-            console.error("🔴 /api/admin/approve-user-access: Transaction rolled back as no user was found/updated.");
-            return res.status(404).json({ message: "User not found or already verified." });
+            console.error("🔴 /api/admin/access-requests/:notificationId/approve: Transaction rolled back as no user was found/updated.");
+            return res.status(404).json({ success: false, message: "User not found or already verified." });
         }
-        console.log(`✅ /api/admin/approve-user-access: User ${userId} is_verified updated. Affected rows: ${updateResult.affectedRows}`);
+        console.log(`✅ /api/admin/access-requests/:notificationId/approve: User ${userId} is_verified updated. Affected rows: ${updateUserResult.affectedRows}`);
+
+        // 2. Update the notification status in the 'notif' table
+        const updateNotificationSql = "UPDATE notif SET status = ?, is_read = 1 WHERE id = ? AND type = 'request'";
+        console.log("🔵 /api/admin/access-requests/:notificationId/approve: Executing SQL to update notification status:", updateNotificationSql, "with notificationId:", notificationId);
+        const [updateNotifResult] = await connection.query(updateNotificationSql, ['approved', notificationId]);
+
+        console.log("🔵 /api/admin/access-requests/:notificationId/approve: Notification update SQL result:", updateNotifResult);
+        if (updateNotifResult.affectedRows === 0) {
+            console.log("🟠 /api/admin/access-requests/:notificationId/approve: Notification not found or not a pending request. Affected rows: 0.");
+            // This might happen if the notification was already processed or deleted.
+            // We can still commit the user update if the user update was successful,
+            // but it's safer to rollback if the primary record of the request isn't found/updated.
+            await connection.rollback();
+            console.error("🔴 /api/admin/access-requests/:notificationId/approve: Transaction rolled back as notification was not found/updated.");
+            return res.status(404).json({ success: false, message: "Access request notification not found or already processed." });
+        }
+        console.log(`✅ /api/admin/access-requests/:notificationId/approve: Notification ${notificationId} status updated to 'approved'.`);
+
 
         // Commit the transaction
         await connection.commit();
-        console.log(`🎉 /api/admin/approve-user-access: User ${userId} successfully verified and request processed. Transaction committed.`);
-        res.status(200).json({ message: "User access approved successfully." });
+        console.log(`🎉 /api/admin/access-requests/:notificationId/approve: User ${userId} successfully verified and request ${notificationId} processed. Transaction committed.`);
+        res.status(200).json({ success: true, message: "User access approved successfully." });
 
     } catch (err) {
         if (connection) {
             await connection.rollback(); // Rollback on any error
-            console.error("🔴 /api/admin/approve-user-access: Transaction rolled back due to error:", err);
+            console.error("🔴 /api/admin/access-requests/:notificationId/approve: Transaction rolled back due to error:", err);
         }
-        console.error("🔴 /api/admin/approve-user-access: Error during user approval process:", err);
-        res.status(500).json({ message: "Failed to verify user due to a server error." });
+        console.error("🔴 /api/admin/access-requests/:notificationId/approve: Error during user approval process:", err);
+        res.status(500).json({ success: false, message: "Failed to verify user and process request due to a server error." });
     } finally {
         if (connection) {
-            connection.release(); // <--- ALWAYS release the connection
-            console.log("🔵 /api/admin/approve-user-access: Database connection released.");
+            connection.release();
+            console.log("🔵 /api/admin/access-requests/:notificationId/approve: Database connection released.");
         }
     }
 });
@@ -1508,39 +1541,40 @@ app.post('/api/notifications/superadmin', async (req, res) => {
 
 // notif
 app.post('/api/access-requests', async (req, res) => {
-    const { fromUser, fromUserId } = req.body; // Expecting these from the frontend
+    // Destructure deviceId from the request body
+    const { fromUser, fromUserId, deviceId } = req.body; // Expecting these from the frontend
 
-    if (!fromUser || !fromUserId) {
-        return res.status(400).json({ success: false, message: 'Missing user information.' });
+    // Add validation for deviceId
+    if (!fromUser || !fromUserId || !deviceId) {
+        return res.status(400).json({ success: false, message: 'Missing user information or device ID.' });
     }
 
     try {
         const connection = await pool.getConnection(); // Get a connection from the pool
 
         try {
-            // 1. Check if a pending request already exists for this user
-            // Assuming 'status' column still exists for tracking 'pending' requests.
-            // If 'status' is removed, you'd need a different way to track pending state,
-            // perhaps by using the 'priority' column or adding a new boolean flag.
+            // 1. Check if a pending request already exists for this user and device ID
+            // This prevents duplicate requests for the same user-device combination.
             const [existingRequests] = await connection.execute(
-                'SELECT id FROM notif WHERE user_id = ? AND type = ? AND status = ?',
-                [fromUserId, 'request', 'pending'] // 'type' is now 'request'
+                'SELECT id FROM notif WHERE user_id = ? AND type = ? AND status = ? AND device_id = ?',
+                [fromUserId, 'request', 'pending', deviceId] // Include deviceId in the check
             );
 
             if (existingRequests.length > 0) {
-                return res.status(409).json({ success: false, message: 'You already have a pending access request. Please wait for the Super Admin\'s review.' });
+                return res.status(409).json({ success: false, message: 'You already have a pending access request for this device. Please wait for the Super Admin\'s review.' });
             }
 
-            // 2. Insert the new access request into the 'notifications' table
+            // 2. Insert the new access request into the 'notif' table
             const title = 'Access Request';
-            const message = `User '${fromUser}' (ID: ${fromUserId}) has requested access to restricted features.`;
-            // timestamp and is_read will use their default values in the table
-            const status = 'pending'; // This column is crucial for the logic
-            const priority = 'normal'; // As per the new ENUM for priority
+            // Update the message to include the device ID for the admin
+            const message = `User '${fromUser}' (ID: ${fromUserId}) has requested access to restricted features for Device ID: ${deviceId}.`;
+            const status = 'pending';
+            const priority = 'normal';
 
             const [result] = await connection.execute(
-                'INSERT INTO notif (type, title, message, user_id, related_id, priority, status) VALUES (?, ?, ?, ?, ?, ?, ?)',
-                ['request', title, message, fromUserId, null, priority, status] // 'type' is 'request', 'status' is 'pending', 'priority' is 'normal'
+                // Add device_id to the INSERT statement
+                'INSERT INTO notif (type, title, message, user_id, related_id, priority, status, device_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+                ['request', title, message, fromUserId, null, priority, status, deviceId] // Pass deviceId here
             );
 
             if (result.affectedRows === 1) {
@@ -1605,7 +1639,7 @@ app.get('/api/admin/notifications', authenticateAdminRoute, async (req, res) => 
                         message,
                         timestamp AS createdAt,
                         is_read AS \`read\`,
-                        user_id AS fromUserId,
+                        user_id ,
                         related_id,
                         priority,
                         status

@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
-import { Bell, CheckCircle, AlertTriangle, XCircle, Trash2, CalendarCheck } from 'lucide-react'; // Import CalendarCheck
+import { Bell, CheckCircle, AlertTriangle, XCircle, Trash2, CalendarCheck, UserCheck, UserX } from 'lucide-react'; // Import new icons
 import { motion, AnimatePresence } from 'framer-motion';
-import axios from 'axios'; // Import axios
+import axios from 'axios';
 import '../styles/Pages Css/Notifications.css';
 import Sidebar from '../components/Sidebar';
 import { ThemeContext } from '../context/ThemeContext';
 
-// --- NotificationIcon component (updated for 'schedule' type) ---
+// --- NotificationIcon component (updated for 'schedule' and 'request' type) ---
 const NotificationIcon = ({ type }) => {
     switch (type) {
         case 'success':
@@ -17,24 +17,29 @@ const NotificationIcon = ({ type }) => {
             return <XCircle className="icon-error" />;
         case 'info':
             return <Bell className="icon-info" />;
-        case 'schedule': // New case for events
-            return <CalendarCheck className="icon-info" />; // Using CalendarCheck icon
+        case 'schedule':
+            return <CalendarCheck className="icon-info" />;
+        case 'request': // New case for access requests
+            return <Bell className="icon-request" />; // Or a specific icon like UserCheck for pending
         default:
             return <Bell className="icon-default" />;
     }
 };
 
-// --- NotificationCard component (updated for 'schedule' type display) ---
-const NotificationCard = ({ notification, onMarkAsRead, onDelete }) => {
+// --- NotificationCard component (updated for 'schedule' and 'request' type display) ---
+const NotificationCard = ({ notification, onMarkAsRead, onDelete, onApprove, onDecline }) => { // Add onApprove, onDecline
     const { theme } = useContext(ThemeContext);
 
-    // Function to format the display type
     const getDisplayType = (type) => {
         switch (type) {
-            case 'schedule': return 'Scheduled Event'; // Display name for events
+            case 'schedule': return 'Scheduled Event';
+            case 'request': return 'Access Request'; // Display name for access requests
             default: return type.charAt(0).toUpperCase() + type.slice(1);
         }
     };
+
+    // Determine if the notification is a pending access request
+    const isPendingRequest = notification.type === 'request' && notification.status === 'pending';
 
     return (
         <motion.div
@@ -56,11 +61,36 @@ const NotificationCard = ({ notification, onMarkAsRead, onDelete }) => {
                             <p className={`notification-message ${notification.read ? 'read' : 'unread'}`}>
                                 {notification.message}
                             </p>
+                            {/* Display status for requests if not pending */}
+                            {notification.type === 'request' && notification.status !== 'pending' && (
+                                <p className={`notification-status status-${notification.status}`}>
+                                    Status: {notification.status.charAt(0).toUpperCase() + notification.status.slice(1)}
+                                </p>
+                            )}
                         </div>
                     </div>
                     <div className="notification-actions">
-                        {/* Optionally hide mark as read for schedules if they are more like fixed calendar entries */}
-                        {!notification.read && notification.type !== 'schedule' && (
+                        {isPendingRequest && (
+                            <>
+                                <button
+                                    onClick={() => onApprove(notification.id, notification.user_id)} // Pass notif ID and user ID
+                                    className={`notification-action-button approve-button`}
+                                    title="Approve Request"
+                                >
+                                    <UserCheck className="approve-icon" /> Approve
+                                </button>
+                                <button
+                                    onClick={() => onDecline(notification.id, notification.user_id)} // Pass notif ID and user ID
+                                    className={`notification-action-button decline-button`}
+                                    title="Decline Request"
+                                >
+                                    <UserX className="decline-icon" /> Decline
+                                </button>
+                            </>
+                        )}
+
+                        {/* Optionally hide mark as read for schedules/requests if they are more like fixed calendar entries/actions */}
+                        {!notification.read && notification.type !== 'schedule' && notification.type !== 'request' && (
                             <button
                                 onClick={() => onMarkAsRead(notification.id)}
                                 className={`notification-action-button mark-read-button`}
@@ -94,40 +124,40 @@ const AdminNotificationsPage = () => {
 
     const API_BASE_URL = "http://localhost:5000";
 
-    // Re-introduce localStorage helpers or ensure they are accessible
+    // --- CHANGE 1: Use a more general localStorage key for all admin notifications ---
     const loadAdminNotifications = useCallback(() => {
         try {
-            const storedNotifications = localStorage.getItem('adminSchedules'); // Use a different key for schedules
+            const storedNotifications = localStorage.getItem('adminNotifications'); // Changed key
             return storedNotifications ? JSON.parse(storedNotifications) : [];
         } catch (error) {
-            console.error("Frontend: Failed to parse Admin schedules from localStorage:", error);
+            console.error("Frontend: Failed to parse Admin notifications from localStorage:", error);
             return [];
         }
     }, []);
 
     const saveAdminNotifications = useCallback((notificationsToSave) => {
         try {
-            localStorage.setItem('adminSchedules', JSON.stringify(notificationsToSave)); // Use a different key
+            localStorage.setItem('adminNotifications', JSON.stringify(notificationsToSave)); // Changed key
         } catch (error) {
-            console.error("Frontend: Failed to save Admin schedules to localStorage:", error);
+            console.error("Frontend: Failed to save Admin notifications to localStorage:", error);
         }
     }, []);
 
 
-    // --- fetchSchedules function to get ONLY 'schedule' type from backend ---
-    const fetchSchedules = useCallback(async () => {
+    // --- CHANGE 2: fetchAllNotifications function to get ALL notification types from backend ---
+    const fetchAllNotifications = useCallback(async () => {
         setLoading(true);
         try {
-            const token = localStorage.getItem('token'); // Assuming admin has a token for authentication
+            const token = localStorage.getItem('token');
             if (!token) {
-                console.warn("No authentication token found for admin. Cannot fetch schedules.");
+                console.warn("No authentication token found for admin. Cannot fetch notifications.");
                 setNotifications(loadAdminNotifications());
                 setLoading(false);
                 return;
             }
 
-            // Fetch only 'schedule' type from the backend
-            const response = await axios.get(`${API_BASE_URL}/api/admin/notifications?type=schedule`, {
+            // Fetch ALL notifications for the admin
+            const response = await axios.get(`${API_BASE_URL}/api/admin/notifications`, { // Removed type filter
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -135,94 +165,173 @@ const AdminNotificationsPage = () => {
 
             if (response.data.success) {
                 setNotifications(response.data.notifications);
-                saveAdminNotifications(response.data.notifications); // Save fetched schedules
-                console.log("Frontend (Admin): Scheduled events fetched from database.");
+                saveAdminNotifications(response.data.notifications); // Save fetched notifications
+                console.log("Frontend (Admin): All notifications fetched from database.");
             } else {
-                console.error("Failed to fetch scheduled events:", response.data.message);
+                console.error("Failed to fetch all notifications:", response.data.message);
                 setNotifications(loadAdminNotifications()); // Fallback to localStorage
             }
         } catch (error) {
-            console.error("Error fetching scheduled events from backend:", error);
+            console.error("Error fetching notifications from backend:", error);
             setNotifications(loadAdminNotifications()); // Fallback to localStorage
         } finally {
             setLoading(false);
         }
-    }, [API_BASE_URL, loadAdminNotifications, saveAdminNotifications]); // Dependencies for fetchSchedules
+    }, [API_BASE_URL, loadAdminNotifications, saveAdminNotifications]);
 
     // Effect hook to fetch data on component mount and set up polling
     useEffect(() => {
-        fetchSchedules();
-        const pollInterval = setInterval(fetchSchedules, 30000); // Poll every 30 seconds
+        fetchAllNotifications(); // Call the new fetch function
+        const pollInterval = setInterval(fetchAllNotifications, 30000); // Poll every 30 seconds
         return () => clearInterval(pollInterval); // Cleanup on unmount
-    }, [fetchSchedules]);
+    }, [fetchAllNotifications]);
 
     // Effect hook to save notifications to localStorage whenever 'notifications' state changes
     useEffect(() => {
         if (!loading) {
             saveAdminNotifications(notifications);
-            console.log("Frontend (Admin): Schedules saved to localStorage.");
+            console.log("Frontend (Admin): Notifications saved to localStorage.");
         }
     }, [notifications, loading, saveAdminNotifications]);
 
-    // Handler functions (simplified as mark as read/delete behavior for schedules might be different)
-    const markAsRead = (id) => {
-        // For schedules, you might just want to set 'read' to true locally
-        setNotifications(prevNotifications => {
-            const updated = prevNotifications.map(n => n.id === id ? { ...n, read: true } : n);
-            return updated;
-        });
-        // TODO: If you want to persist 'read' status for events, you'll need a backend endpoint to update it.
-    };
-
-    const deleteNotification = async (id) => {
-        // Determine if it's a regular notification or a mapped event
-        if (id.startsWith('event_')) {
-            const eventId = id.replace('event_', '');
-            try {
-                const token = localStorage.getItem('token');
-                await axios.delete(`${API_BASE_URL}/api/admin/events/${eventId}`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
-                console.log(`Event ${eventId} deleted from DB.`);
-                fetchSchedules(); // Re-fetch to update the list
-            } catch (error) {
-                console.error(`Error deleting event ${eventId}:`, error.response?.data || error.message);
-                alert(`Failed to delete event: ${error.response?.data?.message || 'Server error.'}`);
+    // --- NEW: Handle Approve Request ---
+    const handleApproveRequest = async (notificationId, userId) => {
+        console.log(`Approving request ${notificationId} for user ${userId}`);
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert("Authentication required to approve requests.");
+                return;
             }
-        } else {
-            // TODO: If this page handles other notification types later, add their delete logic here.
-            setNotifications(prevNotifications => prevNotifications.filter(n => n.id !== id));
-            console.log("Frontend (Admin): Deleted notification (local only for now).", id);
+
+            const response = await axios.put(`${API_BASE_URL}/api/admin/access-requests/${notificationId}/approve`, { userId }, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            if (response.data.success) {
+                alert(response.data.message);
+                fetchAllNotifications(); // Re-fetch all notifications to update status
+            } else {
+                alert(`Failed to approve request: ${response.data.message}`);
+            }
+        } catch (error) {
+            console.error("Error approving request:", error.response?.data || error.message);
+            alert(`Error approving request: ${error.response?.data?.message || 'Server error.'}`);
         }
     };
 
-    const markAllAsRead = () => {
-        setNotifications(notifications.map(n => ({ ...n, read: true })));
+    // --- NEW: Handle Decline Request ---
+    const handleDeclineRequest = async (notificationId, userId) => {
+        console.log(`Declining request ${notificationId} for user ${userId}`);
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert("Authentication required to decline requests.");
+                return;
+            }
+
+            const response = await axios.put(`${API_BASE_URL}/api/admin/access-requests/${notificationId}/decline`, { userId }, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            if (response.data.success) {
+                alert(response.data.message);
+                fetchAllNotifications(); // Re-fetch all notifications to update status
+            } else {
+                alert(`Failed to decline request: ${response.data.message}`);
+            }
+        } catch (error) {
+            console.error("Error declining request:", error.response?.data || error.message);
+            alert(`Error declining request: ${error.response?.data?.message || 'Server error.'}`);
+        }
+    };
+
+
+    // Handler functions (simplified as mark as read/delete behavior for schedules might be different)
+    const markAsRead = async (id) => {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                console.warn("No token found for marking notification as read.");
+                return;
+            }
+            await axios.put(`${API_BASE_URL}/api/admin/notifications/${id}/read`, {}, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            console.log(`Notification ${id} marked as read in DB.`);
+            setNotifications(prevNotifications =>
+                prevNotifications.map(n => n.id === id ? { ...n, read: true } : n)
+            );
+        } catch (error) {
+            console.error("Error marking notification as read:", error.response?.data || error.message);
+            alert(`Failed to mark notification as read: ${error.response?.data?.message || 'Server error.'}`);
+        }
+    };
+
+    const deleteNotification = async (id) => {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert("Authentication required to delete notifications.");
+                return;
+            }
+            await axios.delete(`${API_BASE_URL}/api/admin/notifications/${id}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            console.log(`Notification ${id} deleted from DB.`);
+            fetchAllNotifications(); // Re-fetch to ensure the list is up-to-date
+        } catch (error) {
+            console.error(`Error deleting notification ${id}:`, error.response?.data || error.message);
+            alert(`Failed to delete notification: ${error.response?.data?.message || 'Server error.'}`);
+        }
+    };
+
+
+    const markAllAsRead = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert("Authentication required to mark all notifications as read.");
+                return;
+            }
+            await axios.put(`${API_BASE_URL}/api/admin/notifications/mark-all-read`, {}, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            alert("All notifications marked as read!");
+            fetchAllNotifications(); // Re-fetch to update local state
+        } catch (error) {
+            console.error("Error marking all notifications as read:", error.response?.data || error.message);
+            alert(`Failed to mark all as read: ${error.response?.data?.message || 'Server error.'}`);
+        }
     };
 
     const deleteAllNotifications = async () => {
-        // This will delete ALL schedules currently displayed.
-        // Needs a backend endpoint to delete all events or filter by some criteria.
         try {
             const token = localStorage.getItem('token');
-            const eventIdsToDelete = notifications.filter(n => n.type === 'schedule' && n.id.startsWith('event_')).map(n => n.related_id); // Use related_id for actual event ID
-
-            if (eventIdsToDelete.length > 0) {
-                 await axios.post(`${API_BASE_URL}/api/admin/events/delete-multiple`, { eventIds: eventIdsToDelete }, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
-                console.log("All scheduled events deleted from DB.");
-                setNotifications([]); // Clear locally
-            } else {
-                setNotifications([]); // If no schedules, just clear locally
+            if (!token) {
+                alert("Authentication required to delete all notifications.");
+                return;
             }
+            await axios.delete(`${API_BASE_URL}/api/admin/notifications/delete-all`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            alert("All notifications deleted!");
+            setNotifications([]); // Clear locally immediately
         } catch (error) {
-            console.error("Error deleting all scheduled events:", error.response?.data || error.message);
-            alert(`Failed to delete all events: ${error.response?.data?.message || 'Server error.'}`);
+            console.error("Error deleting all notifications:", error.response?.data || error.message);
+            alert(`Failed to delete all notifications: ${error.response?.data?.message || 'Server error.'}`);
         }
     };
 
@@ -233,9 +342,10 @@ const AdminNotificationsPage = () => {
         <div className={`notifications-container bg-${theme}-background text-${theme}-text`}>
             <div className="notifications-wrapper">
                 <div className="notifications-header">
+                    {/* CHANGE 3: Generalize the title */}
                     <h1 className={`notifications-title ${theme}-text`}>
-                        Scheduled Events
-                    </h1> {/* Changed title */}
+                        Admin Panel Notifications
+                    </h1>
                     <div className="notifications-actions">
                         <button
                             onClick={markAllAsRead}
@@ -254,13 +364,12 @@ const AdminNotificationsPage = () => {
                             Delete all
                         </button>
                     </div>
-
                 </div>
 
                 {loading ? (
-                    <div className={`loading-text text-${theme}-secondary-text`}>Loading scheduled events...</div>
+                    <div className={`loading-text text-${theme}-secondary-text`}>Loading notifications...</div>
                 ) : notifications.length === 0 ? (
-                    <div className={`no-notifications-text text-${theme}-secondary-text italic`}>No scheduled events available.</div>
+                    <div className={`no-notifications-text text-${theme}-secondary-text italic`}>No notifications available.</div>
                 ) : (
                     <AnimatePresence>
                         {notifications.map(notification => (
@@ -269,6 +378,8 @@ const AdminNotificationsPage = () => {
                                 notification={notification}
                                 onMarkAsRead={markAsRead}
                                 onDelete={deleteNotification}
+                                onApprove={handleApproveRequest} // Pass the new handler
+                                onDecline={handleDeclineRequest} // Pass the new handler
                             />
                         ))}
                     </AnimatePresence>
@@ -279,9 +390,10 @@ const AdminNotificationsPage = () => {
 };
 
 const AdminNotif = () => {
+    const { theme, toggleTheme } = useContext(ThemeContext); // Added toggleTheme for sidebar
     return (
         <div className="Notifpage">
-            <Sidebar />
+            <Sidebar theme={theme} toggleTheme={toggleTheme} /> {/* Pass theme and toggleTheme to Sidebar */}
             <div className="Notifpage-content">
                 <AdminNotificationsPage />
             </div>

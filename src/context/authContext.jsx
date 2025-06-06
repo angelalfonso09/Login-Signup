@@ -6,7 +6,8 @@ export const AuthContext = createContext(null);
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(() => {
     try {
-      const storedUser = localStorage.getItem('currentUser');
+      // CHANGE 1: Use 'user' key for localStorage
+      const storedUser = localStorage.getItem('user');
       return storedUser ? JSON.parse(storedUser) : null;
     } catch (error) {
       console.error("Failed to parse user from localStorage", error);
@@ -22,14 +23,16 @@ export const AuthProvider = ({ children }) => {
   // Effect to update localStorage whenever currentUser or userRole changes
   useEffect(() => {
     if (currentUser) {
-      localStorage.setItem('currentUser', JSON.stringify(currentUser));
+      // CHANGE 2: Use 'user' key when setting localStorage
+      localStorage.setItem('user', JSON.stringify(currentUser));
       // Also update userRole in localStorage if currentUser changes
       if (currentUser.role) { // Assuming userData has a 'role' property
         localStorage.setItem('userRole', currentUser.role);
         setUserRole(currentUser.role); // Keep context state in sync
       }
     } else {
-      localStorage.removeItem('currentUser');
+      // CHANGE 3: Use 'user' key when removing from localStorage
+      localStorage.removeItem('user');
       localStorage.removeItem('userRole'); // Clear role on logout
       setUserRole(null); // Clear context state on logout
     }
@@ -55,7 +58,8 @@ export const AuthProvider = ({ children }) => {
     setCurrentUser(null);
     setUserRole(null); // Clear user role on logout
     localStorage.removeItem('token');
-    localStorage.removeItem('currentUser');
+    // CHANGE 4: Use 'user' key when removing from localStorage
+    localStorage.removeItem('user');
     localStorage.removeItem('userRole'); // Ensure userRole is also cleared
   };
 
