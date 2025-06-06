@@ -19,6 +19,12 @@ const Dashboard = () => {
   const [availableSensors, setAvailableSensors] = useState([]); // New state for available sensors
   const [selectedSensors, setSelectedSensors] = useState([]); // New state for selected sensors
 
+  // --- Helper Function to Generate Device ID ---
+  const generateDeviceId = () => {
+    // Generates a random 5-digit number as a string
+    return Math.floor(10000 + Math.random() * 90000).toString();
+  };
+
   // --- Database Interaction ---
 
   const fetchEstablishments = async () => {
@@ -56,14 +62,15 @@ const Dashboard = () => {
     }
   };
 
-  const addEstablishmentToDatabase = async (name, sensors) => {
+  const addEstablishmentToDatabase = async (name, sensors, deviceId) => { // Added deviceId parameter
     try {
       const response = await fetch('http://localhost:5000/api/establishments', {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ name, sensors }), // Include selected sensors in the payload
+        // Include selected sensors and the generated deviceId in the payload
+        body: JSON.stringify({ name, sensors, device_id: deviceId }),
       });
       if (!response.ok) {
         const errorText = await response.text();
@@ -144,8 +151,9 @@ const Dashboard = () => {
 
   const handleAddEstablishment = async () => {
     if (newEstablishmentName.trim() !== "") {
-      // Add to the database, including selected sensors
-      await addEstablishmentToDatabase(newEstablishmentName, selectedSensors);
+      const newDeviceId = generateDeviceId(); // Generate the device ID
+      // Add to the database, including selected sensors and the generated device ID
+      await addEstablishmentToDatabase(newEstablishmentName, selectedSensors, newDeviceId);
       setNewEstablishmentName("");
       setSelectedSensors([]); // Clear selected sensors after adding
       setShowAddForm(false);

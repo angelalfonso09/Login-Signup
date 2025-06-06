@@ -172,3 +172,7 @@ estab-modal-content::-webkit-scrollbar {
 .estab-modal-close-button:hover {
   background-color: var(--modal-close-hover);
 }
+
+.estab-device-id{
+  font-family: 'poppins';
+}

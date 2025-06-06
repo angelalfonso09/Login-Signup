@@ -880,13 +880,14 @@ app.get('/api/admin/establishments', async (req, res) => {
  */
 app.get('/api/establishments', async (req, res) => {
     try {
-        // SQL query to get establishments and their associated sensors
+        // SQL query to get establishments, their device_id, and their associated sensors
         // Use LEFT JOIN to include establishments that might not have any sensors yet.
-        // We select establishment ID and name, and sensor ID and name.
+        // We select establishment ID, name, DEVICE ID, and sensor ID and name.
         const [rows] = await pool.execute(`
             SELECT
                 e.id AS establishmentId,
                 e.estab_name AS establishmentName,
+                e.device_id AS deviceId, 
                 s.id AS sensorId,
                 s.sensor_name AS sensorName
             FROM
@@ -905,13 +906,15 @@ app.get('/api/establishments', async (req, res) => {
         const establishmentsMap = new Map();
 
         rows.forEach(row => {
-            const { establishmentId, establishmentName, sensorId, sensorName } = row;
+            // Destructure deviceId from the row, along with existing fields
+            const { establishmentId, establishmentName, deviceId, sensorId, sensorName } = row;
 
             // If the establishment has not been added to our map yet, add it.
             if (!establishmentsMap.has(establishmentId)) {
                 establishmentsMap.set(establishmentId, {
                     id: establishmentId,
                     name: establishmentName,
+                    device_id: deviceId, // <-- NEW: Include device_id here
                     sensors: [] // Initialize an empty array for this establishment's sensors
                 });
             }
@@ -945,12 +948,18 @@ app.get('/api/establishments', async (req, res) => {
  * Expects JSON body: {"name": "Establishment Name", "sensors": [sensor_id_1, sensor_id_2]}
  */
 app.post('/api/establishments', async (req, res) => {
-    const { name, sensors } = req.body; // Destructure name and sensors from the request body
+    // Destructure name, sensors, and device_id from the request body
+    const { name, sensors, device_id } = req.body;
 
-    // Input validation for the establishment name.
+    // Input validation for the establishment name and device_id.
     if (!name || typeof name !== 'string' || name.trim() === '') {
         return res.status(400).json({ error: 'Establishment name is required and must be a non-empty string.' });
     }
+    // Validate device_id: It should be a non-empty string of exactly 5 digits.
+    if (!device_id || typeof device_id !== 'string' || !/^\d{5}$/.test(device_id)) {
+        return res.status(400).json({ error: 'Device ID is required and must be a 5-digit string.' });
+    }
+
     // Ensure 'sensors' is an array; default to an empty array if not provided or invalid.
     const selectedSensorIds = Array.isArray(sensors) ? sensors : [];
 
@@ -964,23 +973,34 @@ app.post('/api/establishments', async (req, res) => {
         await connection.beginTransaction();
 
         // 1. Check if an establishment with the same name already exists to prevent duplicates.
-        const [existing] = await connection.execute(
+        const [existingName] = await connection.execute(
             'SELECT id FROM estab WHERE estab_name = ?',
             [name.trim()]
         );
-        if (existing.length > 0) {
-            await connection.rollback(); // Rollback the transaction if a duplicate is found.
+        if (existingName.length > 0) {
+            await connection.rollback(); // Rollback the transaction if a duplicate name is found.
             return res.status(409).json({ error: `Establishment '${name.trim()}' already exists.` });
         }
 
-        // 2. Insert the new establishment into the 'establishments' table.
+        // --- NEW: Check if an establishment with the same device_id already exists ---
+        const [existingDeviceId] = await connection.execute(
+            'SELECT id FROM estab WHERE device_id = ?',
+            [device_id]
+        );
+        if (existingDeviceId.length > 0) {
+            await connection.rollback(); // Rollback the transaction if a duplicate device ID is found.
+            return res.status(409).json({ error: `Device ID '${device_id}' already exists. Please try adding the establishment again to generate a new ID.` });
+        }
+        // --- END NEW CHECK ---
+
+        // 2. Insert the new establishment into the 'estab' table, including the device_id.
         const [result] = await connection.execute(
-            'INSERT INTO estab (estab_name) VALUES (?)',
-            [name.trim()]
+            'INSERT INTO estab (estab_name, device_id) VALUES (?, ?)',
+            [name.trim(), device_id] // Add device_id to the insert query
         );
         // Get the auto-generated ID of the newly inserted establishment.
         const newEstablishmentId = result.insertId;
-        console.log(`New establishment '${name.trim()}' added with ID: ${newEstablishmentId}`);
+        console.log(`New establishment '${name.trim()}' added with ID: ${newEstablishmentId}, Device ID: ${device_id}`);
 
         // 3. Associate selected sensors with the new establishment in the junction table.
         if (selectedSensorIds.length > 0) {
@@ -1014,7 +1034,12 @@ app.post('/api/establishments', async (req, res) => {
 
         // If all database operations within the transaction succeed, commit the transaction.
         await connection.commit();
-        res.status(201).json({ message: 'Establishment added successfully', id: newEstablishmentId, name: name.trim() });
+        res.status(201).json({
+            message: 'Establishment added successfully',
+            id: newEstablishmentId,
+            name: name.trim(),
+            device_id: device_id // Include the device_id in the response
+        });
 
     } catch (error) {
         // If any error occurs, rollback the transaction to undo all changes made during the transaction.
