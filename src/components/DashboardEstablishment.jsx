@@ -19,13 +19,13 @@ import '@fortawesome/fontawesome-free/css/all.min.css'; // Ensure Font Awesome C
 // to their corresponding React components. If a sensor type doesn't have a component, you can map it to `null`.
 const sensorComponentMap = {
   // Updated/Added mappings based on your screenshot's displayed names (lowercase)
-  "turbidity": Turbidity, // Mapping "turbidity" to Turbidity component
-  "ph": Ph,             // Mapping "ph" to Ph component
-  "tds": Tds,           // Mapping "tds" to Tds component
-  "conductivity": Conductivity, // This handles the 'conductivity' sensor
-  "salinity": Salinity, // Mapping "salinity" to Salinity component
-  "temperature": Temperature, // Mapping "temperature" to Temperature component
-  "ec": ElectricalCon,  // Mapped 'ec' to ElectricalCon
+  "Turbidity": Turbidity, // Mapping "turbidity" to Turbidity component
+  "ph Level": Ph,             // Mapping "ph" to Ph component
+  "Total Dissolved Solids": Tds,           // Mapping "tds" to Tds component
+  "Conductivity": Conductivity, // This handles the 'conductivity' sensor
+  "Salinity": Salinity, // Mapping "salinity" to Salinity component
+  "Temperature": Temperature, // Mapping "temperature" to Temperature component
+  "Electrical Conductivity": ElectricalCon,  // Mapped 'ec' to ElectricalCon
 
   // Keep these if they are alternative or more formal names from your backend/database:
   "Turbidity Sensor": Turbidity,

@@ -449,8 +449,8 @@ app.post("/login", async (req, res) => {
     return res.status(400).json({ error: "All fields are required" });
   }
 
-  // Fetch email_verified along with other user data
-  const sql = "SELECT id, username, role, password_hash, is_verified, email_verified FROM users WHERE username = ?";
+  // Fetch email_verified and device_id along with other user data
+  const sql = "SELECT id, username, role, password_hash, is_verified, email_verified, device_id FROM users WHERE username = ?"; // <--- ADDED device_id HERE!
 
   try {
     const [results] = await db.query(sql, [username]);
@@ -474,7 +474,13 @@ app.post("/login", async (req, res) => {
     }
 
     const token = jwt.sign(
-      { id: user.id, role: user.role, isVerified: user.is_verified, emailVerified: user.email_verified }, // Include emailVerified in JWT
+      {
+        id: user.id,
+        role: user.role,
+        isVerified: user.is_verified,
+        emailVerified: user.email_verified,
+        deviceId: user.device_id // <--- IMPORTANT: Include device_id in JWT payload if you use it there
+      },
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
@@ -493,15 +499,16 @@ app.post("/login", async (req, res) => {
       id: user.id,
       username: user.username,
       role: user.role,
-      isVerified: user.is_verified === 1, 
-      emailVerified: user.email_verified === 1 
+      isVerified: user.is_verified === 1,
+      emailVerified: user.email_verified === 1,
+      deviceId: user.device_id // <--- IMPORTANT: ADDED deviceId HERE for the frontend user object!
     };
 
     res.json({
       message: "Login successful",
       user: userForFrontend,
       token: token,
-      role: user.role,
+      role: user.role, // Redundant if 'user.role' is already in 'userForFrontend', but fine
       redirectUrl: redirectUrl,
     });
 
@@ -886,7 +893,6 @@ app.get('/api/admin/establishments', async (req, res) => {
 });
 
 /**
- * GET /api/establishments
  * Returns a list of all existing establishment names.
  */
 app.get('/api/establishments', async (req, res) => {
@@ -898,15 +904,13 @@ app.get('/api/establishments', async (req, res) => {
             SELECT
                 e.id AS establishmentId,
                 e.estab_name AS establishmentName,
-                e.device_id AS deviceId, 
+                e.device_id AS deviceId,
                 s.id AS sensorId,
                 s.sensor_name AS sensorName
             FROM
                 estab e
             LEFT JOIN
-                establishment_sensors es ON e.id = es.establishment_id
-            LEFT JOIN
-                sensors s ON es.sensor_id = s.id
+                sensors s ON e.device_id = s.device_id -- <--- CHANGE IS HERE!
             ORDER BY
                 e.estab_name ASC, s.sensor_name ASC;
         `);
@@ -959,20 +963,26 @@ app.get('/api/establishments', async (req, res) => {
  * Expects JSON body: {"name": "Establishment Name", "sensors": [sensor_id_1, sensor_id_2]}
  */
 app.post('/api/establishments', async (req, res) => {
-    // Destructure name, sensors, and device_id from the request body
+    // Destructure name, sensors (which are sensor IDs), and device_id from the request body
     const { name, sensors, device_id } = req.body;
 
-    // Input validation for the establishment name and device_id.
+    // --- Input validation for the establishment name and device_id. ---
     if (!name || typeof name !== 'string' || name.trim() === '') {
+        console.log("🔴 Backend - POST /api/establishments: Validation Error: Establishment name is required and must be a non-empty string.");
         return res.status(400).json({ error: 'Establishment name is required and must be a non-empty string.' });
     }
     // Validate device_id: It should be a non-empty string of exactly 5 digits.
+    // NOTE: Generating UUIDs on the backend (using 'uuid' library) is generally
+    // more robust for unique IDs in a production environment to avoid collisions.
+    // If you switch to backend UUID generation, remove this frontend-centric regex.
     if (!device_id || typeof device_id !== 'string' || !/^\d{5}$/.test(device_id)) {
+        console.log("🔴 Backend - POST /api/establishments: Validation Error: Device ID is required and must be a 5-digit string.");
         return res.status(400).json({ error: 'Device ID is required and must be a 5-digit string.' });
     }
 
     // Ensure 'sensors' is an array; default to an empty array if not provided or invalid.
     const selectedSensorIds = Array.isArray(sensors) ? sensors : [];
+    console.log(`🟢 Backend - POST /api/establishments: Received request for '${name}' with Device ID '${device_id}' and sensors: ${selectedSensorIds.join(', ')}`);
 
     let connection; // Declare 'connection' here so it's accessible in the finally block.
 
@@ -980,8 +990,9 @@ app.post('/api/establishments', async (req, res) => {
         // Get a database connection from the pool.
         connection = await pool.getConnection();
         // Start a database transaction. This is crucial for multi-step operations
-        // to maintain data integrity.
+        // to maintain data integrity (either all succeed or all fail).
         await connection.beginTransaction();
+        console.log("🔵 Backend - POST /api/establishments: Transaction started.");
 
         // 1. Check if an establishment with the same name already exists to prevent duplicates.
         const [existingName] = await connection.execute(
@@ -990,61 +1001,67 @@ app.post('/api/establishments', async (req, res) => {
         );
         if (existingName.length > 0) {
             await connection.rollback(); // Rollback the transaction if a duplicate name is found.
+            console.log(`🔴 Backend - POST /api/establishments: Conflict: Establishment '${name.trim()}' already exists.`);
             return res.status(409).json({ error: `Establishment '${name.trim()}' already exists.` });
         }
 
-        // --- NEW: Check if an establishment with the same device_id already exists ---
+        // 2. Check if an establishment with the same device_id already exists.
         const [existingDeviceId] = await connection.execute(
             'SELECT id FROM estab WHERE device_id = ?',
             [device_id]
         );
         if (existingDeviceId.length > 0) {
             await connection.rollback(); // Rollback the transaction if a duplicate device ID is found.
+            console.log(`🔴 Backend - POST /api/establishments: Conflict: Device ID '${device_id}' already exists.`);
             return res.status(409).json({ error: `Device ID '${device_id}' already exists. Please try adding the establishment again to generate a new ID.` });
         }
-        // --- END NEW CHECK ---
 
-        // 2. Insert the new establishment into the 'estab' table, including the device_id.
+        // 3. Insert the new establishment into the 'estab' table, including the device_id.
         const [result] = await connection.execute(
             'INSERT INTO estab (estab_name, device_id) VALUES (?, ?)',
             [name.trim(), device_id] // Add device_id to the insert query
         );
         // Get the auto-generated ID of the newly inserted establishment.
         const newEstablishmentId = result.insertId;
-        console.log(`New establishment '${name.trim()}' added with ID: ${newEstablishmentId}, Device ID: ${device_id}`);
+        console.log(`✅ Backend - POST /api/establishments: New establishment '${name.trim()}' added with ID: ${newEstablishmentId}, Device ID: ${device_id}`);
 
-        // 3. Associate selected sensors with the new establishment in the junction table.
+        // 4. Update the selected sensors to link them directly to the new device_id.
+        // This replaces the 'establishment_sensors' junction table logic.
         if (selectedSensorIds.length > 0) {
-            // First, validate that all provided sensor IDs actually exist in the 'sensors' table.
+            // Validate that all provided sensor IDs actually exist in the 'sensors' table and are currently unassigned (device_id IS NULL).
+            // This prevents linking sensors already assigned elsewhere unless you intend to re-assign.
+            const sensorIdPlaceholders = selectedSensorIds.map(() => '?').join(',');
             const [validSensors] = await connection.execute(
-                `SELECT id FROM sensors WHERE id IN (${selectedSensorIds.map(() => '?').join(',')})`,
+                `SELECT id FROM sensors WHERE id IN (${sensorIdPlaceholders}) AND device_id IS NULL`, // Added AND device_id IS NULL
                 selectedSensorIds
             );
 
-            // If the number of valid sensors found does not match the number of sensor IDs provided,
-            // it means some provided IDs were invalid or non-existent.
-            if (validSensors.length !== selectedSensorIds.length) {
-                await connection.rollback(); // Rollback the transaction.
-                return res.status(400).json({ error: 'One or more provided sensor IDs are invalid.' });
+            // Filter for only truly available and valid sensors
+            const availableAndValidSensorIds = validSensors.map(s => s.id);
+
+            if (availableAndValidSensorIds.length !== selectedSensorIds.length) {
+                // This means some sensors were either invalid or already assigned
+                const invalidOrAssignedSensors = selectedSensorIds.filter(id => !availableAndValidSensorIds.includes(id));
+                console.warn(`🟠 Backend - POST /api/establishments: Warning: Some provided sensor IDs (${invalidOrAssignedSensors.join(', ')}) were invalid or already assigned to another device. Will only link valid and unassigned sensors.`);
             }
 
-            // Prepare the values for batch insertion into the 'establishment_sensors' junction table.
-            // Each element in 'sensorAssociationValues' will be an array like [establishment_id, sensor_id].
-            const sensorAssociationValues = selectedSensorIds.map(sensorId => [newEstablishmentId, sensorId]);
+            if (availableAndValidSensorIds.length > 0) {
+                const updateSensorSql = `UPDATE sensors SET device_id = ? WHERE id IN (${availableAndValidSensorIds.map(() => '?').join(',')})`;
+                const updateParams = [device_id, ...availableAndValidSensorIds];
 
-            // Perform the batch insert. The '?' placeholder when used with an array of arrays
-            // indicates a multi-row insert.
-            const [assocResult] = await connection.query(
-                `INSERT INTO establishment_sensors (establishment_id, sensor_id) VALUES ?`,
-                [sensorAssociationValues]
-            );
-            console.log(`Associated ${assocResult.affectedRows} sensors with establishment ID ${newEstablishmentId}`);
+                const [updateResult] = await connection.execute(updateSensorSql, updateParams);
+                console.log(`✅ Backend - POST /api/establishments: Linked ${updateResult.affectedRows} sensors to Device ID: ${device_id}.`);
+            } else {
+                console.log("🔵 Backend - POST /api/establishments: No valid or unassigned sensors were selected to link.");
+            }
+
         } else {
-            console.log('No sensors selected for this establishment.');
+            console.log('🔵 Backend - POST /api/establishments: No sensors selected for this establishment.');
         }
 
         // If all database operations within the transaction succeed, commit the transaction.
         await connection.commit();
+        console.log("🎉 Backend - POST /api/establishments: Establishment and sensors linked successfully. Transaction committed.");
         res.status(201).json({
             message: 'Establishment added successfully',
             id: newEstablishmentId,
@@ -1056,13 +1073,16 @@ app.post('/api/establishments', async (req, res) => {
         // If any error occurs, rollback the transaction to undo all changes made during the transaction.
         if (connection) {
             await connection.rollback();
+            console.error("🔴 Backend - POST /api/establishments: Transaction rolled back due to error:", error);
         }
-        console.error('Error adding establishment:', error);
-        res.status(500).json({ error: 'Internal Server Error', details: error.message });
+        console.error('🔴 Backend - POST /api/establishments: Error adding establishment:', error);
+        // Provide a more generic error message to the client, keeping detailed errors in server logs.
+        res.status(500).json({ error: 'Internal Server Error while adding establishment.' });
     } finally {
         // Always release the database connection back to the pool, regardless of success or failure.
         if (connection) {
             connection.release();
+            console.log("🔵 Backend - POST /api/establishments: Database connection released.");
         }
     }
 });
@@ -1071,15 +1091,35 @@ app.post('/api/establishments', async (req, res) => {
  * GET /api/sensors
  * Returns a list of all available sensors with their IDs and names.
  */
-app.get('/api/sensors', async (req, res) => {
+// In your backend, likely in app.js or a sensors-related route file
+app.get('/api/devices/:deviceId/sensors', async (req, res) => {
+    const { deviceId } = req.params; // Extract deviceId from the URL parameters
+
+    // Basic validation to ensure deviceId is provided
+    if (!deviceId) {
+        console.log('🔴 /api/devices/:deviceId/sensors: Device ID is missing in request parameters.');
+        return res.status(400).json({ error: 'Device ID is required.' });
+    }
+
+    let connection; // Declare connection here
     try {
-        // Execute a SELECT query to get all sensors from the 'sensors' table.
-        const [rows] = await pool.execute('SELECT id, sensor_name FROM sensors ORDER BY sensor_name ASC');
-        console.log('Fetched available sensors:', rows);
+        connection = await pool.getConnection(); // Get a connection from the pool
+
+        // Execute a SELECT query to get sensors associated with the specific device_id
+        const [rows] = await connection.execute( // Use connection.execute on the pooled connection
+            'SELECT id, sensor_name, device_id FROM sensors WHERE device_id = ? ORDER BY sensor_name ASC', // Add WHERE clause
+            [deviceId] // Pass deviceId as a parameter to the query
+        );
+        console.log(`Fetched sensors for device ${deviceId}:`, rows);
         res.status(200).json(rows);
     } catch (error) {
-        console.error('Error fetching available sensors:', error);
+        console.error(`Error fetching sensors for device ${deviceId}:`, error);
         res.status(500).json({ error: 'Internal Server Error' });
+    } finally {
+        if (connection) {
+            connection.release(); // ALWAYS release the connection
+            console.log("🔵 Database connection released for /api/devices/:deviceId/sensors.");
+        }
     }
 });
 
@@ -1166,6 +1206,7 @@ app.get('/api/admin/assigned-establishments', authenticateAdminRoute, async (req
             SELECT
                 e.id AS establishmentId,
                 e.estab_name AS establishmentName,
+                e.device_id AS deviceId,
                 s.id AS sensorId,
                 s.sensor_name AS sensorName
             FROM
@@ -1173,9 +1214,7 @@ app.get('/api/admin/assigned-establishments', authenticateAdminRoute, async (req
             JOIN
                 user_establishments ue ON e.id = ue.establishment_id
             LEFT JOIN
-                establishment_sensors es ON e.id = es.establishment_id
-            LEFT JOIN
-                sensors s ON es.sensor_id = s.id
+                sensors s ON e.device_id = s.device_id -- <--- CHANGE IS HERE: Join sensors directly on device_id
             WHERE
                 ue.user_id = ?
             ORDER BY
@@ -1187,12 +1226,13 @@ app.get('/api/admin/assigned-establishments', authenticateAdminRoute, async (req
         const establishmentsMap = new Map();
 
         rows.forEach(row => {
-            const { establishmentId, establishmentName, sensorId, sensorName } = row;
+            const { establishmentId, establishmentName, deviceId, sensorId, sensorName } = row;
 
             if (!establishmentsMap.has(establishmentId)) {
                 establishmentsMap.set(establishmentId, {
                     id: establishmentId,
                     name: establishmentName,
+                    device_id: deviceId,
                     sensors: [] // Initialize an empty array for this establishment's sensors
                 });
             }
@@ -1544,51 +1584,84 @@ app.post('/api/access-requests', async (req, res) => {
     // Destructure deviceId from the request body
     const { fromUser, fromUserId, deviceId } = req.body; // Expecting these from the frontend
 
+    console.log("🟢 /api/access-requests: Received request to send access request.");
+    console.log("🟢 /api/access-requests: Request Body:", { fromUser, fromUserId, deviceId });
+
     // Add validation for deviceId
     if (!fromUser || !fromUserId || !deviceId) {
+        console.log("🔴 /api/access-requests: Missing User ID, Username, or Device ID in request.");
         return res.status(400).json({ success: false, message: 'Missing user information or device ID.' });
     }
 
+    let connection;
     try {
-        const connection = await pool.getConnection(); // Get a connection from the pool
+        connection = await pool.getConnection(); // Get a connection from the pool
+        await connection.beginTransaction(); // Start a transaction
 
-        try {
-            // 1. Check if a pending request already exists for this user and device ID
-            // This prevents duplicate requests for the same user-device combination.
-            const [existingRequests] = await connection.execute(
-                'SELECT id FROM notif WHERE user_id = ? AND type = ? AND status = ? AND device_id = ?',
-                [fromUserId, 'request', 'pending', deviceId] // Include deviceId in the check
-            );
+        console.log("🔵 /api/access-requests: Transaction started.");
 
-            if (existingRequests.length > 0) {
-                return res.status(409).json({ success: false, message: 'You already have a pending access request for this device. Please wait for the Super Admin\'s review.' });
-            }
+        // --- NEW STEP: 1. Update the user's device_id in the 'users' table ---
+        const updateUserDeviceIdSql = "UPDATE users SET device_id = ? WHERE id = ?";
+        console.log("🔵 /api/access-requests: Executing SQL to update user's device_id:", updateUserDeviceIdSql, "with deviceId:", deviceId, "and userId:", fromUserId);
+        const [updateUserResult] = await connection.execute(updateUserDeviceIdSql, [deviceId, fromUserId]);
 
-            // 2. Insert the new access request into the 'notif' table
-            const title = 'Access Request';
-            // Update the message to include the device ID for the admin
-            const message = `User '${fromUser}' (ID: ${fromUserId}) has requested access to restricted features for Device ID: ${deviceId}.`;
-            const status = 'pending';
-            const priority = 'normal';
-
-            const [result] = await connection.execute(
-                // Add device_id to the INSERT statement
-                'INSERT INTO notif (type, title, message, user_id, related_id, priority, status, device_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-                ['request', title, message, fromUserId, null, priority, status, deviceId] // Pass deviceId here
-            );
-
-            if (result.affectedRows === 1) {
-                res.status(201).json({ success: true, message: 'Your access request has been sent to the Super Admin for review.', requestId: result.insertId });
-            } else {
-                res.status(500).json({ success: false, message: 'Failed to send access request.' });
-            }
-
-        } finally {
-            connection.release(); // Release the connection back to the pool
+        console.log("🔵 /api/access-requests: User device_id update SQL result:", updateUserResult);
+        if (updateUserResult.affectedRows === 0) {
+            console.log("🟠 /api/access-requests: User not found when trying to update device_id. Affected rows: 0.");
+            await connection.rollback();
+            console.error("🔴 /api/access-requests: Transaction rolled back as user device_id could not be updated.");
+            return res.status(404).json({ success: false, message: "Failed to assign device ID. User not found." });
         }
+        console.log(`✅ /api/access-requests: User ${fromUserId}'s device_id updated to ${deviceId}. Affected rows: ${updateUserResult.affectedRows}`);
+
+        // 2. Check if a pending request already exists for this user and device ID
+        // This prevents duplicate requests for the same user-device combination.
+        const [existingRequests] = await connection.execute(
+            'SELECT id FROM notif WHERE user_id = ? AND type = ? AND status = ? AND device_id = ?',
+            [fromUserId, 'request', 'pending', deviceId] // Include deviceId in the check
+        );
+
+        if (existingRequests.length > 0) {
+            console.log("🟠 /api/access-requests: Existing pending request found for user and device. Rolling back.");
+            await connection.rollback(); // Rollback the device_id update too if notification already exists
+            return res.status(409).json({ success: false, message: 'You already have a pending access request for this device. Please wait for the Super Admin\'s review.' });
+        }
+        console.log("✅ /api/access-requests: No existing pending request found.");
+
+
+        // 3. Insert the new access request into the 'notif' table
+        const title = 'Access Request';
+        const message = `User '${fromUser}' (ID: ${fromUserId}) has requested access to restricted features for Device ID: ${deviceId}.`;
+        const status = 'pending';
+        const priority = 'normal';
+
+        const [result] = await connection.execute(
+            'INSERT INTO notif (type, title, message, user_id, related_id, priority, status, device_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            ['request', title, message, fromUserId, null, priority, status, deviceId] // Pass deviceId here
+        );
+
+        if (result.affectedRows === 1) {
+            await connection.commit(); // Commit both operations if successful
+            console.log(`🎉 /api/access-requests: Access request sent for user ${fromUserId} and device ${deviceId}. Device ID updated in users table. Transaction committed.`);
+            res.status(201).json({ success: true, message: 'Your access request has been sent to the Super Admin for review.', requestId: result.insertId });
+        } else {
+            console.log("🔴 /api/access-requests: Failed to insert notification. Rolling back.");
+            await connection.rollback(); // Rollback if notification insertion fails
+            res.status(500).json({ success: false, message: 'Failed to send access request.' });
+        }
+
     } catch (error) {
-        console.error('Error in /api/access-requests:', error);
+        if (connection) {
+            await connection.rollback(); // Rollback on any error during the process
+            console.error("🔴 /api/access-requests: Transaction rolled back due to error:", error);
+        }
+        console.error('🔴 Error in /api/access-requests:', error);
         res.status(500).json({ success: false, message: 'Server error while processing your request.' });
+    } finally {
+        if (connection) {
+            connection.release(); // Release the connection back to the pool
+            console.log("🔵 /api/access-requests: Database connection released.");
+        }
     }
 });
 
@@ -1952,6 +2025,61 @@ app.post('/api/contact', async (req, res) => {
 });
 
 
+// --- 1. Endpoint to get AVAILABLE sensors for adding to an establishment ---
+// This addresses the 404 error from Dashboard.js's fetchAvailableSensors()
+app.get('/api/sensors/available', verifyToken, async (req, res) => {
+    let connection;
+    try {
+        connection = await db.getConnection();
+        // REMOVE the WHERE device_id IS NULL clause to return all sensors
+        const [sensors] = await connection.execute(
+            `SELECT id, sensor_name, device_id FROM sensors ORDER BY sensor_name ASC` // <-- IMPORTANT: Also select device_id
+        );
+        console.log('🟢 Backend - /api/sensors/available: Fetched all sensors:', sensors);
+        res.status(200).json(sensors);
+    } catch (error) {
+        console.error('🔴 Backend - /api/sensors/available: Error fetching all sensors:', error);
+        res.status(500).json({ message: 'Internal Server Error fetching all sensors.' });
+    } finally {
+        if (connection) connection.release();
+    }
+});
+
+// --- Endpoint to reset a device_id for a sensor (set it to NULL) ---
+// This can be used if you want to 'unassign' a sensor from a device.
+// You could call this from an admin panel if you have a "Remove Sensor from Device" button.
+app.put('/api/sensors/:sensorId/unassign-device', verifyToken, authorizeAdmin, async (req, res) => {
+    const { sensorId } = req.params;
+    console.log(`🟢 /api/sensors/${sensorId}/unassign-device: Request to unassign device from sensor.`);
+
+    if (!sensorId) {
+        return res.status(400).json({ success: false, message: 'Sensor ID is required.' });
+    }
+
+    let connection;
+    try {
+        connection = await db.getConnection();
+        const [result] = await connection.execute(
+            `UPDATE sensors SET device_id = NULL WHERE id = ?`,
+            [sensorId]
+        );
+
+        if (result.affectedRows > 0) {
+            console.log(`✅ Sensor ${sensorId} device_id set to NULL.`);
+            res.status(200).json({ success: true, message: 'Sensor unassigned from device successfully.' });
+        } else {
+            console.log(`🟠 Sensor ${sensorId} not found or already unassigned.`);
+            res.status(404).json({ success: false, message: 'Sensor not found or already unassigned.' });
+        }
+    } catch (error) {
+        console.error(`🔴 Error unassigning device from sensor ${sensorId}:`, error);
+        res.status(500).json({ success: false, message: 'Server error unassigning sensor.' });
+    } finally {
+        if (connection) {
+            connection.release();
+        }
+    }
+});
 
 // // --- NEW API ENDPOINT FOR DECLINING USER ACCESS ---
 // app.post("/api/admin/decline-user-access", verifyToken, authorizeSuperAdmin, (req, res) => {

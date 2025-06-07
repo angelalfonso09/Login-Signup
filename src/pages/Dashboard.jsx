@@ -1,4 +1,4 @@
-// Dashboard.js (updated with robust filtering and delete function)
+// Dashboard.js (updated)
 
 import React, { useContext, useState, useEffect } from "react";
 import Navbar from "../components/Navbar"; // Assuming Navbar exists and is used elsewhere
@@ -50,12 +50,27 @@ const Dashboard = () => {
 
   const fetchAvailableSensors = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/sensors');
+      const token = localStorage.getItem('token'); // Assuming you store the token here
+      if (!token) {
+        console.error("No authentication token found. Please log in.");
+        // Optionally redirect to login page
+        return;
+      }
+
+      const response = await fetch('http://localhost:5000/api/sensors/available', {
+        headers: {
+          'Authorization': `Bearer ${token}` // Include the token in the Authorization header
+        }
+      });
+
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        console.error(`HTTP error! status: ${response.status}, text: ${errorText}`); // More detailed error log
+        throw new Error(`HTTP error! status: ${response.status}, text: ${errorText}`);
       }
       const data = await response.json();
-      setAvailableSensors(data); // Assuming the API returns an array of sensor objects [{id: N, name: 'Sensor Name'}, ...]
+      // Data will now include `device_id` for each sensor
+      setAvailableSensors(data);
     } catch (error) {
       console.error("Failed to fetch available sensors:", error);
       setAvailableSensors([]);
@@ -64,7 +79,7 @@ const Dashboard = () => {
 
   const addEstablishmentToDatabase = async (name, sensors, deviceId) => { // Added deviceId parameter
     try {
-      const response = await fetch('http://localhost:5000/api/establishments', {
+      const response = await fetch('http://localhost:5000/api/establishments', { // Corrected URL
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -228,7 +243,15 @@ const Dashboard = () => {
                             checked={selectedSensors.includes(sensor.id)}
                             onChange={() => handleSensorCheckboxChange(sensor.id)}
                           />
-                          <label htmlFor={`sensor-${sensor.id}`}>{sensor.sensor_name}</label>
+                          <label htmlFor={`sensor-${sensor.id}`}>
+                            {sensor.sensor_name}
+                            {/* NEW: Display status */}
+                            {sensor.device_id ? ( // Check if device_id exists
+                                <span className={styles.assignedStatus} title={`Currently assigned to Device ID: ${sensor.device_id}`}> (Assigned)</span>
+                            ) : (
+                                <span className={styles.availableStatus}> (Available)</span>
+                            )}
+                          </label>
                         </div>
                       ))}
                     </div>
