@@ -1,11 +1,15 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { ThemeContext } from '../context/ThemeContext';
 import Sidebar from '../components/Sidebar';
-import { ChevronRight, ChevronDown, User, Lock, Bell, Sun, Moon, History, Save, Edit, KeyRound, LogIn, LogOut } from 'lucide-react'; // Added LogIn and LogOut icons
+import { ChevronRight, ChevronDown, User, Lock, Bell, Sun, Moon, History, Save, Edit, KeyRound, LogIn, LogOut } from 'lucide-react';
 import axios from 'axios';
 
 // Import the new CSS file
 import '../styles/Pages Css/Settings.css';
+
+// Define your backend API base URL
+// Ensure this matches the port your Node.js backend is running on (default: 5000)
+const API_BASE_URL = 'http://localhost:5000/api';
 
 const SettingsPage = () => {
   const { theme, toggleTheme } = useContext(ThemeContext);
@@ -18,13 +22,20 @@ const SettingsPage = () => {
   const [receiveNotifications, setReceiveNotifications] = useState(true);
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState(''); // 'success' or 'error'
-  const [sessionHistory, setSessionHistory] = useState([]); // New state for session history
+  const [sessionHistory, setSessionHistory] = useState([]);
 
-  // State to manage open/closed status of each section
+  // State to manage open/closed status of each main section
   const [openSection, setOpenSection] = useState(null); // 'profile', 'appearance', 'session'
+
+  // States to manage the visibility of nested forms within Profile Management
+  const [showEditProfileForm, setShowEditProfileForm] = useState(false);
+  const [showChangePasswordForm, setShowChangePasswordForm] = useState(false);
 
   // Load user data and session history from localStorage on component mount
   useEffect(() => {
+    // In a real application, the initial user data would be fetched from the backend
+    // after a successful login. For this example, we still load from localStorage
+    // to populate the fields initially.
     const userString = localStorage.getItem('user');
     if (userString) {
       try {
@@ -91,9 +102,14 @@ const SettingsPage = () => {
     }
   };
 
-  // Function to toggle section visibility
+  // Function to toggle main section visibility
   const toggleSection = (sectionName) => {
     setOpenSection(openSection === sectionName ? null : sectionName);
+    // When a main section is closed, hide its nested forms
+    if (openSection === sectionName) {
+      setShowEditProfileForm(false);
+      setShowChangePasswordForm(false);
+    }
   };
 
   // Function to handle saving profile changes
@@ -102,18 +118,69 @@ const SettingsPage = () => {
     setMessage('');
     setMessageType('');
 
+    // --- NEW: Get the authentication token ---
+    const token = localStorage.getItem('token'); // Assuming you store your JWT here after login
+    if (!token) {
+        setMessage('You are not logged in. Please log in first.');
+        setMessageType('error');
+        return;
+    }
+    // --- END NEW ---
+
     try {
-      setMessage('Profile updated successfully (mock)!');
+      // Send data to the backend API with Authorization header
+      const response = await axios.put(`${API_BASE_URL}/super-admin/profile`,
+        { username, email, phone },
+        {
+          headers: {
+            Authorization: `Bearer ${token}` // Send the token with 'Bearer' prefix
+          }
+        }
+      );
+
+      // Update frontend state with confirmed data from backend
+      const updatedUser = response.data.user;
+      setUsername(updatedUser.username);
+      setEmail(updatedUser.email);
+      setPhone(updatedUser.phone);
+      setReceiveNotifications(updatedUser.receive_notifications);
+
+      setMessage(response.data.message);
       setMessageType('success');
+
+      // Update localStorage to reflect the changes confirmed by the backend
       const userString = localStorage.getItem('user');
       if (userString) {
         let currentUser = JSON.parse(userString);
-        currentUser = { ...currentUser, username, email, phone };
+        currentUser = {
+          ...currentUser,
+          username: updatedUser.username,
+          email: updatedUser.email,
+          phone: updatedUser.phone,
+          receiveNotifications: updatedUser.receive_notifications
+        };
         localStorage.setItem('user', JSON.stringify(currentUser));
       }
+
+      setShowEditProfileForm(false); // Hide form after successful save
     } catch (error) {
       console.error("Error saving profile:", error);
-      setMessage('Failed to update profile due to a server error.');
+      // Check for specific error messages from the backend
+      if (error.response) {
+          if (error.response.status === 401) {
+              setMessage(error.response.data.message || 'Unauthorized. Please log in again.');
+          } else if (error.response.status === 400) {
+              setMessage(error.response.data.message || 'Invalid input for profile update.');
+          } else if (error.response.status === 409) { // Added for conflict (username/email in use)
+              setMessage(error.response.data.message || 'Username or email already in use.');
+          } else {
+              setMessage(error.response.data.message || 'Failed to update profile due to a server error.');
+          }
+      } else if (error.request) {
+          setMessage('No response from server. Check your internet connection.');
+      } else {
+          setMessage('Error setting up request to update profile.');
+      }
       setMessageType('error');
     }
   };
@@ -123,6 +190,15 @@ const SettingsPage = () => {
     e.preventDefault();
     setMessage('');
     setMessageType('');
+
+    // --- NEW: Get the authentication token ---
+    const token = localStorage.getItem('token');
+    if (!token) {
+        setMessage('You are not logged in. Please log in first.');
+        setMessageType('error');
+        return;
+    }
+    // --- END NEW ---
 
     if (!currentPassword || !newPassword || !confirmNewPassword) {
       setMessage('All password fields are required.');
@@ -141,14 +217,40 @@ const SettingsPage = () => {
     }
 
     try {
-      setMessage('Password changed successfully (mock)!');
+      // Send data to the backend API with Authorization header
+      const response = await axios.post(`${API_BASE_URL}/super-admin/change-password`,
+        { currentPassword, newPassword },
+        {
+          headers: {
+            Authorization: `Bearer ${token}` // Send the token with 'Bearer' prefix
+          }
+        }
+      );
+
+      setMessage(response.data.message);
       setMessageType('success');
       setCurrentPassword('');
       setNewPassword('');
       setConfirmNewPassword('');
+      setShowChangePasswordForm(false); // Hide form after successful change
     } catch (error) {
       console.error("Error changing password:", error);
-      setMessage('Failed to change password due to a server error.');
+      // Check for specific error messages from the backend
+      if (error.response) {
+          if (error.response.status === 401) {
+              setMessage(error.response.data.message || 'Unauthorized. Incorrect current password or session expired. Please log in again.');
+          } else if (error.response.status === 400) {
+              setMessage(error.response.data.message || 'Invalid input for password change.');
+          } else if (error.response.status === 404) {
+              setMessage(error.response.data.message || 'User not found. This should not happen if logged in.');
+          } else {
+              setMessage(error.response.data.message || 'Failed to change password due to a server error.');
+          }
+      } else if (error.request) {
+          setMessage('No response from server. Check your internet connection.');
+      } else {
+          setMessage('Error setting up request to change password.');
+      }
       setMessageType('error');
     }
   };
@@ -156,13 +258,37 @@ const SettingsPage = () => {
   // Function to handle notification preference change
   const handleToggleNotifications = async () => {
     const newPreference = !receiveNotifications;
-    setReceiveNotifications(newPreference);
+    setReceiveNotifications(newPreference); // Optimistic update
+
     setMessage('');
     setMessageType('');
 
+    // --- NEW: Get the authentication token ---
+    const token = localStorage.getItem('token');
+    if (!token) {
+        setMessage('You are not logged in. Please log in first.');
+        setMessageType('error');
+        setReceiveNotifications(!newPreference); // Revert optimistic update immediately
+        return;
+    }
+    // --- END NEW ---
+
     try {
-      setMessage('Notification preference updated (mock)!');
+      // Send data to the backend API with Authorization header
+      const response = await axios.put(`${API_BASE_URL}/super-admin/notifications`,
+        { receiveNotifications: newPreference },
+        {
+          headers: {
+            Authorization: `Bearer ${token}` // Send the token with 'Bearer' prefix
+          }
+        }
+      );
+
+      // Confirm update from backend response
+      setMessage(response.data.message);
       setMessageType('success');
+
+      // Update localStorage with new notification preference
       const userString = localStorage.getItem('user');
       if (userString) {
         let currentUser = JSON.parse(userString);
@@ -171,9 +297,21 @@ const SettingsPage = () => {
       }
     } catch (error) {
       console.error("Error updating notification preference:", error);
-      setMessage('Failed to update notification preference due to a server error.');
+      if (error.response) {
+          if (error.response.status === 401) {
+              setMessage(error.response.data.message || 'Unauthorized. Please log in again.');
+          } else if (error.response.status === 400) {
+              setMessage(error.response.data.message || 'Invalid input for notification preference.');
+          } else {
+              setMessage(error.response.data.message || 'Failed to update notification preference due to a server error.');
+          }
+      } else if (error.request) {
+          setMessage('No response from server. Check your internet connection.');
+      } else {
+          setMessage('Error setting up request to update notification preference.');
+      }
       setMessageType('error');
-      setReceiveNotifications(!newPreference); // Revert on failure
+      setReceiveNotifications(!newPreference); // Revert optimistic update on failure
     }
   };
 
@@ -202,105 +340,109 @@ const SettingsPage = () => {
             {openSection === 'profile' && (
               <div className="settings-page-form-wrapper">
                 {/* Edit Profile Item */}
-                <div className="settings-page-list-item" onClick={() => console.log('Edit Profile Clicked')}>
+                <div className="settings-page-list-item" onClick={() => { setShowEditProfileForm(!showEditProfileForm); setShowChangePasswordForm(false); }}>
                   <div className="settings-page-item-content">
                     <Edit size={20} className="settings-page-item-icon" />
                     <span className="settings-page-item-text">Edit Profile</span>
                   </div>
-                  <ChevronRight size={20} className="settings-page-item-arrow" />
+                  {showEditProfileForm ? <ChevronDown size={20} className="settings-page-item-arrow" /> : <ChevronRight size={20} className="settings-page-item-arrow" />}
                 </div>
-                {/* Content for Edit Profile (Form) - displayed directly for now */}
-                <form onSubmit={handleSaveProfile} className="settings-page-nested-form">
-                  <div className="settings-page-form-group">
-                    <label htmlFor="username">Username</label>
-                    <input
-                      type="text"
-                      id="username"
-                      className="settings-page-input-field"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      placeholder="Your username"
-                      required
-                    />
-                  </div>
-                  <div className="settings-page-form-group">
-                    <label htmlFor="email">Email</label>
-                    <input
-                      type="email"
-                      id="email"
-                      className="settings-page-input-field"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="your.email@example.com"
-                      required
-                    />
-                  </div>
-                  <div className="settings-page-form-group">
-                    <label htmlFor="phone">Phone</label>
-                    <input
-                      type="tel"
-                      id="phone"
-                      className="settings-page-input-field"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      placeholder="e.g., +1234567890"
-                    />
-                  </div>
-                  <button type="submit" className="settings-page-button settings-page-button-primary">
-                    <Save size={20} className="settings-page-button-icon" /> Save Profile
-                  </button>
-                </form>
+                {/* Content for Edit Profile (Form) */}
+                {showEditProfileForm && (
+                  <form onSubmit={handleSaveProfile} className="settings-page-nested-form">
+                    <div className="settings-page-form-group">
+                      <label htmlFor="username">Username</label>
+                      <input
+                        type="text"
+                        id="username"
+                        className="settings-page-input-field"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        placeholder="Your username"
+                        required
+                      />
+                    </div>
+                    <div className="settings-page-form-group">
+                      <label htmlFor="email">Email</label>
+                      <input
+                        type="email"
+                        id="email"
+                        className="settings-page-input-field"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="your.email@example.com"
+                        required
+                      />
+                    </div>
+                    <div className="settings-page-form-group">
+                      <label htmlFor="phone">Phone</label>
+                      <input
+                        type="tel"
+                        id="phone"
+                        className="settings-page-input-field"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        placeholder="e.g., +1234567890"
+                      />
+                    </div>
+                    <button type="submit" className="settings-page-button settings-page-button-primary">
+                      <Save size={20} className="settings-page-button-icon" /> Save Profile
+                    </button>
+                  </form>
+                )}
 
                 {/* Change Password Item */}
-                <div className="settings-page-list-item" onClick={() => console.log('Change Password Clicked')}>
+                <div className="settings-page-list-item" onClick={() => { setShowChangePasswordForm(!showChangePasswordForm); setShowEditProfileForm(false); }}>
                   <div className="settings-page-item-content">
                     <KeyRound size={20} className="settings-page-item-icon" />
                     <span className="settings-page-item-text">Change Password</span>
                   </div>
-                  <ChevronRight size={20} className="settings-page-item-arrow" />
+                  {showChangePasswordForm ? <ChevronDown size={20} className="settings-page-item-arrow" /> : <ChevronRight size={20} className="settings-page-item-arrow" />}
                 </div>
-                {/* Content for Change Password (Form) - displayed directly for now */}
-                <form onSubmit={handleSavePassword} className="settings-page-nested-form">
-                  <div className="settings-page-form-group">
-                    <label htmlFor="currentPassword">Current Password</label>
-                    <input
-                      type="password"
-                      id="currentPassword"
-                      className="settings-page-input-field"
-                      value={currentPassword}
-                      onChange={(e) => setCurrentPassword(e.target.value)}
-                      placeholder="Enter current password"
-                      required
-                    />
-                  </div>
-                  <div className="settings-page-form-group">
-                    <label htmlFor="newPassword">New Password</label>
-                    <input
-                      type="password"
-                      id="newPassword"
-                      className="settings-page-input-field"
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      placeholder="Enter new password"
-                      required
-                    />
-                  </div>
-                  <div className="settings-page-form-group">
-                    <label htmlFor="confirmNewPassword">Confirm New Password</label>
-                    <input
-                      type="password"
-                      id="confirmNewPassword"
-                      className="settings-page-input-field"
-                      value={confirmNewPassword}
-                      onChange={(e) => setConfirmNewPassword(e.target.value)}
-                      placeholder="Confirm new password"
-                      required
-                    />
-                  </div>
-                  <button type="submit" className="settings-page-button settings-page-button-primary">
-                    <Save size={20} className="settings-page-button-icon" /> Change Password
-                  </button>
-                </form>
+                {/* Content for Change Password (Form) */}
+                {showChangePasswordForm && (
+                  <form onSubmit={handleSavePassword} className="settings-page-nested-form">
+                    <div className="settings-page-form-group">
+                      <label htmlFor="currentPassword">Current Password</label>
+                      <input
+                        type="password"
+                        id="currentPassword"
+                        className="settings-page-input-field"
+                        value={currentPassword}
+                        onChange={(e) => setCurrentPassword(e.target.value)}
+                        placeholder="Enter current password"
+                        required
+                      />
+                    </div>
+                    <div className="settings-page-form-group">
+                      <label htmlFor="newPassword">New Password</label>
+                      <input
+                        type="password"
+                        id="newPassword"
+                        className="settings-page-input-field"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        placeholder="Enter new password"
+                        required
+                      />
+                    </div>
+                    <div className="settings-page-form-group">
+                      <label htmlFor="confirmNewPassword">Confirm New Password</label>
+                      <input
+                        type="password"
+                        id="confirmNewPassword"
+                        className="settings-page-input-field"
+                        value={confirmNewPassword}
+                        onChange={(e) => setConfirmNewPassword(e.target.value)}
+                        placeholder="Confirm new password"
+                        required
+                      />
+                    </div>
+                    <button type="submit" className="settings-page-button settings-page-button-primary">
+                      <Save size={20} className="settings-page-button-icon" /> Change Password
+                    </button>
+                  </form>
+                )}
               </div>
             )}
           </section>
@@ -374,8 +516,6 @@ const SettingsPage = () => {
                           **{session.username}** {session.type === 'login' ? 'logged in' : 'logged out'} on {session.timestamp} from {session.device} (IP: {session.ipAddress})
                         </span>
                       </div>
-                      {/* You might not need an arrow here unless there's more detail to show */}
-                      {/* <ChevronRight size={20} className="settings-page-item-arrow" /> */}
                     </div>
                   ))
                 ) : (
@@ -385,7 +525,6 @@ const SettingsPage = () => {
                     </div>
                   </div>
                 )}
-
               </div>
             )}
           </section>

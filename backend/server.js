@@ -30,6 +30,28 @@ const JWT_SECRET = process.env.JWT_SECRET;
 
 const authenticateUser = require('../backend/middleware/authenticateUser');
 
+const authenticateToken = (req, res, next) => {
+    // Get the token from the Authorization header (Bearer token)
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1]; // Extract the token after 'Bearer'
+
+    if (token == null) {
+        // No token provided
+        return res.status(401).json({ message: 'Authentication token required.' });
+    }
+
+    // Verify the token
+    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+        if (err) {
+            // Token is invalid or expired
+            return res.status(403).json({ message: 'Invalid or expired token.' });
+        }
+        // If valid, attach the user payload from the token to the request object
+        req.user = user;
+        next(); // Proceed to the next middleware/route handler
+    });
+};
+
 const authMiddleware = (req, res, next) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1]; // Expected format: "Bearer TOKEN"
@@ -2078,6 +2100,162 @@ app.put('/api/sensors/:sensorId/unassign-device', verifyToken, authorizeAdmin, a
         if (connection) {
             connection.release();
         }
+    }
+});
+
+
+// PUT /api/user/profile - Update user profile information
+app.put('/api/super-admin/profile', authenticateToken, async (req, res) => {
+    const { username, email, phone } = req.body;
+
+    const userId = req.user.id;
+
+    if (!username || !email) {
+        return res.status(400).json({ message: 'Username and email are required.' });
+    }
+
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        const [result] = await connection.execute(
+            'UPDATE users SET username = ?, email = ?, phone = ? WHERE id = ?',
+            [username, email, phone, userId]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'User not found.' });
+        }
+
+        // Fetch the updated user data to send back
+        const [rows] = await connection.execute(
+            'SELECT username, email, phone FROM users WHERE id = ?',
+            [userId]
+        );
+        const updatedUser = rows[0];
+
+        res.status(200).json({ message: 'Profile updated successfully!', user: updatedUser });
+
+    } catch (error) {
+        console.error('Error updating profile:', error);
+        if (error.code === 'ER_DUP_ENTRY') {
+            return res.status(409).json({ message: 'Username or email already exists.' });
+        }
+        res.status(500).json({ message: 'Failed to update profile due to a server error.' });
+    } finally {
+        if (connection) connection.release(); // Release the connection
+    }
+});
+
+// POST /api/user/change-password - Change user password
+app.post('/api/super-admin/change-password', authenticateToken, async (req, res) => {
+
+    const userId = req.user.id;
+
+    const { currentPassword, newPassword } = req.body;
+
+    // 1. Basic input validation
+    if (!currentPassword || !newPassword) {
+        return res.status(400).json({ message: 'Current and new passwords are required.' });
+    }
+    if (newPassword.length < 8) {
+        return res.status(400).json({ message: 'New password must be at least 8 characters long.' });
+    }
+
+    let connection;
+    try {
+        connection = await pool.getConnection();
+
+        // 2. Retrieve current hashed password from database
+        // Ensure column name 'password_hash' matches the actual column name in your database
+        const [rows] = await connection.execute(
+            'SELECT password_hash FROM users WHERE id = ?',
+            [userId]
+        );
+
+        // 3. Handle case where user is not found
+        if (rows.length === 0) {
+            // This 404 is good for "user not found based on ID",
+            // but in a fully authenticated flow, a 401 Unauthorized might be more appropriate
+            // if the user ID came from an invalid or missing token.
+            return res.status(404).json({ message: 'User not found.' });
+        }
+
+        // IMPORTANT: Ensure you are accessing the correct column name from the result
+        // If your column in the database is 'password_hash', then access 'password_hash'
+        const storedHashedPassword = rows[0].password_hash; // Changed from hashed_password to password_hash
+
+        // 4. Compare provided current password with stored hashed password
+        const isMatch = await bcrypt.compare(currentPassword, storedHashedPassword);
+
+        if (!isMatch) {
+            return res.status(401).json({ message: 'Incorrect current password.' });
+        }
+
+        // 5. Check if new password is the same as the current password (after hashing)
+        // This is a good security practice.
+        if (await bcrypt.compare(newPassword, storedHashedPassword)) {
+            return res.status(400).json({ message: 'New password cannot be the same as the current password.' });
+        }
+
+        // 6. Hash the new password
+        const newHashedPassword = await bcrypt.hash(newPassword, 10); // 10 salt rounds is standard
+
+        // 7. Update password in database
+        const [result] = await connection.execute(
+            'UPDATE users SET password_hash = ? WHERE id = ?',
+            [newHashedPassword, userId]
+        );
+
+        // 8. Check if the update actually affected a row
+        if (result.affectedRows === 0) {
+            // This could happen if the user was somehow deleted between select and update,
+            // or if the userId didn't match. A 404 is still appropriate here.
+            return res.status(404).json({ message: 'User not found or password already updated (no change needed).' });
+        }
+
+        // 9. Success response
+        res.status(200).json({ message: 'Password changed successfully!' });
+
+    } catch (error) {
+        // 10. Centralized error handling for unexpected issues (e.g., database connection errors)
+        console.error('Error changing password:', error);
+        res.status(500).json({ message: 'Failed to change password due to a server error.' });
+    } finally {
+        // 11. Release the database connection back to the pool
+        if (connection) connection.release();
+    }
+});
+
+// PUT /api/super-admin/notifications - Update notification preference
+app.put('/api/super-admin/notifications', async (req, res) => {
+    const { receiveNotifications } = req.body;
+
+    // In a real app, you'd get the current user ID from an authentication token
+    const userId = "mock_user_id_123"; // For demonstration
+
+    if (typeof receiveNotifications !== 'boolean') {
+        return res.status(400).json({ message: 'Invalid data: receiveNotifications must be a boolean.' });
+    }
+
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        const [result] = await connection.execute(
+            'UPDATE users SET receive_notifications = ? WHERE id = ?',
+            [receiveNotifications, userId]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'User not found.' });
+        }
+
+        res.status(200).json({ message: 'Notification preference updated!', receiveNotifications: receiveNotifications });
+
+    } catch (error) {
+        console.error('Error updating notification preference:', error);
+        res.status(500).json({ message: 'Failed to update notification preference due to a server error.' });
+    } finally {
+        if (connection) connection.release();
     }
 });
 
