@@ -1,5 +1,3 @@
-// Dashboard.js (updated)
-
 import React, { useContext, useState, useEffect } from "react";
 import Navbar from "../components/Navbar"; // Assuming Navbar exists and is used elsewhere
 import Sidebar from "../components/Sidebar";
@@ -8,6 +6,12 @@ import { ThemeContext } from "../context/ThemeContext";
 import DashboardPage from "../components/DashboardPage"; // This component holds the total stats
 import EstablishmentSensors from "../components/DashboardEstablishment"; // This component displays individual establishment cards
 import CalendarComponent from "../components/CalendarComponent"; // Import Calendar Component
+import io from 'socket.io-client'; // Import socket.io-client
+
+// Initialize Socket.IO connection here, or import from a dedicated socket.js file
+// const socket = io('http://localhost:3001'); // Ensure this matches your backend's URL
+// If you have a shared socket instance like in Turbidity.js, import it:
+import socket from '../Dashboard Meters/socket'; // Assuming 'socket.js' is in '../components'
 
 const Dashboard = () => {
   const { theme, toggleTheme } = useContext(ThemeContext);
@@ -19,26 +23,29 @@ const Dashboard = () => {
   const [availableSensors, setAvailableSensors] = useState([]); // New state for available sensors
   const [selectedSensors, setSelectedSensors] = useState([]); // New state for selected sensors
 
+  // --- States for the Global Warning Pop-up ---
+  const [showWarningPopup, setShowWarningPopup] = useState(false);
+  const [warningMessage, setWarningMessage] = useState('');
+  const [warningTitle, setWarningTitle] = useState('⚠️ Water Quality Alert!');
+
   // --- Helper Function to Generate Device ID ---
   const generateDeviceId = () => {
-    // Generates a random 5-digit number as a string
     return Math.floor(10000 + Math.random() * 90000).toString();
   };
 
   // --- Database Interaction ---
-
   const fetchEstablishments = async () => {
     setLoading(true);
     try {
       const response = await fetch('http://localhost:5000/api/establishments');
-      console.log('Frontend - HTTP Response Status:', response.status); // Log status
+      console.log('Frontend - HTTP Response Status:', response.status);
       if (!response.ok) {
         const errorText = await response.text();
         console.error('Frontend - HTTP Error fetching establishments:', response.status, errorText);
         throw new Error(`HTTP error! status: ${response.status}, text: ${errorText}`);
       }
       const data = await response.json();
-      console.log('Frontend - Data received from backend:', data); // <--- THIS IS KEY!
+      console.log('Frontend - Data received from backend:', data);
       setEstablishments(data);
     } catch (error) {
       console.error("Frontend - Failed to fetch establishments (catch block):", error);
@@ -50,26 +57,24 @@ const Dashboard = () => {
 
   const fetchAvailableSensors = async () => {
     try {
-      const token = localStorage.getItem('token'); // Assuming you store the token here
+      const token = localStorage.getItem('token');
       if (!token) {
         console.error("No authentication token found. Please log in.");
-        // Optionally redirect to login page
         return;
       }
 
       const response = await fetch('http://localhost:5000/api/sensors/available', {
         headers: {
-          'Authorization': `Bearer ${token}` // Include the token in the Authorization header
+          'Authorization': `Bearer ${token}`
         }
       });
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error(`HTTP error! status: ${response.status}, text: ${errorText}`); // More detailed error log
+        console.error(`HTTP error! status: ${response.status}, text: ${errorText}`);
         throw new Error(`HTTP error! status: ${response.status}, text: ${errorText}`);
       }
       const data = await response.json();
-      // Data will now include `device_id` for each sensor
       setAvailableSensors(data);
     } catch (error) {
       console.error("Failed to fetch available sensors:", error);
@@ -77,14 +82,13 @@ const Dashboard = () => {
     }
   };
 
-  const addEstablishmentToDatabase = async (name, sensors, deviceId) => { // Added deviceId parameter
+  const addEstablishmentToDatabase = async (name, sensors, deviceId) => {
     try {
-      const response = await fetch('http://localhost:5000/api/establishments', { // Corrected URL
+      const response = await fetch('http://localhost:5000/api/establishments', {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        // Include selected sensors and the generated deviceId in the payload
         body: JSON.stringify({ name, sensors, device_id: deviceId }),
       });
       if (!response.ok) {
@@ -94,20 +98,17 @@ const Dashboard = () => {
       }
       const responseData = await response.json();
       console.log('Establishment added successfully:', responseData);
-      await fetchEstablishments(); // Refresh the list after adding
+      await fetchEstablishments();
     } catch (error) {
       console.error("Failed to add establishment:", error);
-      // You might want to show a user-friendly error message here
     }
   };
 
-  // --- NEW: Function to delete an establishment ---
   const handleDeleteEstablishment = async (establishmentId, establishmentName) => {
-    // Implement a custom confirmation dialog here instead of `confirm()`
     const isConfirmed = window.confirm(`Are you sure you want to delete "${establishmentName}"? This action cannot be undone.`);
 
     if (!isConfirmed) {
-      return; // User cancelled the deletion
+      return;
     }
 
     try {
@@ -122,14 +123,11 @@ const Dashboard = () => {
       }
 
       console.log(`Establishment ${establishmentId} deleted successfully.`);
-      // Refresh the list after deletion
       await fetchEstablishments();
     } catch (error) {
       console.error("Failed to delete establishment:", error);
-      // Show error message to user, e.g., with a toast or modal
     }
   };
-
 
   // --- Effect Hooks ---
 
@@ -145,11 +143,34 @@ const Dashboard = () => {
     }
   }, [showAddForm]);
 
-  // --- Event Handlers ---
+  // --- Socket.IO Listener for Global Notifications ---
+  useEffect(() => {
+    const handleNewNotification = (notification) => {
+      console.log('Dashboard received new notification:', notification);
+      
+      // Customize the message for the pop-up
+      // The backend is already sending a comprehensive message like:
+      // "⚠️ Alert: Turbidity safety score is below threshold (30/100 Safety Score). Current value: 25/100 Safety Score."
+      // or "⚠️ Alert: pH level is outside optimal range (6.5-8.5pH). Current value: 6.0pH."
+      
+      // Remove the "⚠️ Alert: " prefix if you want a cleaner message in the pop-up body
+      const cleanedMessage = notification.message.replace('⚠️ Alert: ', '');
+      
+      setWarningMessage(`${cleanedMessage} Please take actions now.`);
+      setShowWarningPopup(true); // Show the pop-up
+    };
 
+    socket.on('newNotification', handleNewNotification);
+
+    return () => {
+      socket.off('newNotification', handleNewNotification);
+    };
+  }, []); // Empty dependency array means this effect runs once on mount
+
+  // --- Event Handlers ---
   const handleAddButtonClick = () => {
     setShowAddForm(true);
-    setSelectedSensors([]); // Clear previously selected sensors
+    setSelectedSensors([]);
   };
 
   const handleInputChange = (event) => {
@@ -166,14 +187,12 @@ const Dashboard = () => {
 
   const handleAddEstablishment = async () => {
     if (newEstablishmentName.trim() !== "") {
-      const newDeviceId = generateDeviceId(); // Generate the device ID
-      // Add to the database, including selected sensors and the generated device ID
+      const newDeviceId = generateDeviceId();
       await addEstablishmentToDatabase(newEstablishmentName, selectedSensors, newDeviceId);
       setNewEstablishmentName("");
-      setSelectedSensors([]); // Clear selected sensors after adding
+      setSelectedSensors([]);
       setShowAddForm(false);
     } else {
-      // Use a custom modal or toast for alerts, not `alert()`
       console.warn("Please enter an establishment name.");
     }
   };
@@ -181,7 +200,7 @@ const Dashboard = () => {
   const handleCancelAdd = () => {
     setShowAddForm(false);
     setNewEstablishmentName("");
-    setSelectedSensors([]); // Clear selected sensors on cancel
+    setSelectedSensors([]);
   };
 
   const handleSearchChange = (event) => {
@@ -189,11 +208,9 @@ const Dashboard = () => {
   };
 
   // --- Filtered Establishments ---
-  // Filter by establishment.name, with a robust check for undefined/null establishments
   const filteredEstablishments = establishments.filter((establishment) => {
-    // Ensure 'establishment' is a valid object and has a 'name' property
     if (!establishment || typeof establishment.name !== 'string') {
-      return false; // Exclude this item if it's not a valid establishment object
+      return false;
     }
     return establishment.name.toLowerCase().includes(searchQuery.toLowerCase());
   });
@@ -239,14 +256,13 @@ const Dashboard = () => {
                           <input
                             type="checkbox"
                             id={`sensor-${sensor.id}`}
-                            value={sensor.id} // Set value to sensor.id
+                            value={sensor.id}
                             checked={selectedSensors.includes(sensor.id)}
                             onChange={() => handleSensorCheckboxChange(sensor.id)}
                           />
                           <label htmlFor={`sensor-${sensor.id}`}>
                             {sensor.sensor_name}
-                            {/* NEW: Display status */}
-                            {sensor.device_id ? ( // Check if device_id exists
+                            {sensor.device_id ? (
                                 <span className={styles.assignedStatus} title={`Currently assigned to Device ID: ${sensor.device_id}`}> (Assigned)</span>
                             ) : (
                                 <span className={styles.availableStatus}> (Available)</span>
@@ -283,13 +299,11 @@ const Dashboard = () => {
                 ) : filteredEstablishments.length === 0 ? (
                   <div className={styles.noEstablishmentsMessage}>No establishments found matching your search.</div>
                 ) : (
-                  // Pass the entire establishment object to EstablishmentSensors
                   filteredEstablishments.map((establishment) => (
                     <EstablishmentSensors
                       key={establishment.id}
                       establishment={establishment}
-                      // Pass the delete function as a prop
-                      onDelete={handleDeleteEstablishment} // <--- NEW PROP
+                      onDelete={handleDeleteEstablishment}
                     />
                   ))
                 )}
@@ -303,6 +317,19 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
+
+      {/* Global Pop-up Warning Notification (Centered on Screen) */}
+      {showWarningPopup && (
+        <div className="warning-popup"> {/* Ensure you have this class in your CSS */}
+          <div className="popup-content"> {/* Ensure you have this class in your CSS */}
+            <h3>{warningTitle}</h3>
+            <p>{warningMessage}</p>
+            <button onClick={() => setShowWarningPopup(false)} className="close-popup">
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -2357,29 +2357,6 @@ app.put('/api/super-admin/notifications', async (req, res) => {
 //   });
 // }
 
-// function insertNotification(water_quality_id, turbidityValue) {
-//   const threshold = 40;
-//   const status = 'Unread'; // Since turbidity is less than threshold, status is 'Unread'
-//   const message = `⚠️ Alert: Turbidity level dropped below threshold (${threshold}). Current value: ${turbidityValue}`;
-
-//   const notifQuery = `
-//     INSERT INTO notifications (water_quality_id, message, status)
-//     VALUES (?, ?, ?)
-//   `;
-
-//   db.query(notifQuery, [water_quality_id, message, status], (notifErr, notifResult) => {
-//     if (notifErr) {
-//       console.error("❌ Notification Insert Error:", notifErr.sqlMessage);
-//       console.error("❌ Full SQL:", notifErr.sql);
-//     } else {
-//       console.log("⚠️ Notification Inserted Successfully: ID", notifResult.insertId);
-
-//       // Emit the notification data to clients via socket.io
-//       io.emit("newNotification", { message: message, status: status });
-//     }
-//   });
-// }
-
 //     // Handling pH data
 //     if (phValue !== undefined) {
 //       console.log("📡 Received pH Level Data:", phValue);
@@ -2634,7 +2611,7 @@ app.put('/api/super-admin/notifications', async (req, res) => {
  // CLEAN VERSION NG BACKEND FOR GAUGE METER AND HISTORICAL DATA RAWR RAWR RAWR RAWR RAWR
  // CLEAN VERSION NG BACKEND FOR GAUGE METER AND HISTORICAL DATA RAWR RAWR RAWR RAWR RAWR
 
-// const serialPort = new SerialPort({ path: "COM5", baudRate: 9600 });
+// const serialPort = new SerialPort({ path: "COM7", baudRate: 9600 });
 // const parser = serialPort.pipe(new ReadlineParser({ delimiter: "\n" }));
 
 // let sensorConnected = false;
@@ -2871,3 +2848,233 @@ app.put('/api/super-admin/notifications', async (req, res) => {
 // app.get("/data/temperature/24h", (req, res) => getHistoricalData('temperature_readings', 'temperature_celsius', '24h', res));
 // app.get("/data/temperature/7d-avg", (req, res) => getHistoricalData('temperature_readings', 'temperature_celsius', '7d-avg', res));
 // app.get("/data/temperature/30d-avg", (req, res) => getHistoricalData('temperature_readings', 'temperature_celsius', '30d-avg', res));
+
+// // Notification for Sensors
+// async function insertNotification(
+//   sensorType,
+//   currentValue,
+//   threshold,
+//   condition, // e.g., 'lessThan', 'greaterThan', 'outsideRange'
+//   unit = "" // Unit for the sensor value (e.g., "NTU", "pH", "ppm")
+// ) {
+//   const type = "Sensor Alert"; // A general type for these notifications
+//   let title = `${sensorType.charAt(0).toUpperCase() + sensorType.slice(1)} Alert`; // Capitalize first letter for title
+//   let message = "";
+//   const priority = "High"; // Assuming all sensor alerts are high priority
+
+//   switch (sensorType) {
+//     case "turbidity":
+//     case "tds":
+//     case "salinity":
+//     case "ec":
+//       if (condition === "lessThan" && currentValue < threshold) {
+//         message = `⚠️ Alert: ${sensorType} safety score is below threshold (${threshold}${unit}). Current value: ${currentValue}${unit}.`;
+//       }
+//       break;
+//     case "ph":
+//       if (condition === "outsideRange") {
+//         const [lowerBound, upperBound] = threshold;
+//         if (currentValue < lowerBound || currentValue > upperBound) {
+//           message = `⚠️ Alert: pH level is outside optimal range (${lowerBound}-${upperBound}${unit}). Current value: ${currentValue}${unit}.`;
+//         }
+//       }
+//       break;
+//     case "temperature":
+//       if (condition === "outsideRange") {
+//         const [lowerBound, upperBound] = threshold;
+//         if (currentValue < lowerBound || currentValue > upperBound) {
+//           message = `⚠️ Alert: Temperature is outside optimal range (${lowerBound}-${upperBound}${unit}). Current value: ${currentValue}${unit}.`;
+//         }
+//       }
+//       break;
+//     default:
+//       console.warn(`Unknown sensor type for notification: ${sensorType}`);
+//       return; // Exit if sensor type is not recognized
+//   }
+
+//   if (!message) {
+//     return; // No notification message generated, so no need to insert
+//   }
+
+//   const notifQuery = `
+//     INSERT INTO notif (type, title, message, timestamp, priority)
+//     VALUES (?, ?, ?, NOW(), ?)
+//   `;
+
+//   try {
+//     const [notifResult] = await db.query(notifQuery, [
+//       type,
+//       title,
+//       message,
+//       priority,
+//     ]);
+//     console.log("⚠️ Notification Inserted Successfully: ID", notifResult.insertId);
+//     io.emit("newNotification", {
+//       id: notifResult.insertId, // The new 'id' from the auto-increment
+//       type: type,
+//       title: title,
+//       message: message,
+//       timestamp: new Date().toISOString(), // Use current time for consistency
+//       priority: priority,
+//     });
+//   } catch (notifErr) {
+//     console.error(
+//       "❌ Notification Insert Error:",
+//       notifErr.sqlMessage || notifErr.message
+//     );
+//   }
+// }
+
+// // --- Consolidated Data Handling from Arduino ---
+// parser.on("data", async (data) => {
+//   try {
+//     const jsonData = JSON.parse(data.trim());
+//     const currentTime = new Date();
+
+//     // Function to insert data into a table and emit via Socket.IO
+//     const insertAndEmit = async (
+//       tableName,
+//       valueColumn,
+//       value,
+//       socketEventName,
+//       notificationConfig = null // New parameter for notification configuration
+//     ) => {
+//       if (value !== undefined && value !== null) {
+//         console.log(`📡 Received ${valueColumn} Data:`, value);
+//         const query = `INSERT INTO ${tableName} (${valueColumn}, timestamp) VALUES (?, ?)`;
+//         try {
+//           const [result] = await db.query(query, [value, currentTime]);
+//           console.log(`✅ ${tableName} Data Inserted Successfully: ID`, result.insertId);
+
+//           io.emit(socketEventName, {
+//             value: value,
+//             timestamp: currentTime.toISOString(),
+//           });
+
+//           // Handle notifications based on the notificationConfig
+//           if (notificationConfig) {
+//             const { sensorType, threshold, condition, unit } = notificationConfig;
+//             await insertNotification(
+//               sensorType,
+//               value, // Pass currentValue directly
+//               threshold,
+//               condition,
+//               unit
+//             );
+//           }
+//         } catch (err) {
+//           console.error(
+//             `❌ ${tableName} Database Insert Error:`,
+//             err.sqlMessage || err.message
+//           );
+//         }
+//       }
+//     };
+
+//     // --- Process each sensor value ---
+//     const {
+//       turbidity_value,
+//       ph_value,
+//       tds_value,
+//       salinity_value,
+//       ec_value_mS,
+//       ec_compensated_mS,
+//       temperature_celsius,
+//     } = jsonData;
+
+//     // Define notification configurations for each sensor
+//     // Threshold set to 30 for most sensors (out of 100 safety score)
+//     const notifications = {
+//       turbidity: {
+//         sensorType: "turbidity",
+//         threshold: 30, // Alert if turbidity safety score is below 30
+//         condition: "lessThan",
+//         unit: "/100 Safety Score",
+//       },
+//       ph: {
+//         sensorType: "ph",
+//         threshold: [6.5, 8.5], // Optimal pH range
+//         condition: "outsideRange",
+//         unit: "pH",
+//       },
+//       tds: {
+//         sensorType: "tds",
+//         threshold: 30, // Alert if TDS safety score is below 30
+//         condition: "lessThan",
+//         unit: "/100 Safety Score",
+//       },
+//       salinity: {
+//         sensorType: "salinity",
+//         threshold: 30, // Alert if Salinity safety score is below 30
+//         condition: "lessThan",
+//         unit: "/100 Safety Score",
+//       },
+//       ec: {
+//         sensorType: "ec",
+//         threshold: 30, // Alert if EC safety score is below 30
+//         condition: "lessThan",
+//         unit: "/100 Safety Score",
+//       },
+//       temperature: {
+//         sensorType: "temperature",
+//         threshold: [1, 50], // Optimal temperature range (e.g., for aquatic life)
+//         condition: "outsideRange",
+//         unit: "°C",
+//       },
+//     };
+
+//     await Promise.all([
+//       insertAndEmit(
+//         "turbidity_readings",
+//         "turbidity_value",
+//         turbidity_value,
+//         "updateTurbidityData",
+//         notifications.turbidity
+//       ),
+//       insertAndEmit(
+//         "phlevel_readings",
+//         "ph_value",
+//         ph_value,
+//         "updatePHData",
+//         notifications.ph
+//       ),
+//       insertAndEmit(
+//         "tds_readings",
+//         "tds_value",
+//         tds_value,
+//         "updateTDSData",
+//         notifications.tds
+//       ),
+//       insertAndEmit(
+//         "salinity_readings",
+//         "salinity_value",
+//         salinity_value,
+//         "updateSalinityData",
+//         notifications.salinity
+//       ),
+//       insertAndEmit(
+//         "ec_readings",
+//         "ec_value_mS", // Assuming ec_value_mS is what maps to the safety score
+//         ec_value_mS,
+//         "updateECData",
+//         notifications.ec
+//       ),
+//       insertAndEmit(
+//         "ec_compensated_readings",
+//         "ec_compensated_mS", // Assuming ec_compensated_mS also maps to safety score
+//         ec_compensated_mS,
+//         "updateECCompensatedData",
+//         notifications.ec // Use the same EC notification config
+//       ),
+//       insertAndEmit(
+//         "temperature_readings",
+//         "temperature_celsius",
+//         temperature_celsius,
+//         "updateTemperatureData",
+//         notifications.temperature
+//       ),
+//     ]);
+//   } catch (err) {
+//     console.error("JSON Parse Error or data missing:", err);
+//   }
+// });

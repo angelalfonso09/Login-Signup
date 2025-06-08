@@ -144,7 +144,7 @@ const NotificationsPage = () => {
     const [loading, setLoading] = useState(true);
     const { theme } = useContext(ThemeContext);
 
-    const API_BASE_URL = "http://localhost:5000";
+    const API_BASE_URL = "http://localhost:5000"; // Ensure this matches your backend URL
 
     // --- Helper Functions for Super Admin Notifications (MOVED INSIDE COMPONENT) ---
     // Wrapped with useCallback to ensure stable function references for dependency arrays.
@@ -185,15 +185,20 @@ const NotificationsPage = () => {
             });
 
             if (response.data.success) {
-                setNotifications(response.data.notifications);
-                saveSuperAdminNotifications(response.data.notifications); // Update localStorage cache
-                console.log("Frontend (Super Admin): Notifications and Events fetched from database.");
+                // Ensure 'type' is 'sensor' for these notifications as per backend endpoint
+                const fetchedNotifications = response.data.notifications.map(n => ({
+                    ...n,
+                    type: n.type || 'sensor' // Default to 'sensor' if not explicitly set by backend for some reason
+                }));
+                setNotifications(fetchedNotifications);
+                saveSuperAdminNotifications(fetchedNotifications); // Update localStorage cache
+                console.log("Frontend (Super Admin): Sensor notifications fetched from database.");
             } else {
-                console.error("Failed to fetch notifications and events:", response.data.message);
+                console.error("Failed to fetch sensor notifications:", response.data.message);
                 setNotifications(loadSuperAdminNotifications()); // Fallback on backend error
             }
         } catch (error) {
-            console.error("Error fetching notifications and events from backend:", error);
+            console.error("Error fetching sensor notifications from backend:", error);
             setNotifications(loadSuperAdminNotifications()); // Fallback on network error
         } finally {
             setLoading(false);
@@ -215,41 +220,128 @@ const NotificationsPage = () => {
         }
     }, [notifications, loading, saveSuperAdminNotifications]); // Dependencies for saving
 
-    const markAsRead = (id) => {
-        // TODO: In a real app, this should also make a backend API call to update `is_read` status in the DB
-        setNotifications(prevNotifications => {
-            const updated = prevNotifications.map(n => n.id === id ? { ...n, read: true } : n);
-            console.log("Frontend (Super Admin): Marked notification as read:", id);
-            return updated;
-        });
+    // --- Backend API calls for sensor notifications ---
+
+    const markAsRead = async (id) => {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert("Authentication token not found. Please log in again.");
+                return;
+            }
+            const response = await axios.post(`${API_BASE_URL}/api/admin/notifications/mark-read`, { notificationId: id }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            if (response.data.success) {
+                setNotifications(prevNotifications => {
+                    // Update the status locally for immediate UI feedback
+                    const updated = prevNotifications.map(n =>
+                        n.id === id ? { ...n, read: true, status: 'read' } : n
+                    );
+                    console.log("Frontend (Super Admin): Marked notification as read (via API):", id);
+                    return updated;
+                });
+            } else {
+                console.error("Failed to mark notification as read:", response.data.message);
+                alert(`Failed to mark notification as read: ${response.data.message}`);
+            }
+        } catch (error) {
+            console.error("Error marking notification as read:", error);
+            alert("An error occurred while marking notification as read.");
+        }
     };
 
-    const deleteNotification = (id) => {
-        // TODO: In a real app, this should also make a backend API call to delete the notification from the DB.
-        // For events (prefixed with 'event_'), you'd need a separate endpoint like /api/admin/events/:id.
-        setNotifications(prevNotifications => {
-            const updated = prevNotifications.filter(n => n.id !== id);
-            console.log("Frontend (Super Admin): Deleted notification:", id);
-            return updated;
-        });
+    const deleteNotification = async (id) => {
+        if (!window.confirm('Are you sure you want to delete this notification?')) {
+            return;
+        }
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert("Authentication token not found. Please log in again.");
+                return;
+            }
+            const response = await axios.delete(`${API_BASE_URL}/api/admin/notifications/${id}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            if (response.data.success) {
+                setNotifications(prevNotifications => {
+                    // Remove the notification locally for immediate UI feedback
+                    const updated = prevNotifications.filter(n => n.id !== id);
+                    console.log("Frontend (Super Admin): Deleted notification (via API):", id);
+                    return updated;
+                });
+            } else {
+                console.error("Failed to delete notification:", response.data.message);
+                alert(`Failed to delete notification: ${response.data.message}`);
+            }
+        } catch (error) {
+            console.error("Error deleting notification:", error);
+            alert("An error occurred while deleting notification.");
+        }
     };
 
-    const markAllAsRead = () => {
-        // TODO: Backend API call needed for this too
-        setNotifications(prevNotifications => {
-            const updated = prevNotifications.map(n => ({ ...n, read: true }));
-            console.log("Frontend (Super Admin): Marked all notifications as read.");
-            return updated;
-        });
+    const markAllAsRead = async () => {
+        if (!window.confirm('Are you sure you want to mark ALL unread sensor notifications as read?')) {
+            return;
+        }
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert("Authentication token not found. Please log in again.");
+                return;
+            }
+            const response = await axios.post(`${API_BASE_URL}/api/admin/notifications/mark-all-read`, {}, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            if (response.data.success) {
+                setNotifications(prevNotifications => {
+                    // Mark all relevant notifications as read locally
+                    const updated = prevNotifications.map(n => ({ ...n, read: true, status: 'read' }));
+                    console.log("Frontend (Super Admin): Marked all notifications as read (via API).");
+                    return updated;
+                });
+            } else {
+                console.error("Failed to mark all notifications as read:", response.data.message);
+                alert(`Failed to mark all notifications as read: ${response.data.message}`);
+            }
+        } catch (error) {
+            console.error("Error marking all notifications as read:", error);
+            alert("An error occurred while marking all notifications as read.");
+        }
     };
 
-    const deleteAllNotifications = () => {
-        // TODO: Backend API call needed for this too
-        setNotifications([]);
-        console.log("Frontend (Super Admin): Deleted all notifications.");
+    const deleteAllNotifications = async () => {
+        if (!window.confirm('Are you sure you want to delete ALL sensor notifications? This action cannot be undone.')) {
+            return;
+        }
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert("Authentication token not found. Please log in again.");
+                return;
+            }
+            const response = await axios.delete(`${API_BASE_URL}/api/admin/notifications/all`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            if (response.data.success) {
+                setNotifications([]); // Clear all notifications locally
+                console.log("Frontend (Super Admin): Deleted all notifications (via API).");
+            } else {
+                console.error("Failed to delete all notifications:", response.data.message);
+                alert(`Failed to delete all notifications: ${response.data.message}`);
+            }
+        } catch (error) {
+            console.error("Error deleting all notifications:", error);
+            alert("An error occurred while deleting all notifications.");
+        }
     };
 
-    // --- handleApproveRequest with backend API call ---
+    // --- handleApproveRequest with backend API call (already good) ---
     const handleApproveRequest = async (notificationId, userId) => {
         console.log("Frontend (Super Admin): Approving request for user:", userId);
 
@@ -289,18 +381,18 @@ const NotificationsPage = () => {
                 if (targetUserString) {
                     try {
                         let targetUser = JSON.parse(targetUserString);
+                        // This logic needs to be careful: If the user ID in localStorage is for the *current* admin,
+                        // this won't apply to the user whose access is being approved.
+                        // Ideally, this part of the logic would be handled by the user's *own* frontend
+                        // fetching updated data or by a real-time notification system.
                         if (targetUser.id === userId) {
                             targetUser.isVerified = true;
                             localStorage.setItem('user', JSON.stringify(targetUser));
                             console.log(`Frontend (Super Admin): User ${userId} 'isVerified' status updated in localStorage.`);
-                        } else {
-                            console.warn(`Frontend (Super Admin): User ID mismatch for localStorage update. Expected ${userId}, found ${targetUser.id}.`);
                         }
                     } catch (e) {
                         console.error("Frontend (Super Admin): Error parsing user data to verify in localStorage:", e);
                     }
-                } else {
-                    console.warn("Frontend (Super Admin): No 'user' object found in localStorage to update verification status.");
                 }
 
                 const userNotifications = loadUserNotifications(userId);
@@ -340,7 +432,7 @@ const NotificationsPage = () => {
         }
     };
 
-    // --- handleDeclineRequest with backend API call ---
+    // --- handleDeclineRequest with backend API call (already good) ---
     const handleDeclineRequest = async (notificationId, userId) => {
         console.log("Frontend (Super Admin): Declining request for user:", userId);
 
@@ -363,7 +455,7 @@ const NotificationsPage = () => {
             );
 
             if (response.status === 200) {
-                 // 1. Update the Super Admin's local notification status
+                // 1. Update the Super Admin's local notification status
                 setNotifications(prevNotifications => {
                     const updatedNotifications = prevNotifications.map(n =>
                         n.id === notificationId
@@ -390,7 +482,7 @@ const NotificationsPage = () => {
                 alert("User access declined and notification sent to user's page!");
                 fetchNotifications(); // Refresh notifications from DB after action
             } else {
-                 alert(`Decline failed: ${response.data.message || 'Unknown error'}`);
+                alert(`Decline failed: ${response.data.message || 'Unknown error'}`);
             }
 
         } catch (error) {
