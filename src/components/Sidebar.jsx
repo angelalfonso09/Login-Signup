@@ -136,9 +136,23 @@ const Sidebar = () => {
     return ""; // No active path if role is not recognized
   };
 
+  // --- Helper function to get the correct history path based on role ---
+  const getHistoryPath = () => {
+    if (userRole === "Super Admin") {
+      return "/history"; // Super Admin goes to /history
+    } else if (userRole === "Admin") {
+      return "/adminhistory"; // Admin goes to /admin-history
+    } else if (userRole === "User") {
+      return "/user-history"; // User goes to /user-history
+    }
+    return "/"; // Default or fallback
+  };
+
+
   const currentDashboardPath = getDashboardPath();
   const currentNotificationsPath = getNotificationsPath();
   const activeSettingsPath = getSettingsActivePath();
+  const currentHistoryPath = getHistoryPath(); // Get the history path
 
   return (
     <div className={`sidebar ${theme}`}>
@@ -172,12 +186,12 @@ const Sidebar = () => {
           </div>
         )}
 
-        {/* History (Visible to all roles) */}
+        {/* History (Visible to all roles, but path is dynamic) */}
         <div
           className={`menu-item ${
-            location.pathname === "/history" ? "active" : ""
+            location.pathname === currentHistoryPath ? "active" : ""
           }`}
-          onClick={() => navigate("/history")}
+          onClick={() => navigate(currentHistoryPath)}
         >
           <FaHistory className="icon" />
           <span>History</span>

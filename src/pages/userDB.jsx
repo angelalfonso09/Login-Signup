@@ -29,7 +29,7 @@ const AlertDialog = ({ isOpen, message, onClose }) => {
                 <p className="text-lg font-semibold mb-4">{message}</p>
                 <button
                     onClick={onClose}
-                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus->ring-blue-500 focus:ring-opacity-50"
                 >
                     OK
                 </button>
@@ -40,7 +40,8 @@ const AlertDialog = ({ isOpen, message, onClose }) => {
 
 const Userdb = () => {
     const { theme, toggleTheme } = useContext(ThemeContext);
-    const { currentUser, login, logout, getToken } = useContext(AuthContext); // Use AuthContext
+    // Destructure deviceId and isVerified directly from AuthContext for clarity and reactivity
+    const { currentUser, login, logout, getToken, deviceId, establishmentId } = useContext(AuthContext);
     const [showAccessModal, setShowAccessModal] = useState(false);
     const navigate = useNavigate();
 
@@ -54,53 +55,54 @@ const Userdb = () => {
     // NEW STATE: To store the sensors associated with the user's device
     const [associatedSensors, setAssociatedSensors] = useState([]);
     const [loadingSensors, setLoadingSensors] = useState(true);
-    // userDeviceId and isUserVerified are now directly from AuthContext's currentUser
-    // and updated via the login function when the backend sends new user data.
 
-    // Removed getUserDataAndVerification useCallback as AuthContext provides this
-
-    // Effect for initial setup and verification check
+    // Effect for initial setup and verification check and controlling AccessRestrictedModal visibility
     useEffect(() => {
-        // Use currentUser directly from AuthContext
         const user = currentUser;
         const isVerified = user?.isVerified || false;
-        const deviceId = user?.deviceId || null;
+        const currentDeviceIdFromContext = deviceId; // Use the top-level deviceId from context
 
         console.log("User verification status on load (from AuthContext):", isVerified);
-        console.log("User Device ID on load (from AuthContext):", deviceId);
+        console.log("User Device ID on load (from AuthContext):", currentDeviceIdFromContext);
+        console.log("Current User Object on load (from AuthContext):", currentUser);
 
-        // Logic for showing the access modal
         const showModalFlag = localStorage.getItem("showAccessModalOnLoad");
 
-        if (showModalFlag === "true" && !isVerified) {
+        // Prioritize showing the modal if no device ID is associated, as the user needs to input it.
+        if (!currentDeviceIdFromContext) {
             setShowAccessModal(true);
-            localStorage.removeItem("showAccessModalOnLoad");
-            setIsPolling(true); // Start polling if modal is shown for unverified user
-        } else if (isVerified) {
-            localStorage.removeItem("showAccessModalOnLoad");
+            setIsPolling(false); // No need to poll for verification if deviceId input is the current step
+            console.log("User needs to input Device ID. Modal forced open.");
+        } 
+        // If deviceId is present, but user is not verified, and modal flag is set from previous navigation/registration
+        else if (showModalFlag === "true" && !isVerified) {
+            setShowAccessModal(true);
+            localStorage.removeItem("showAccessModalOnLoad"); // Clear the flag after acting on it
+            setIsPolling(true); // Start polling for verification
+            console.log("User verified? No. Modal flag set. Modal opened for verification polling.");
+        } 
+        // If the user is verified, hide the modal and stop polling
+        else if (isVerified) {
+            localStorage.removeItem("showAccessModalOnLoad"); // Clear the flag if user is now verified
             console.log("User is already verified, skipping access request modal.");
             setShowAccessModal(false);
-            setIsPolling(false); // Stop polling if already verified
-        } else if (!isVerified && !deviceId) {
-            // If not verified and no deviceId, always show the modal on initial load.
-            // This covers cases where user registers but hasn't sent a request.
-            setShowAccessModal(true);
-            setIsPolling(true); // Start polling
+            setIsPolling(false);
         }
-    }, [currentUser]); // Dependency on currentUser from AuthContext
+        // Default case: ensure modal is closed if none of the above conditions are met.
+        else {
+            setShowAccessModal(false);
+            setIsPolling(false);
+            console.log("Modal not needed for current user state.");
+        }
+
+    }, [currentUser, deviceId, isPolling]); // Dependencies: currentUser, deviceId, and isPolling to react to changes
+
 
     // Effect for polling verification status
     useEffect(() => {
         let pollInterval;
         if (isPolling) {
             pollInterval = setInterval(() => {
-                // To get the absolute latest from localStorage without waiting for AuthContext re-render
-                // It's better to refetch user data if a server-side change is expected
-                // or ensure AuthContext updates reliably.
-                // For now, let's trigger a re-fetch of user data to ensure up-to-dateness
-                // A better approach would be to have a `refreshUser` function in AuthContext
-                // that re-reads from localStorage or re-fetches from backend.
-
                 const storedUserString = localStorage.getItem("user");
                 let updatedUser = null;
                 let newIsVerified = false;
@@ -117,12 +119,14 @@ const Userdb = () => {
                 }
 
                 console.log("Polling for verification status (from localStorage):", newIsVerified);
+                // Also log the deviceId from the updated user during polling
+                console.log("Polling for deviceId (from localStorage updatedUser):", updatedUser?.deviceId);
+
                 if (newIsVerified) {
                     setShowAccessModal(false);
                     setIsPolling(false);
                     setAlertMessage("Your account has been verified! You can now access all features.");
                     setShowAlert(true);
-                    // No need to set isUserVerified and userDeviceId here, AuthContext's login handles it
                 }
             }, 5000);
         }
@@ -135,13 +139,18 @@ const Userdb = () => {
     // NEW EFFECT: Fetch sensors based on currentUser's deviceId and isVerified status
     useEffect(() => {
         const fetchAssociatedSensors = async () => {
-            // Use currentUser directly from AuthContext
-            const userDeviceId = currentUser?.deviceId;
-            const isUserVerified = currentUser?.isVerified;
+            // Use deviceId and isVerified directly from AuthContext
+            const userDeviceId = deviceId; // Use the top-level deviceId from context
+            const isUserVerified = currentUser?.isVerified; // Use currentUser for isVerified as it's a direct property
+
+            console.log("DEBUG: fetchAssociatedSensors called.");
+            console.log("DEBUG: userDeviceId (from AuthContext):", userDeviceId);
+            console.log("DEBUG: isUserVerified (from AuthContext):", isUserVerified);
+            console.log("DEBUG: currentUser object:", currentUser);
 
             // Only proceed if deviceId exists AND user is verified
             if (!userDeviceId || !isUserVerified) {
-                console.log("Skipping sensor fetch: No userDeviceId or user not verified.");
+                console.log("Skipping sensor fetch: No userDeviceId or user not verified. Conditions not met.");
                 setLoadingSensors(false);
                 setAssociatedSensors([]); // Clear sensors if conditions aren't met
                 return;
@@ -156,6 +165,7 @@ const Userdb = () => {
                     return;
                 }
 
+                console.log(`Attempting to fetch sensors for device ID: ${userDeviceId}`);
                 const response = await axios.get(`${API_BASE_URL}/api/devices/${userDeviceId}/sensors`, {
                     headers: {
                         Authorization: `Bearer ${token}`
@@ -163,43 +173,8 @@ const Userdb = () => {
                 });
 
                 if (response.data) {
-                    // IMPORTANT: Normalize sensor names from DB to match component map keys
                     const normalizedSensors = response.data.map(sensor => {
-                        let normalizedName = sensor.sensor_name;
-
-                        // Apply specific normalization rules for common variations
-                        if (normalizedName && typeof normalizedName === 'string') {
-                            const lowerCaseName = normalizedName.toLowerCase();
-                            switch (lowerCaseName) {
-                                case 'ph':
-                                    normalizedName = 'pH Level'; // Your component map uses 'pH Level'
-                                    break;
-                                case 'temperature':
-                                    normalizedName = 'Temperature';
-                                    break;
-                                case 'turbidity':
-                                    normalizedName = 'Turbidity';
-                                    break;
-                                case 'conductivity':
-                                    normalizedName = 'Conductivity';
-                                    break;
-                                case 'salinity':
-                                    normalizedName = 'Salinity';
-                                    break;
-                                case 'tds':
-                                    normalizedName = 'Total Dissolved Solids (TDS)';
-                                    break;
-                                case 'ec':
-                                    normalizedName = 'Electrical Conductivity(Compensated)';
-                                    break;
-                                // Add more cases if you have other variations
-                                default:
-                                    // If no specific rule, try to capitalize first letter and handle spaces if needed
-                                    normalizedName = normalizedName.charAt(0).toUpperCase() + normalizedName.slice(1);
-                                    break;
-                            }
-                        }
-                        return { ...sensor, normalized_sensor_name: normalizedName };
+                        return { ...sensor, normalized_sensor_name: sensor.sensor_name };
                     });
 
                     setAssociatedSensors(normalizedSensors);
@@ -219,11 +194,13 @@ const Userdb = () => {
         };
 
         // Only call fetchAssociatedSensors if currentUser is available
+        // The dependency array now includes deviceId and currentUser.isVerified for reactivity
+        // We ensure currentUser is not null/undefined before attempting to fetch
         if (currentUser) {
             fetchAssociatedSensors();
         }
 
-    }, [currentUser, getToken]); // Dependencies on currentUser and getToken from AuthContext
+    }, [currentUser, deviceId, getToken]); // Dependencies on currentUser, deviceId, and getToken from AuthContext
 
     const handleSendRequest = async (deviceIdFromModal) => {
         console.log("handleSendRequest function called.");
@@ -232,11 +209,11 @@ const Userdb = () => {
         // Get user info directly from AuthContext
         const username = currentUser?.username || "Unknown User";
         const userId = currentUser?.id || "unknown-id";
-        const deviceId = deviceIdFromModal || ""; // Use empty string if deviceIdFromModal is null/undefined
+        const deviceIdToSend = deviceIdFromModal || ""; // Use empty string if deviceIdFromModal is null/undefined
 
-        console.log(`Extracted username: ${username}, userId: ${userId}, deviceId: ${deviceId}`);
+        console.log(`Extracted username: ${username}, userId: ${userId}, deviceIdToSend: ${deviceIdToSend}`);
 
-        if (!deviceId || deviceId.trim() === "") {
+        if (!deviceIdToSend || deviceIdToSend.trim() === "") {
             setAlertMessage("Please enter a valid Device ID to send the request.");
             setShowAlert(true);
             return;
@@ -251,7 +228,7 @@ const Userdb = () => {
                 body: JSON.stringify({
                     fromUser: username,
                     fromUserId: userId,
-                    deviceId: deviceId,
+                    deviceId: deviceIdToSend,
                 }),
             });
 
@@ -261,13 +238,8 @@ const Userdb = () => {
                 setAlertMessage(data.message);
                 setShowAlert(true);
                 setIsPolling(true);
-                // If the request was successful, and backend *might* have updated user's deviceId
-                // You might need to trigger a refresh of currentUser to reflect the new deviceId
-                // This will be handled by the polling if `isVerified` changes, but if only `deviceId` changes,
-                // and the user is not yet verified, it won't trigger an AuthContext update.
-                // A better pattern would be: if backend returns updated user/token, use AuthContext.login(updatedUser, newToken)
-                if (data.user && data.token) { // If your /api/access-requests endpoint starts returning user/token
-                     login(data.user, data.token); // Update AuthContext
+                if (data.user && data.token) {
+                    login(data.user, data.token); // Update AuthContext with any new user/token data
                 }
             } else {
                 setAlertMessage(data.message || 'An error occurred while sending your request.');
@@ -287,20 +259,21 @@ const Userdb = () => {
         logout(); // Use AuthContext's logout to ensure full cleanup
     };
 
-    // Sensor component mapping - ensure these keys exactly match the normalized names
+    // Sensor component mapping - these keys MUST EXACTLY match the 'sensor_name' from your backend API response
     const sensorComponentsMap = {
         'Turbidity': Turbidity,
         'Temperature': Temperature,
         'Salinity': Salinity,
         'Conductivity': Conductivity,
-        'Total Dissolved Solids (TDS)': Tds, // Adjusted from 'Tds' if your component is called Tds
-        'pH Level': Ph, // This seems to be the correct one based on your image
-        'Electrical Conductivity(Compensated)': ElectricalCon,
+        'Total Dissolved Solids': Tds,
+        'ph Level': Ph,
+        'Electrical Conductivity': ElectricalCon,
     };
 
     // Determine current verification and device ID from AuthContext
     const currentIsUserVerified = currentUser?.isVerified || false;
-    const currentDeviceId = currentUser?.deviceId || null;
+    // Use the directly destructured deviceId from context for render logic
+    const currentDeviceId = deviceId || null;
 
     // Render loading state for sensors
     if (loadingSensors) {
@@ -316,10 +289,9 @@ const Userdb = () => {
         );
     }
 
-    // Render access restricted message if not verified AND no device ID set
-    // This condition also handles the polling state implicitly, as polling will
-    // eventually set isUserVerified to true and remove the modal.
-    if (!currentIsUserVerified || !currentDeviceId) {
+    // Render access restricted message if not verified AND no device ID set,
+    // or if the modal is explicitly being shown (e.g., to input device ID)
+    if (!currentIsUserVerified || !currentDeviceId || showAccessModal) {
         return (
             <div className={`${styles.userDb} ${theme}`}>
                 <div className={styles.userDbContainer}>
@@ -329,15 +301,17 @@ const Userdb = () => {
                     </div>
                 </div>
                 <AccessRestrictedModal
-                    isOpen={showAccessModal || (!currentIsUserVerified && !isPolling)} // Keep modal open if not verified and not polling (initial state)
+                    isOpen={showAccessModal || (!currentIsUserVerified && !isPolling)} // Keep modal open if conditions require it
                     onClose={handleCloseModal}
                     onRequestSend={handleSendRequest}
                     message={
+                        // This message will still change based on currentDeviceId,
+                        // but the input will always be there if showDeviceIdInput is true below.
                         !currentDeviceId
                             ? "Please enter your Device ID to send an access request and get started."
                             : "You need Admin approval to view dashboard features. Your access request has been sent. Please wait for approval to continue or log out."
                     }
-                    showDeviceIdInput={!currentDeviceId} // Show input only if deviceId is null
+                    showDeviceIdInput={true} // FORCED TRUE: Always show the input field
                 />
                 <AlertDialog
                     isOpen={showAlert}
@@ -356,12 +330,10 @@ const Userdb = () => {
                     <div className={styles.meterRowFlex}>
                         {associatedSensors.length > 0 ? (
                             associatedSensors.map((sensor) => {
-                                // Use the normalized_sensor_name for lookup
                                 const SensorComponent = sensorComponentsMap[sensor.normalized_sensor_name];
                                 if (SensorComponent) {
                                     return (
                                         <div className={styles.meterWidget} key={sensor.id}>
-                                            {/* Display original sensor_name for user readability */}
                                             <div className={styles.meterLabel}>{sensor.sensor_name}</div>
                                             <SensorComponent deviceId={currentDeviceId} sensorId={sensor.id} />
                                         </div>
@@ -391,7 +363,7 @@ const Userdb = () => {
                         ? "Please enter your Device ID to send an access request and get started."
                         : "You need Admin approval to view dashboard features. Your access request has been sent. Please wait for approval to continue or log out."
                 }
-                showDeviceIdInput={!currentDeviceId}
+                showDeviceIdInput={true} // FORCED TRUE: Always show the input field
             />
             <AlertDialog
                 isOpen={showAlert}

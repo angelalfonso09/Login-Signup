@@ -31,24 +31,23 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const authenticateUser = require('../backend/middleware/authenticateUser');
 
 const authenticateToken = (req, res, next) => {
-    // Get the token from the Authorization header (Bearer token)
     const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1]; // Extract the token after 'Bearer'
+    const token = authHeader && authHeader.split(' ')[1];
 
     if (token == null) {
-        // No token provided
-        return res.status(401).json({ message: 'Authentication token required.' });
+        console.log('🔴 authenticateToken: No token provided.');
+        return res.sendStatus(401); // No token
     }
 
-    // Verify the token
     jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
         if (err) {
-            // Token is invalid or expired
-            return res.status(403).json({ message: 'Invalid or expired token.' });
+            console.log('🔴 authenticateToken: Invalid token:', err.message);
+            return res.sendStatus(403); // Token is no longer valid or tampered
         }
-        // If valid, attach the user payload from the token to the request object
-        req.user = user;
-        next(); // Proceed to the next middleware/route handler
+        // Attach the decoded user payload to the request
+        req.user = user; 
+        console.log('🔵 authenticateToken: Token successfully verified. req.user:', req.user);
+        next();
     });
 };
 
@@ -471,8 +470,7 @@ app.post("/login", async (req, res) => {
     return res.status(400).json({ error: "All fields are required" });
   }
 
-  // Fetch email_verified and device_id along with other user data
-  const sql = "SELECT id, username, role, password_hash, is_verified, email_verified, device_id FROM users WHERE username = ?"; // <--- ADDED device_id HERE!
+  const sql = "SELECT id, username, role, password_hash, is_verified, email_verified, device_id FROM users WHERE username = ?"; // IMPORTANT: Select device_id here
 
   try {
     const [results] = await db.query(sql, [username]);
@@ -483,6 +481,10 @@ app.post("/login", async (req, res) => {
     }
 
     const user = results[0];
+    // --- NEW DEBUG LOG ---
+    console.log(`Backend Debug: User object directly from DB query for ${user.username}:`, user);
+    // --- END NEW DEBUG LOG ---
+
     const isMatch = await bcrypt.compare(password, user.password_hash);
 
     if (!isMatch) {
@@ -490,10 +492,43 @@ app.post("/login", async (req, res) => {
       return res.status(400).json({ error: "Incorrect password" });
     }
 
-    // Add a check for email verification status
     if (user.email_verified === 0) {
       return res.status(403).json({ error: "Please verify your email address first." });
     }
+
+    // --- IMPORTANT: Fetch the establishment ID and DEVICE ID for the User/Admin ---
+    let associatedEstablishmentId = null;
+    let associatedDeviceId = null; 
+
+    if (user.role === "Admin") {
+      const [adminAssignments] = await db.query(
+        `SELECT ae.establishment_id, e.device_id
+         FROM admin_establishments ae
+         JOIN estab e ON ae.establishment_id = e.id
+         WHERE ae.user_id = ?`,
+        [user.id]
+      );
+
+      if (adminAssignments.length > 0) {
+        associatedEstablishmentId = adminAssignments[0].establishment_id;
+        associatedDeviceId = adminAssignments[0].device_id; 
+        console.log(`Backend Debug: Admin user ${user.username} (ID: ${user.id}) assigned establishmentId: ${associatedEstablishmentId}, deviceId: ${associatedDeviceId}`);
+      } else {
+        console.warn(`Backend Debug: Admin user ${user.username} (ID: ${user.id}) has no assigned establishments.`);
+      }
+    } else if (user.role === "User") { 
+        // For 'User' role, directly use the device_id from the 'users' table
+        associatedDeviceId = user.device_id; // Directly assign from the fetched user object
+        
+        // If a User is also linked to an establishment, you might still want to fetch that
+        // However, based on your schema, it's not directly in the 'users' table.
+        // If you intend for users to have an establishment, Option 1 (modifying schema) is better.
+        // For now, we'll keep establishmentId as null for regular users if it's not in the users table
+        // or fetched via a join.
+
+        console.log(`Backend Debug: User ${user.username} (ID: ${user.id}) directly using deviceId: ${associatedDeviceId}`);
+    }
+
 
     const token = jwt.sign(
       {
@@ -501,7 +536,8 @@ app.post("/login", async (req, res) => {
         role: user.role,
         isVerified: user.is_verified,
         emailVerified: user.email_verified,
-        deviceId: user.device_id // <--- IMPORTANT: Include device_id in JWT payload if you use it there
+        establishmentId: associatedEstablishmentId,
+        deviceId: associatedDeviceId 
       },
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
@@ -523,14 +559,18 @@ app.post("/login", async (req, res) => {
       role: user.role,
       isVerified: user.is_verified === 1,
       emailVerified: user.email_verified === 1,
-      deviceId: user.device_id // <--- IMPORTANT: ADDED deviceId HERE for the frontend user object!
+      establishmentId: associatedEstablishmentId,
+      deviceId: associatedDeviceId 
     };
+
+    console.log("Backend Debug: userForFrontend object being sent:", userForFrontend);
+
 
     res.json({
       message: "Login successful",
       user: userForFrontend,
       token: token,
-      role: user.role, // Redundant if 'user.role' is already in 'userForFrontend', but fine
+      role: user.role,
       redirectUrl: redirectUrl,
     });
 
@@ -539,6 +579,8 @@ app.post("/login", async (req, res) => {
     res.status(500).json({ error: "Server error during login." });
   }
 });
+
+
 
 // Create admin
 // --- Route: Create Admin Account (and assign to multiple establishments) ---
@@ -604,7 +646,7 @@ app.post('/admin', async (req, res) => {
         // 6. Assign User (Admin) to Establishments
         for (const establishmentId of establishmentIds) {
             await connection.execute(
-                "INSERT INTO user_establishments (user_id, establishment_id) VALUES (?, ?)",
+                "INSERT INTO admin_establishments (user_id, establishment_id) VALUES (?, ?)",
                 [userId, establishmentId]
             );
         }
@@ -891,7 +933,7 @@ app.get('/api/admin/establishments', async (req, res) => {
             FROM
                 estab e
             JOIN
-                user_establishments ue ON e.id = ue.establishment_id
+                admin_establishments ue ON e.id = ue.establishment_id
             LEFT JOIN
                 sensors s ON e.id = s.establishment_id -- Join with a hypothetical 'sensors' table
             WHERE
@@ -919,46 +961,39 @@ app.get('/api/admin/establishments', async (req, res) => {
  */
 app.get('/api/establishments', async (req, res) => {
     try {
-        // SQL query to get establishments, their device_id, and their associated sensors
-        // Use LEFT JOIN to include establishments that might not have any sensors yet.
-        // We select establishment ID, name, DEVICE ID, and sensor ID and name.
+        // Correct SQL query to get establishments and their associated sensors via the junction table.
         const [rows] = await pool.execute(`
             SELECT
                 e.id AS establishmentId,
                 e.estab_name AS establishmentName,
-                e.device_id AS deviceId,
+                e.device_id AS deviceId, -- Still including establishment's own device_id
                 s.id AS sensorId,
                 s.sensor_name AS sensorName
             FROM
                 estab e
             LEFT JOIN
-                sensors s ON e.device_id = s.device_id -- <--- CHANGE IS HERE!
+                estab_sensors es ON e.id = es.estab_id -- Join through the junction table
+            LEFT JOIN
+                sensors s ON es.sensor_id = s.id -- Then join to the sensors table
             ORDER BY
                 e.estab_name ASC, s.sensor_name ASC;
         `);
 
-        // Process the flat rows from the SQL query into a hierarchical structure.
-        // Multiple rows for the same establishment (each representing one of its sensors)
-        // are aggregated into a single establishment object containing an array of its sensors.
         const establishmentsMap = new Map();
 
         rows.forEach(row => {
-            // Destructure deviceId from the row, along with existing fields
             const { establishmentId, establishmentName, deviceId, sensorId, sensorName } = row;
 
-            // If the establishment has not been added to our map yet, add it.
             if (!establishmentsMap.has(establishmentId)) {
                 establishmentsMap.set(establishmentId, {
                     id: establishmentId,
                     name: establishmentName,
-                    device_id: deviceId, // <-- NEW: Include device_id here
-                    sensors: [] // Initialize an empty array for this establishment's sensors
+                    device_id: deviceId, // Include establishment's device_id
+                    sensors: []
                 });
             }
 
-            // If there's an associated sensor (i.e., sensorId is not null from the LEFT JOIN),
-            // push it to the establishment's sensors array.
-            if (sensorId !== null) {
+            if (sensorId !== null) { // Check if a sensor exists for this link (for establishments with no sensors)
                 establishmentsMap.get(establishmentId).sensors.push({
                     id: sensorId,
                     name: sensorName
@@ -966,14 +1001,10 @@ app.get('/api/establishments', async (req, res) => {
             }
         });
 
-        // Convert the Map values (the aggregated establishment objects) into an array
-        // to send as the JSON response to the frontend.
         const formattedEstablishments = Array.from(establishmentsMap.values());
-        // Log the formatted data for debugging purposes on the backend console.
         console.log('Fetched establishments with sensors:', JSON.stringify(formattedEstablishments, null, 2));
         res.status(200).json(formattedEstablishments);
     } catch (error) {
-        // Log any errors that occur during the database query or data processing.
         console.error('Error fetching establishments:', error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
@@ -985,18 +1016,14 @@ app.get('/api/establishments', async (req, res) => {
  * Expects JSON body: {"name": "Establishment Name", "sensors": [sensor_id_1, sensor_id_2]}
  */
 app.post('/api/establishments', async (req, res) => {
-    // Destructure name, sensors (which are sensor IDs), and device_id from the request body
-    const { name, sensors, device_id } = req.body;
+    const { name, sensors, device_id } = req.body; // 'device_id' here refers to the establishment's unique ID, not sensor assignment.
 
-    // --- Input validation for the establishment name and device_id. ---
+    // --- Input validation for the establishment name and establishment's device_id. ---
     if (!name || typeof name !== 'string' || name.trim() === '') {
         console.log("🔴 Backend - POST /api/establishments: Validation Error: Establishment name is required and must be a non-empty string.");
         return res.status(400).json({ error: 'Establishment name is required and must be a non-empty string.' });
     }
-    // Validate device_id: It should be a non-empty string of exactly 5 digits.
-    // NOTE: Generating UUIDs on the backend (using 'uuid' library) is generally
-    // more robust for unique IDs in a production environment to avoid collisions.
-    // If you switch to backend UUID generation, remove this frontend-centric regex.
+    // Validate device_id for the establishment itself (as generated by frontend or backend)
     if (!device_id || typeof device_id !== 'string' || !/^\d{5}$/.test(device_id)) {
         console.log("🔴 Backend - POST /api/establishments: Validation Error: Device ID is required and must be a 5-digit string.");
         return res.status(400).json({ error: 'Device ID is required and must be a 5-digit string.' });
@@ -1004,15 +1031,12 @@ app.post('/api/establishments', async (req, res) => {
 
     // Ensure 'sensors' is an array; default to an empty array if not provided or invalid.
     const selectedSensorIds = Array.isArray(sensors) ? sensors : [];
-    console.log(`🟢 Backend - POST /api/establishments: Received request for '${name}' with Device ID '${device_id}' and sensors: ${selectedSensorIds.join(', ')}`);
+    console.log(`🟢 Backend - POST /api/establishments: Received request for '${name}' with Establishment Device ID '${device_id}' and sensors: ${selectedSensorIds.join(', ')}`);
 
-    let connection; // Declare 'connection' here so it's accessible in the finally block.
+    let connection;
 
     try {
-        // Get a database connection from the pool.
         connection = await pool.getConnection();
-        // Start a database transaction. This is crucial for multi-step operations
-        // to maintain data integrity (either all succeed or all fail).
         await connection.beginTransaction();
         console.log("🔵 Backend - POST /api/establishments: Transaction started.");
 
@@ -1022,7 +1046,7 @@ app.post('/api/establishments', async (req, res) => {
             [name.trim()]
         );
         if (existingName.length > 0) {
-            await connection.rollback(); // Rollback the transaction if a duplicate name is found.
+            await connection.rollback();
             console.log(`🔴 Backend - POST /api/establishments: Conflict: Establishment '${name.trim()}' already exists.`);
             return res.status(409).json({ error: `Establishment '${name.trim()}' already exists.` });
         }
@@ -1033,75 +1057,69 @@ app.post('/api/establishments', async (req, res) => {
             [device_id]
         );
         if (existingDeviceId.length > 0) {
-            await connection.rollback(); // Rollback the transaction if a duplicate device ID is found.
+            await connection.rollback();
             console.log(`🔴 Backend - POST /api/establishments: Conflict: Device ID '${device_id}' already exists.`);
             return res.status(409).json({ error: `Device ID '${device_id}' already exists. Please try adding the establishment again to generate a new ID.` });
         }
 
-        // 3. Insert the new establishment into the 'estab' table, including the device_id.
+        // 3. Insert the new establishment into the 'estab' table.
         const [result] = await connection.execute(
             'INSERT INTO estab (estab_name, device_id) VALUES (?, ?)',
-            [name.trim(), device_id] // Add device_id to the insert query
+            [name.trim(), device_id]
         );
-        // Get the auto-generated ID of the newly inserted establishment.
         const newEstablishmentId = result.insertId;
         console.log(`✅ Backend - POST /api/establishments: New establishment '${name.trim()}' added with ID: ${newEstablishmentId}, Device ID: ${device_id}`);
 
-        // 4. Update the selected sensors to link them directly to the new device_id.
-        // This replaces the 'establishment_sensors' junction table logic.
+        // 4. Link selected sensors to the new establishment in the 'estab_sensors' junction table.
+        // This is the core change for many-to-many.
         if (selectedSensorIds.length > 0) {
-            // Validate that all provided sensor IDs actually exist in the 'sensors' table and are currently unassigned (device_id IS NULL).
-            // This prevents linking sensors already assigned elsewhere unless you intend to re-assign.
+            // Optional: Validate if sensor IDs exist. If not, the FOREIGN KEY constraint will catch it.
+            // For robustness, you might want to check if they exist before inserting.
+            // Example:
             const sensorIdPlaceholders = selectedSensorIds.map(() => '?').join(',');
-            const [validSensors] = await connection.execute(
-                `SELECT id FROM sensors WHERE id IN (${sensorIdPlaceholders}) AND device_id IS NULL`, // Added AND device_id IS NULL
+            const [existingSensors] = await connection.execute(
+                `SELECT id FROM sensors WHERE id IN (${sensorIdPlaceholders})`,
                 selectedSensorIds
             );
+            const validSensorIds = existingSensors.map(s => s.id);
 
-            // Filter for only truly available and valid sensors
-            const availableAndValidSensorIds = validSensors.map(s => s.id);
-
-            if (availableAndValidSensorIds.length !== selectedSensorIds.length) {
-                // This means some sensors were either invalid or already assigned
-                const invalidOrAssignedSensors = selectedSensorIds.filter(id => !availableAndValidSensorIds.includes(id));
-                console.warn(`🟠 Backend - POST /api/establishments: Warning: Some provided sensor IDs (${invalidOrAssignedSensors.join(', ')}) were invalid or already assigned to another device. Will only link valid and unassigned sensors.`);
+            if (validSensorIds.length !== selectedSensorIds.length) {
+                const invalidSensors = selectedSensorIds.filter(id => !validSensorIds.includes(id));
+                console.warn(`🟠 Backend - POST /api/establishments: Warning: Some provided sensor IDs (${invalidSensors.join(', ')}) do not exist in the 'sensors' table.`);
             }
-
-            if (availableAndValidSensorIds.length > 0) {
-                const updateSensorSql = `UPDATE sensors SET device_id = ? WHERE id IN (${availableAndValidSensorIds.map(() => '?').join(',')})`;
-                const updateParams = [device_id, ...availableAndValidSensorIds];
-
-                const [updateResult] = await connection.execute(updateSensorSql, updateParams);
-                console.log(`✅ Backend - POST /api/establishments: Linked ${updateResult.affectedRows} sensors to Device ID: ${device_id}.`);
+            
+            // Prepare values for batch insert into estab_sensors
+            const insertValues = validSensorIds.map(sensorId => [newEstablishmentId, sensorId]);
+            
+            if (insertValues.length > 0) {
+                // Use a multi-row insert for efficiency
+                const insertSensorLinksSql = `INSERT INTO estab_sensors (estab_id, sensor_id) VALUES ?`;
+                const [linkResult] = await connection.query(insertSensorLinksSql, [insertValues]); // Use .query for VALUES ? syntax
+                console.log(`✅ Backend - POST /api/establishments: Linked ${linkResult.affectedRows} sensors to establishment ID: ${newEstablishmentId}.`);
             } else {
-                console.log("🔵 Backend - POST /api/establishments: No valid or unassigned sensors were selected to link.");
+                console.log("🔵 Backend - POST /api/establishments: No valid sensors were selected or found to link.");
             }
-
         } else {
             console.log('🔵 Backend - POST /api/establishments: No sensors selected for this establishment.');
         }
 
-        // If all database operations within the transaction succeed, commit the transaction.
         await connection.commit();
         console.log("🎉 Backend - POST /api/establishments: Establishment and sensors linked successfully. Transaction committed.");
         res.status(201).json({
             message: 'Establishment added successfully',
             id: newEstablishmentId,
             name: name.trim(),
-            device_id: device_id // Include the device_id in the response
+            device_id: device_id
         });
 
     } catch (error) {
-        // If any error occurs, rollback the transaction to undo all changes made during the transaction.
         if (connection) {
             await connection.rollback();
             console.error("🔴 Backend - POST /api/establishments: Transaction rolled back due to error:", error);
         }
         console.error('🔴 Backend - POST /api/establishments: Error adding establishment:', error);
-        // Provide a more generic error message to the client, keeping detailed errors in server logs.
         res.status(500).json({ error: 'Internal Server Error while adding establishment.' });
     } finally {
-        // Always release the database connection back to the pool, regardless of success or failure.
         if (connection) {
             connection.release();
             console.log("🔵 Backend - POST /api/establishments: Database connection released.");
@@ -1114,32 +1132,105 @@ app.post('/api/establishments', async (req, res) => {
  * Returns a list of all available sensors with their IDs and names.
  */
 // In your backend, likely in app.js or a sensors-related route file
-app.get('/api/devices/:deviceId/sensors', async (req, res) => {
-    const { deviceId } = req.params; // Extract deviceId from the URL parameters
+app.get('/api/devices/:deviceId/sensors', authenticateToken, async (req, res) => {
+    const { deviceId } = req.params;
+    // Get user details from the JWT payload attached by authenticateToken
+    const userIdFromToken = req.user.id;
+    const userRoleFromToken = req.user.role;
+    const userDeviceIdFromToken = req.user.deviceId; // This is the deviceId from the JWT payload
+    const userEstablishmentIdFromToken = req.user.establishmentId; // From JWT for admins
 
-    // Basic validation to ensure deviceId is provided
     if (!deviceId) {
         console.log('🔴 /api/devices/:deviceId/sensors: Device ID is missing in request parameters.');
         return res.status(400).json({ error: 'Device ID is required.' });
     }
 
-    let connection; // Declare connection here
-    try {
-        connection = await pool.getConnection(); // Get a connection from the pool
+    // Debugging logs to verify token contents at the start of the route
+    console.log(`Backend Auth Debug: Requesting device ID: ${deviceId}`);
+    console.log(`Backend Auth Debug: User ID from token: ${userIdFromToken}`);
+    console.log(`Backend Auth Debug: User Role from token: ${userRoleFromToken}`);
+    console.log(`Backend Auth Debug: User Device ID from token: ${userDeviceIdFromToken}`);
+    console.log(`Backend Auth Debug: User Establishment ID from token: ${userEstablishmentIdFromToken}`);
 
-        // Execute a SELECT query to get sensors associated with the specific device_id
-        const [rows] = await connection.execute( // Use connection.execute on the pooled connection
-            'SELECT id, sensor_name, device_id FROM sensors WHERE device_id = ? ORDER BY sensor_name ASC', // Add WHERE clause
-            [deviceId] // Pass deviceId as a parameter to the query
+    let connection;
+    try {
+        connection = await pool.getConnection(); // Assuming 'pool' is your database connection pool
+
+        // --- Authorization Logic ---
+        let authorized = false;
+
+        if (userRoleFromToken === 'User') {
+            // For a regular user, check if the requested deviceId matches the one assigned to them in their token
+            if (userDeviceIdFromToken && userDeviceIdFromToken.toString() === deviceId.toString()) {
+                authorized = true;
+                console.log(`Backend Auth Debug: User ${userIdFromToken} authorized for device ${deviceId} via direct deviceId match.`);
+            } else {
+                console.warn(`Backend Auth Debug: User ${userIdFromToken} (role: User) attempting to access unauthorized device. Token deviceId: ${userDeviceIdFromToken}, Requested deviceId: ${deviceId}`);
+            }
+        } else if (userRoleFromToken === 'Admin') {
+            // For an Admin, they can typically view devices associated with their assigned establishments.
+            // Check if the requested device_id belongs to an establishment linked to this admin.
+            // This requires checking the admin_establishments table.
+            const [adminEstabs] = await connection.execute(
+                `SELECT ae.establishment_id FROM admin_establishments ae WHERE ae.user_id = ?`,
+                [userIdFromToken]
+            );
+
+            if (adminEstabs.length > 0) {
+                const adminEstabIds = adminEstabs.map(row => row.establishment_id);
+                // Now check if the requested deviceId exists in any of these establishments
+                const [deviceInAdminEstabs] = await connection.execute(
+                    `SELECT id FROM estab WHERE device_id = ? AND id IN (${adminEstabIds.map(() => '?').join(',')})`,
+                    [deviceId, ...adminEstabIds]
+                );
+                if (deviceInAdminEstabs.length > 0) {
+                    authorized = true;
+                    console.log(`Backend Auth Debug: Admin ${userIdFromToken} authorized for device ${deviceId} via multi-establishment check.`);
+                } else {
+                    console.warn(`Backend Auth Debug: Admin ${userIdFromToken} (role: Admin) attempting to access unauthorized device ${deviceId}. Device not found in assigned establishments.`);
+                }
+            } else {
+                console.warn(`Backend Auth Debug: Admin ${userIdFromToken} has no associated establishments for device check.`);
+            }
+        } else if (userRoleFromToken === 'Super Admin') {
+            // Super Admin can access all devices (no specific check needed beyond valid token)
+            authorized = true;
+            console.log(`Backend Auth Debug: Super Admin ${userIdFromToken} authorized for device ${deviceId} (all access).`);
+        }
+
+        if (!authorized) {
+            console.log(`🔴 Unauthorized access attempt: User ${userIdFromToken} (Role: ${userRoleFromToken}) tried to access device ${deviceId}.`);
+            return res.status(403).json({ error: 'Access denied: Device does not belong to your account or is not found.' });
+        }
+
+        // If authorized, proceed to fetch sensors
+        const [rows] = await connection.execute(
+            `
+            SELECT
+                s.id AS id,
+                s.sensor_name AS sensor_name
+            FROM
+                estab e
+            JOIN
+                estab_sensors es ON e.id = es.estab_id
+            JOIN
+                sensors s ON es.sensor_id = s.id
+            WHERE
+                e.device_id = ?
+            ORDER BY
+                s.sensor_name ASC;
+            `,
+            [deviceId]
         );
-        console.log(`Fetched sensors for device ${deviceId}:`, rows);
+
+        console.log(`✅ Fetched sensors for device ${deviceId}:`, rows);
         res.status(200).json(rows);
     } catch (error) {
-        console.error(`Error fetching sensors for device ${deviceId}:`, error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        console.error(`🔴 Error fetching sensors for device ${deviceId}:`, error);
+        res.status(500).json({ error: 'Internal Server Error', details: error.message });
     } finally {
         if (connection) {
-            connection.release(); // ALWAYS release the connection
+            connection.release();
             console.log("🔵 Database connection released for /api/devices/:deviceId/sensors.");
         }
     }
@@ -1234,13 +1325,11 @@ app.get('/api/admin/assigned-establishments', authenticateAdminRoute, async (req
             FROM
                 estab e
             JOIN
-                user_establishments ue ON e.id = ue.establishment_id
+                admin_establishments ae ON e.id = ae.establishment_id
             LEFT JOIN
-                sensors s ON e.device_id = s.device_id -- <--- CHANGE IS HERE: Join sensors directly on device_id
-            WHERE
-                ue.user_id = ?
-            ORDER BY
-                e.estab_name ASC, s.sensor_name ASC;
+                estab_sensors es ON e.id = es.estab_id -- This is the new, correct join to the junction table
+            LEFT JOIN
+                sensors s ON es.sensor_id = s.id     -- This is the new, correct join to the sensors table
         `, [userId]);
 
         // Process the flat rows from the SQL query into a hierarchical structure
@@ -2049,18 +2138,20 @@ app.post('/api/contact', async (req, res) => {
 
 // --- 1. Endpoint to get AVAILABLE sensors for adding to an establishment ---
 // This addresses the 404 error from Dashboard.js's fetchAvailableSensors()
-app.get('/api/sensors/available', verifyToken, async (req, res) => {
+app.get('/api/sensors', verifyToken, async (req, res) => { // Renamed endpoint
     let connection;
     try {
         connection = await db.getConnection();
-        // REMOVE the WHERE device_id IS NULL clause to return all sensors
+        // Now it simply fetches all sensors, as 'device_id' is no longer for assignment
+        // If 'device_id' was your sensor's actual unique hardware ID, you could keep it.
+        // Assuming it was for assignment, we remove it from the select.
         const [sensors] = await connection.execute(
-            `SELECT id, sensor_name, device_id FROM sensors ORDER BY sensor_name ASC` // <-- IMPORTANT: Also select device_id
+            `SELECT id, sensor_name FROM sensors ORDER BY sensor_name ASC`
         );
-        console.log('🟢 Backend - /api/sensors/available: Fetched all sensors:', sensors);
+        console.log('🟢 Backend - /api/sensors: Fetched all sensors:', sensors);
         res.status(200).json(sensors);
     } catch (error) {
-        console.error('🔴 Backend - /api/sensors/available: Error fetching all sensors:', error);
+        console.error('🔴 Backend - /api/sensors: Error fetching all sensors:', error);
         res.status(500).json({ message: 'Internal Server Error fetching all sensors.' });
     } finally {
         if (connection) connection.release();
@@ -2256,6 +2347,175 @@ app.put('/api/super-admin/notifications', async (req, res) => {
         res.status(500).json({ message: 'Failed to update notification preference due to a server error.' });
     } finally {
         if (connection) connection.release();
+    }
+});
+
+// =======================================================
+// API Routes for your requirements
+// =======================================================
+
+// Route 1: Get establishment details for an admin
+// This is typically called after login to set the context for the admin
+app.get('/api/admin/:userId/establishments', async (req, res) => {
+    const userId = req.params.userId;
+    try {
+        const [rows] = await pool.execute(
+            `SELECT
+                e.id AS establishment_id,
+                e.estab_name,
+                e.device_id
+            FROM
+                users u
+            JOIN
+                admin_establishments ae ON u.id = ae.user_id
+            JOIN
+                estab e ON ae.establishment_id = e.id
+            WHERE
+                u.id = ?`,
+            [userId]
+        );
+        res.json(rows);
+    } catch (error) {
+        console.error('Error fetching admin establishments:', error);
+        res.status(500).json({ error: 'Failed to fetch establishments.' });
+    }
+});
+
+// Route 2: Get list of sensors associated with a specific establishment
+// Your frontend already calls this: http://localhost:5000/api/establishment/:establishmentId/sensors
+app.get('/api/establishment/:establishmentId/sensors', async (req, res) => {
+    const establishmentId = req.params.establishmentId;
+
+    // Input validation: Always a good idea for route parameters
+    if (!establishmentId) {
+        return res.status(400).json({ error: 'Establishment ID is required to fetch sensors.' });
+    }
+
+    try {
+        const [rows] = await pool.execute(
+            `SELECT
+                s.id AS sensor_id,
+                s.sensor_name
+            FROM
+                estab_sensors es
+            JOIN
+                sensors s ON es.sensor_id = s.id
+            WHERE
+                es.estab_id = ?`,
+            [establishmentId]
+        );
+
+        // Map the results to the desired format for the frontend
+        // The frontend expects [{ name: "Sensor Name" }] or just ["Sensor Name"]
+        // Your current map returns [{ id: ..., name: ... }], which the frontend handles via `sensor.name || sensor`.
+        // This is fine, but if you only need the name, you can simplify.
+        const activeSensors = rows.map(row => ({ id: row.sensor_id, name: row.sensor_name }));
+        // OR, if the frontend only needs the name string:
+        // const activeSensors = rows.map(row => row.sensor_name);
+
+
+        // Add a console.log for successful fetches
+        if (activeSensors.length > 0) {
+            console.log(`Successfully fetched ${activeSensors.length} sensors for establishment ID: ${establishmentId}`);
+            console.log('Sensors returned:', activeSensors.map(s => s.name).join(', ')); // Log just the names
+        } else {
+            console.warn(`No sensors found for establishment ID: ${establishmentId}`);
+            // You might want to return an empty array, which your frontend already expects.
+        }
+
+        res.json(activeSensors);
+
+    } catch (error) {
+        // Make error logging more specific
+        console.error(`Error fetching sensors for establishment ID ${establishmentId}:`, error);
+        res.status(500).json({ error: `Failed to fetch sensors for establishment ID ${establishmentId}. Please try again later.` });
+    }
+});
+
+// Route 3: Generic API endpoint for Historical Sensor Data
+// Your frontend fetches from: http://localhost:5000/data/:sensorType/:filterType?establishmentId=:establishmentId
+// --- Mappings for sensor data fetching ---
+const sensorTableMap = {
+    "turbidity": { tableName: "turbidity_readings", valueColumn: "turbidity_value" },
+    // Corrected key: "phlevel" to match frontend apiPath "/phlevel"
+    "phlevel": { tableName: "phlevel_readings", valueColumn: "ph_value" },
+    // Corrected key: "tds" to match frontend apiPath "/tds"
+    "tds": { tableName: "tds_readings", valueColumn: "tds_value" },
+    "salinity": { tableName: "salinity_readings", valueColumn: "salinity_value" },
+    "ec": { tableName: "ec_readings", valueColumn: "ec_value_mS" },
+    "ec-compensated": { tableName: "ec_compensated_readings", valueColumn: "ec_compensated_mS" },
+    "temperature": { tableName: "temperature_readings", valueColumn: "temperature_celsius" },
+    "dissolved-oxygen": { tableName: "dissolved_oxygen_readings", valueColumn: "do_value_mg_l" }
+    // If you have a separate "Conductivity" sensor with its own 'conductivity_readings' table
+    // and an apiPath like "/conductivity", you would add it here:
+    // "conductivity": { tableName: "conductivity_readings", valueColumn: "conductivity_value_mS" },
+};
+
+// --- Generic route to fetch historical data for any sensor type ---
+app.get('/data/:sensorType/:filterType', async (req, res) => {
+    const { sensorType, filterType } = req.params;
+    const establishmentId = req.query.establishmentId;
+
+    if (!establishmentId) {
+        return res.status(400).json({ error: 'Establishment ID is required to fetch sensor data.' });
+    }
+
+    const sensorDefinition = sensorTableMap[sensorType];
+    if (!sensorDefinition) {
+        console.error(`Backend Error: Sensor type '${sensorType}' not found in sensorTableMap. Frontend apiPath mismatch?`);
+        return res.status(404).json({ error: `Sensor type '${sensorType}' not found or not configured.` });
+    }
+    const { tableName, valueColumn } = sensorDefinition;
+
+    let timeCondition = '';
+    let groupByClause = '';
+    let selectValueColumn = valueColumn;
+
+    switch (filterType) {
+        case 'realtime':
+            timeCondition = `AND timestamp >= DATE_SUB(NOW(), INTERVAL 1 HOUR)`;
+            break;
+        case '24h':
+            timeCondition = `AND timestamp >= DATE_SUB(NOW(), INTERVAL 24 HOUR)`;
+            break;
+        case '7d-avg':
+            timeCondition = `AND timestamp >= DATE_SUB(NOW(), INTERVAL 7 DAY)`;
+            groupByClause = `GROUP BY DATE(timestamp) ORDER BY DATE(timestamp) ASC`;
+            selectValueColumn = `AVG(${valueColumn}) AS value`;
+            break;
+        case '30d-avg':
+            timeCondition = `AND timestamp >= DATE_SUB(NOW(), INTERVAL 30 DAY)`;
+            groupByClause = `GROUP BY DATE(timestamp) ORDER BY DATE(timestamp) ASC`;
+            selectValueColumn = `AVG(${valueColumn}) AS value`;
+            break;
+        default:
+            return res.status(400).json({ error: 'Invalid filter type.' });
+    }
+
+    try {
+        const query = `
+            SELECT
+                ${selectValueColumn},
+                ${groupByClause ? 'DATE(timestamp) AS timestamp' : 'timestamp'}
+            FROM
+                ${tableName}
+            WHERE
+                establishment_id = ?
+                ${timeCondition}
+            ${groupByClause};
+        `;
+        console.log(`Executing query for ${tableName} (estab: ${establishmentId}, filter: ${filterType}):\n${query}`);
+
+        const [rows] = await db.execute(query, [establishmentId]);
+
+        res.json(rows.map(row => ({
+            value: row.value !== undefined ? row.value : row[valueColumn],
+            timestamp: row.timestamp
+        })));
+
+    } catch (error) {
+        console.error(`Error fetching data for ${sensorType} (estab: ${establishmentId}, filter: ${filterType}):`, error);
+        res.status(500).json({ error: `Failed to fetch ${sensorType} sensor data. Details: ${error.message}` });
     }
 });
 

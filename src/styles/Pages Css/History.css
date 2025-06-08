@@ -172,7 +172,7 @@
 .aqua-history-contents-grid .aqua-turbidity-container,
 .aqua-history-contents-grid .aqua-salinity-container,
 /* This class was added here from your previous code */
-.aqua-history-contents-grid .aqua-electrical-con-container,
+.aqua-history-contents-grid .aqua-electrical-conductivity-container,
 /* This class was added here from your previous code */
 /* Fixed typo */
 .aqua-history-contents-grid .aqua-tds-container,
@@ -194,7 +194,7 @@
 .aqua-history-page.light .aqua-history-contents-grid .aqua-ph-level-container,
 .aqua-history-page.light .aqua-history-contents-grid .aqua-turbidity-container,
 .aqua-history-page.light .aqua-history-contents-grid .aqua-salinity-container,
-.aqua-history-page.light .aqua-history-contents-grid .aqua-electrical-con-container,
+.aqua-history-page.light .aqua-history-contents-grid .aqua-electrical-conductivity-container,
 .aqua-history-page.light .aqua-history-contents-grid .aqua-tds-container,
 .aqua-history-page.light .aqua-history-contents-grid .aqua-do-container,
 .aqua-history-page.light .aqua-history-contents-grid .aqua-conductivity-container {

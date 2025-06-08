@@ -15,10 +15,12 @@ import UserNotif from "./pages/UserNotif";
 import AdminNotif from "./pages/AdminNotif";
 import SettingsPage from "./pages/Settings";
 import UserSettingsPage from "./pages/UserSettings";
+import AdminHistory from "./pages/AdminHsitory"; // Corrected import based on new component name
+import UserHistory from "./pages/UserHistory";
 
 import { ThemeProvider, ThemeContext } from "./context/ThemeContext";
 // NEW: Import AuthProvider and AuthContext
-import { AuthProvider, AuthContext } from "./context/AuthContext"; // <--- ADD THIS LINE
+import { AuthProvider, AuthContext } from "./context/AuthContext";
 
 import "./styles/common/App.css";
 import "./styles/theme.css";
@@ -27,18 +29,8 @@ import "./styles/theme.css";
 const ProtectedRoute = ({ element, allowedRoles }) => {
     const navigate = useNavigate();
     // NEW: Use AuthContext to get authentication state
-    const { currentUser, userRole, authToken, isVerified } = useContext(AuthContext); // <--- MODIFIED
-
-    // Check if user is authenticated (e.g., based on token or currentUser object)
-    // Note: If you primarily use localStorage for initial checks in ProtectedRoute,
-    // you might keep the localStorage reads here, but it's often better to rely on context
-    // if `AuthContext` manages the global auth state effectively.
-    // For now, I'll keep the localStorage reads as they were, but know that `currentUser`
-    // and `userRole` from context *should* reflect the same if `AuthContext` is well-managed.
-
-    // Using localStorage for compatibility with your existing logic.
-    // For a more robust solution, ensure your AuthContext accurately provides these values.
-    const localStorageUserRole = localStorage.getItem("userRole"); //
+    const { currentUser, userRole, authToken, isVerified } = useContext(AuthContext);
+    const localStorageUserRole = localStorage.getItem("userRole");
     let localStorageCurrentUser = null;
     const userString = localStorage.getItem('user'); 
 
@@ -49,26 +41,26 @@ const ProtectedRoute = ({ element, allowedRoles }) => {
             console.error("Error parsing user from localStorage in ProtectedRoute:", e);
         }
     }
-    const isUserVerified = localStorageCurrentUser ? localStorageCurrentUser.isVerified === true : false; //
+    const isUserVerified = localStorageCurrentUser ? localStorageCurrentUser.isVerified === true : false;
 
 
     useEffect(() => {
         if (window.location.pathname === "/userDB" && localStorageUserRole === "User" && !isUserVerified) {
-            localStorage.setItem('showAccessModalOnLoad', 'true'); //
-            console.log("ProtectedRoute: Set showAccessModalOnLoad for unverified User navigating to /userDB."); //
+            localStorage.setItem('showAccessModalOnLoad', 'true');
+            console.log("ProtectedRoute: Set showAccessModalOnLoad for unverified User navigating to /userDB.");
         } else {
-            localStorage.removeItem('showAccessModalOnLoad'); //
-            console.log("ProtectedRoute: Cleared showAccessModalOnLoad."); //
+            localStorage.removeItem('showAccessModalOnLoad');
+            console.log("ProtectedRoute: Cleared showAccessModalOnLoad.");
         }
     }, [localStorageUserRole, isUserVerified, window.location.pathname]);
 
     // Primary check for authentication using localStorageUserRole
-    if (!localStorageUserRole) { //
-        console.log("ProtectedRoute: No userRole found, redirecting to /login"); //
+    if (!localStorageUserRole) {
+        console.log("ProtectedRoute: No userRole found, redirecting to /login");
         return <Navigate to="/login" replace />;
     }
 
-    if (!allowedRoles.includes(localStorageUserRole)) { //
+    if (!allowedRoles.includes(localStorageUserRole)) {
         console.log(`ProtectedRoute: User role '${localStorageUserRole}' not allowed for this route. Allowed: ${allowedRoles.join(', ')}`);
 
         if (localStorageUserRole === "User") {
@@ -105,7 +97,12 @@ const ThemedApp = () => {
                     <Route path="/dashboard" element={<ProtectedRoute element={<Dashboard />} allowedRoles={["Super Admin"]} />} />
                     <Route path="/adminDB" element={<ProtectedRoute element={<AdminDB />} allowedRoles={["Admin"]} />} />
                     <Route path="/accountmanagement" element={<ProtectedRoute element={<AccountManagement />} allowedRoles={["Super Admin"]} />} />
-                    <Route path="/history" element={<ProtectedRoute element={<History />} allowedRoles={["Super Admin", "User", "Admin"]} />} />
+                    
+                    {/* History Routes - Corrected for Role-Based Navigation */}
+                    <Route path="/history" element={<ProtectedRoute element={<History />} allowedRoles={["Super Admin"]} />} /> {/* Only Super Admin to /history */}
+                    <Route path="/adminhistory" element={<ProtectedRoute element={<AdminHistory />} allowedRoles={["Admin"]} />} /> {/* Corrected path */}
+                    <Route path="/user-history" element={<ProtectedRoute element={<UserHistory />} allowedRoles={["User"]} />} /> {/* Corrected path */}
+                    
                     <Route path="/settings" element={<ProtectedRoute element={<SettingsPage />} allowedRoles={["Super Admin", "Admin"]} />} />
                     <Route path="/user-settings" element={<ProtectedRoute element={<UserSettingsPage />} allowedRoles={["User"]} />} />
 
@@ -129,7 +126,7 @@ function App() {
     return (
         <ThemeProvider>
             {/* NEW: Wrap ThemedApp with AuthProvider */}
-            <AuthProvider> {/* <--- ADD THIS WRAPPER */}
+            <AuthProvider>
                 <ThemedApp />
             </AuthProvider>
         </ThemeProvider>
