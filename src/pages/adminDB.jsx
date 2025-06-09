@@ -7,18 +7,26 @@ import { AuthContext } from "../context/AuthContext";
 import AdminDashboardPage from "../components/AdminDashboardPage";
 import EstablishmentSensors from "../components/DashboardEstablishment";
 import Calendar from "../components/CalendarComponent";
+// Import socket.io-client and your socket instance
+import io from 'socket.io-client';
+import socket from '../Dashboard Meters/socket'; // Assuming 'socket.js' is in '../Dashboard Meters'
 
 const AdminDb = () => {
   const { theme, toggleTheme } = useContext(ThemeContext);
-  const { currentUser, getToken } = useContext(AuthContext); // Access currentUser and getToken
+  const { currentUser, getToken } = useContext(AuthContext);
 
   const [establishments, setEstablishments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // --- States for the Global Warning Pop-up ---
+  const [showWarningPopup, setShowWarningPopup] = useState(false);
+  const [warningMessage, setWarningMessage] = useState('');
+  const [warningTitle, setWarningTitle] = useState('⚠️ Water Quality Alert!');
+
   const fetchEstablishments = async () => {
     setLoading(true);
-    setError(null); // Clear previous errors
+    setError(null);
 
     try {
       const token = getToken();
@@ -26,13 +34,11 @@ const AdminDb = () => {
         throw new Error("Authentication token not found. Please log in.");
       }
 
-      // --- FIX APPLIED HERE: Corrected typo in the URL ---
-      // Changed 'assi_ed-establishments' to 'assigned-establishments'
       const response = await fetch(`http://localhost:5000/api/admin/assigned-establishments`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}` // Send the JWT
+          'Authorization': `Bearer ${token}`
         },
       });
 
@@ -41,31 +47,52 @@ const AdminDb = () => {
         throw new Error(`HTTP error! Status: ${response.status} - ${errorData.message || response.statusText}`);
       }
       const data = await response.json();
-      // Log the data to inspect its structure
       console.log("AdminDb - Data received from backend for assigned establishments:", data);
       setEstablishments(data);
     } catch (err) {
       console.error("AdminDb - Failed to fetch establishments:", err);
       setError(`Failed to load assigned establishments: ${err.message}. Please ensure you are logged in as an Admin/Super Admin.`);
-      setEstablishments([]); // Clear establishments on error
+      setEstablishments([]);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    // Only fetch establishments if a user is authenticated (currentUser is not null)
     if (currentUser) {
       fetchEstablishments();
     } else {
-      // If no currentUser, stop loading and inform the user
       setLoading(false);
       setError("Please log in to view assigned establishments.");
-      setEstablishments([]); // Ensure establishments state is empty
+      setEstablishments([]);
     }
-  }, [currentUser]); // Dependency array ensures this effect re-runs if currentUser changes
+  }, [currentUser]);
 
-  // Function to handle deletion (similar to Dashboard.js, but ensures admin context)
+  // --- Socket.IO Listener for Global Notifications ---
+  useEffect(() => {
+    const handleNewNotification = (notification) => {
+      console.log('AdminDb received new notification:', notification);
+
+      const cleanedMessage = notification.message.replace('⚠️ Alert: ', '');
+
+      setWarningMessage(`${cleanedMessage} Please take actions now.`);
+      setShowWarningPopup(true); // Show the pop-up
+    };
+
+    // Ensure the socket is connected before listening
+    if (socket) {
+      socket.on('newNotification', handleNewNotification);
+    }
+
+
+    return () => {
+      // Clean up the event listener when the component unmounts
+      if (socket) {
+        socket.off('newNotification', handleNewNotification);
+      }
+    };
+  }, []); // Empty dependency array means this effect runs once on mount
+
   const handleDeleteEstablishment = async (establishmentId, establishmentName) => {
     const isConfirmed = window.confirm(`Are you sure you want to delete "${establishmentName}"? This action cannot be undone.`);
 
@@ -74,7 +101,7 @@ const AdminDb = () => {
     }
 
     try {
-      const token = getToken(); // Get the token for deletion
+      const token = getToken();
       if (!token) {
         throw new Error("Authentication token missing for delete operation.");
       }
@@ -82,7 +109,7 @@ const AdminDb = () => {
       const response = await fetch(`http://localhost:5000/api/establishments/${establishmentId}`, {
         method: "DELETE",
         headers: {
-          'Authorization': `Bearer ${token}` // Send the JWT
+          'Authorization': `Bearer ${token}`
         },
       });
 
@@ -93,7 +120,6 @@ const AdminDb = () => {
       }
 
       console.log(`Establishment ${establishmentId} deleted successfully.`);
-      // Refresh the list after deletion
       await fetchEstablishments();
     } catch (error) {
       console.error("Failed to delete establishment:", error);
@@ -101,10 +127,8 @@ const AdminDb = () => {
     }
   };
 
-
   return (
     <div className={`${styles.admindb} ${theme}`}>
-      {/* <Navbar theme={theme} toggleTheme={toggleTheme} /> */}
       <div className={styles.admindbContainer}>
         <Sidebar theme={theme} toggleTheme={toggleTheme} />
         <div className={styles.admindbContents}>
@@ -139,6 +163,19 @@ const AdminDb = () => {
           </div>
         </div>
       </div>
+
+      {/* Global Pop-up Warning Notification (Centered on Screen) */}
+      {showWarningPopup && (
+        <div className="warning-popup"> {/* Ensure you have this class in your CSS */}
+          <div className="popup-content"> {/* Ensure you have this class in your CSS */}
+            <h3>{warningTitle}</h3>
+            <p>{warningMessage}</p>
+            <button onClick={() => setShowWarningPopup(false)} className="close-popup">
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

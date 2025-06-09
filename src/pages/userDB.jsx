@@ -15,6 +15,9 @@ import ElectricalCon from "../Dashboard Meters/ElectricalCon";
 import AccessRestrictedModal from "../components/AccessRestrictedModal";
 import { useNavigate, Link } from "react-router-dom";
 import axios from 'axios'; // Import axios for API calls
+// Import socket.io-client and your socket instance
+import io from 'socket.io-client';
+import socket from '../Dashboard Meters/socket'; // Make sure this path is correct
 
 // API base URL - make sure this matches your backend
 const API_BASE_URL = "http://localhost:5000";
@@ -29,7 +32,7 @@ const AlertDialog = ({ isOpen, message, onClose }) => {
                 <p className="text-lg font-semibold mb-4">{message}</p>
                 <button
                     onClick={onClose}
-                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus->ring-blue-500 focus:ring-opacity-50"
+                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
                 >
                     OK
                 </button>
@@ -40,7 +43,6 @@ const AlertDialog = ({ isOpen, message, onClose }) => {
 
 const Userdb = () => {
     const { theme, toggleTheme } = useContext(ThemeContext);
-    // Destructure deviceId and isVerified directly from AuthContext for clarity and reactivity
     const { currentUser, login, logout, getToken, deviceId, establishmentId } = useContext(AuthContext);
     const [showAccessModal, setShowAccessModal] = useState(false);
     const navigate = useNavigate();
@@ -48,6 +50,11 @@ const Userdb = () => {
     // State for AlertDialog
     const [alertMessage, setAlertMessage] = useState("");
     const [showAlert, setShowAlert] = useState(false);
+
+    // --- States for the Global Warning Pop-up ---
+    const [showWarningPopup, setShowWarningPopup] = useState(false);
+    const [warningMessage, setWarningMessage] = useState('');
+    const [warningTitle, setWarningTitle] = useState('⚠️ Water Quality Alert!');
 
     // Polling state to check for verification status periodically
     const [isPolling, setIsPolling] = useState(false);
@@ -73,14 +80,14 @@ const Userdb = () => {
             setShowAccessModal(true);
             setIsPolling(false); // No need to poll for verification if deviceId input is the current step
             console.log("User needs to input Device ID. Modal forced open.");
-        } 
+        }
         // If deviceId is present, but user is not verified, and modal flag is set from previous navigation/registration
         else if (showModalFlag === "true" && !isVerified) {
             setShowAccessModal(true);
             localStorage.removeItem("showAccessModalOnLoad"); // Clear the flag after acting on it
             setIsPolling(true); // Start polling for verification
             console.log("User verified? No. Modal flag set. Modal opened for verification polling.");
-        } 
+        }
         // If the user is verified, hide the modal and stop polling
         else if (isVerified) {
             localStorage.removeItem("showAccessModalOnLoad"); // Clear the flag if user is now verified
@@ -135,6 +142,35 @@ const Userdb = () => {
             clearInterval(pollInterval);
         };
     }, [isPolling, login, getToken]); // Dependencies on login and getToken from AuthContext
+
+    // --- Socket.IO Listener for Global Notifications ---
+    useEffect(() => {
+        const handleNewNotification = (notification) => {
+            console.log('Userdb received new notification:', notification);
+
+            // Check if the notification is relevant to the current user's device
+            // This is a crucial step to avoid showing irrelevant notifications
+            if (notification.deviceId === deviceId) {
+                const cleanedMessage = notification.message.replace('⚠️ Alert: ', '');
+                setWarningMessage(`${cleanedMessage} Please take actions now.`);
+                setShowWarningPopup(true); // Show the pop-up
+            } else {
+                console.log("Notification not for this user's device:", notification.deviceId, "vs current:", deviceId);
+            }
+        };
+
+        // Ensure the socket is connected before listening
+        if (socket) {
+            socket.on('newNotification', handleNewNotification);
+        }
+
+        return () => {
+            // Clean up the event listener when the component unmounts
+            if (socket) {
+                socket.off('newNotification', handleNewNotification);
+            }
+        };
+    }, [deviceId]); // Dependency on deviceId to ensure the listener is correctly configured for the current user's device
 
     // NEW EFFECT: Fetch sensors based on currentUser's deviceId and isVerified status
     useEffect(() => {
@@ -370,6 +406,19 @@ const Userdb = () => {
                 message={alertMessage}
                 onClose={() => setShowAlert(false)}
             />
+
+            {/* Global Pop-up Warning Notification (Centered on Screen) */}
+            {showWarningPopup && (
+                <div className="warning-popup"> {/* Ensure you have this class in your CSS */}
+                    <div className="popup-content"> {/* Ensure you have this class in your CSS */}
+                        <h3>{warningTitle}</h3>
+                        <p>{warningMessage}</p>
+                        <button onClick={() => setShowWarningPopup(false)} className="close-popup">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
