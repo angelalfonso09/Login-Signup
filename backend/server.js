@@ -3295,26 +3295,33 @@ app.get('/data/:sensorType/:filterType', async (req, res) => {
 // app.get("/data/temperature/7d-avg", (req, res) => getHistoricalData('temperature_readings', 'temperature_celsius', '7d-avg', res));
 // app.get("/data/temperature/30d-avg", (req, res) => getHistoricalData('temperature_readings', 'temperature_celsius', '30d-avg', res));
 
-// // Notification for Sensors
+    // Notification for Sensors
 // async function insertNotification(
 //   sensorType,
 //   currentValue,
-//   threshold,
+//   threshold, // For safety score sensors, this will be the lower bound for "critical" (e.g., 30)
 //   condition, // e.g., 'lessThan', 'greaterThan', 'outsideRange'
 //   unit = "" // Unit for the sensor value (e.g., "NTU", "pH", "ppm")
 // ) {
 //   const type = "Sensor Alert"; // A general type for these notifications
 //   let title = `${sensorType.charAt(0).toUpperCase() + sensorType.slice(1)} Alert`; // Capitalize first letter for title
 //   let message = "";
-//   const priority = "High"; // Assuming all sensor alerts are high priority
+//   let priority = "High"; // Default priority
 
 //   switch (sensorType) {
 //     case "turbidity":
 //     case "tds":
 //     case "salinity":
 //     case "ec":
+//       // Assuming 'threshold' here refers to the critical threshold (e.g., 30)
 //       if (condition === "lessThan" && currentValue < threshold) {
-//         message = `⚠️ Alert: ${sensorType} safety score is below threshold (${threshold}${unit}). Current value: ${currentValue}${unit}.`;
+//         // Critical Water Quality: below 31%
+//         message = `⚠️ Critical Water Quality Alert: ${sensorType} safety score is ${currentValue}${unit}. Check Water Tank or Check for damaged sensor. Not Recommended for Drinking and Usage!!`;
+//         priority = "Critical"; // Set priority to Critical for this range
+//       } else if (currentValue >= 31 && currentValue <= 70) {
+//         // Warning Water Quality: 31% to 70%
+//         message = `⚠️ Warning: ${sensorType} safety score is ${currentValue}${unit}. The safety score is below the standard of the Philippine National Standard for Drinking Water of 2017. It is not recommendable for drinking.`;
+//         priority = "High"; // Maintain High priority for this range
 //       }
 //       break;
 //     case "ph":
@@ -3322,6 +3329,7 @@ app.get('/data/:sensorType/:filterType', async (req, res) => {
 //         const [lowerBound, upperBound] = threshold;
 //         if (currentValue < lowerBound || currentValue > upperBound) {
 //           message = `⚠️ Alert: pH level is outside optimal range (${lowerBound}-${upperBound}${unit}). Current value: ${currentValue}${unit}.`;
+//           priority = "High";
 //         }
 //       }
 //       break;
@@ -3330,6 +3338,7 @@ app.get('/data/:sensorType/:filterType', async (req, res) => {
 //         const [lowerBound, upperBound] = threshold;
 //         if (currentValue < lowerBound || currentValue > upperBound) {
 //           message = `⚠️ Alert: Temperature is outside optimal range (${lowerBound}-${upperBound}${unit}). Current value: ${currentValue}${unit}.`;
+//           priority = "High";
 //         }
 //       }
 //       break;
@@ -3343,9 +3352,9 @@ app.get('/data/:sensorType/:filterType', async (req, res) => {
 //   }
 
 //   const notifQuery = `
-//     INSERT INTO notif (type, title, message, timestamp, priority)
-//     VALUES (?, ?, ?, NOW(), ?)
-//   `;
+//         INSERT INTO notif (type, title, message, timestamp, priority)
+//         VALUES (?, ?, ?, NOW(), ?)
+//     `;
 
 //   try {
 //     const [notifResult] = await db.query(notifQuery, [
