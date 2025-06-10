@@ -178,3 +178,93 @@
 .password-toggle-icon.dark:hover {
     color: #f8f9fa; /* White on hover for dark theme, for prominence */
 }
+
+/* Custom styles for the Terms and Conditions Modal */
+
+.terms-modal .modal-content {
+  border-radius: 15px; /* Rounded corners for the modal */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); /* Soft shadow for depth */
+  background: linear-gradient(135deg, #f0f4f8, #e0e7ee); /* Light gradient background */
+  color: #333; /* Darker text for readability */
+}
+
+.terms-modal .modal-header {
+  border-bottom: 1px solid #dcdfe4; /* Subtle border below header */
+  padding: 20px 25px; /* More padding */
+  background-color: #ffffff; /* White header background */
+  border-top-left-radius: 15px;
+  border-top-right-radius: 15px;
+  font-family: 'montserrat';
+}
+
+.terms-modal .modal-title {
+  color: #2c3e50; /* Darker title color */
+  font-weight: 700; /* Bolder title */
+  font-size: 1.5rem; /* Larger font size */
+  
+}
+
+.terms-modal .btn-close {
+  font-size: 1rem;
+  color: #555; /* Darker close button */
+  opacity: 0.7; /* Slightly less opaque */
+}
+
+.terms-modal .modal-body {
+  padding: 25px; /* Ample padding inside body */
+  line-height: 1.7; /* Increased line height for better readability */
+  font-size: 0.95rem; /* Slightly larger base font */
+}
+
+.terms-modal h4 {
+  color: #1a5276; /* Distinct color for subheadings */
+  margin-bottom: 15px;
+  font-weight: 600;
+  border-bottom: 2px solid #aebfd1; /* Underline for emphasis */
+  padding-bottom: 5px;
+  font-family: 'montserrat';
+}
+
+
+.terms-modal ul {
+  list-style-type: disc; /* Standard disc bullets */
+  margin-left: 20px; /* Indent lists */
+  margin-bottom: 15px;
+  font-family: 'poppins';
+  text-align: justify;
+}
+
+.terms-modal ul li {
+  margin-bottom: 8px; /* Spacing between list items */
+  
+}
+
+.terms-modal strong {
+  color: #004085; /* Stronger color for bold text */
+}
+
+.terms-modal .modal-footer {
+  border-top: 1px solid #dcdfe4; /* Subtle border above footer */
+  padding: 15px 25px; /* Padding for the footer */
+  background-color: #ffffff;
+  border-bottom-left-radius: 15px;
+  border-bottom-right-radius: 15px;
+}
+
+.terms-modal .btn-secondary {
+  background-color: #6c757d; /* Standard secondary button color */
+  border-color: #6c757d;
+  transition: all 0.3s ease; /* Smooth transition for hover effects */
+  font-family: 'poppins';
+}
+
+.terms-modal .btn-secondary:hover {
+  background-color: #5a6268;
+  border-color: #545b62;
+  transform: translateY(-2px); /* Slight lift on hover */
+}
+
+.terms-modal p{
+    font-family: 'poppins';
+    text-align: justify;
+}
