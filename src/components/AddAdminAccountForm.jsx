@@ -204,6 +204,7 @@ const AdminCreationForm = ({ onClose, onAddAdmin }) => {
               placeholder="Enter admin username"
               required
               disabled={isOtpSent}
+              className="admin-username-input"
             />
           </Form.Group>
 

@@ -1,7 +1,7 @@
 import React, { useContext, useState, useEffect } from "react"; // Added useEffect
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
-import "../styles/Pages Css/History.css";
+import "../styles/Pages Css/AdminHistory.css";
 import Temp from "../sensors/temp";
 import PhLevel from "../sensors/phlevel"; // Make sure the component name matches the import
 import Turbidity from "../sensors/turbudity";
@@ -261,7 +261,7 @@ const UserHistory = () => {
                 <Sidebar theme={theme} toggleTheme={toggleTheme} />
                 <div className="aqua-history-content-wrapper">
                     <h1 className={`aqua-history-title ${theme}-text`}>Sensor History </h1>
-                    <div className="aqua-history-contents-grid">
+                    <div className="aqua-history-sensors-grid">
                         <p>Loading your device's sensors...</p>
                     </div>
                 </div>
@@ -285,8 +285,9 @@ const UserHistory = () => {
                             {message}
                         </div>
                     )}
-                    <div className="aqua-history-contents-grid">
+                    <div className="aqua-history-sensors-grid">
 
+                    <div className="aqua-history-controls">
                         <div className="aqua-filter-buttons">
                             <button onClick={() => setFilter("realtime")} className={filter === "realtime" ? "active" : ""}>
                                 Real-time
@@ -302,13 +303,20 @@ const UserHistory = () => {
                             </button>
                         </div>
 
+                        <div className="aqua-export-buttons">
+                            <button onClick={exportToExcel} className="aqua-export-btn" disabled={exporting}>
+                                {exporting ? "Exporting..." : "Export Excel"}
+                            </button>
+                        </div>
+                    </div>
+
                         {hasSensors ? (
                             sensorDefinitionsToRender.map((sensor) => { // Use the filtered list for rendering
                                 const SensorComponent = sensor.component;
                                 return (
                                     <div
                                         key={sensor.name} // Use sensor.name for key
-                                        className={sensor.cssClass}
+                                        className={`aqua-sensor-card ${sensor.cssClass}`}
                                         onClick={() => openSensorModal(sensor)}
                                     >
                                         {/* Pass deviceId down to sensor components */}
@@ -319,12 +327,6 @@ const UserHistory = () => {
                         ) : (
                             !isLoadingSensors && <p>No sensors associated with your device found, or an error occurred.</p>
                         )}
-
-                        <div className="aqua-export-buttons">
-                            <button onClick={exportToExcel} className="aqua-export-btn" disabled={exporting || !hasSensors}>
-                                {exporting ? "Exporting..." : "Export Excel"}
-                            </button>
-                        </div>
                     </div>
                 </div>
             </div>

@@ -15,7 +15,7 @@
   --acctbl-controls-gap: 10px;
   --acctbl-controls-margin-bottom: 15px;
   --acctbl-controls-height: 40px;
-  --acctbl-controls-bg-light: #f8f9fa;
+  --acctbl-controls-bg-light: transparent;
   --acctbl-controls-bg-dark: transparent;
 
   /* Inputs */

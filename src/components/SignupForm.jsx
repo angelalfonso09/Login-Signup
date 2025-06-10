@@ -73,7 +73,21 @@ const SignupForm = () => {
             });
 
         } catch (error) {
-            setMessage("❌ Signup failed: " + (error.response?.data.error || "Server error"));
+            // Check for specific error messages from the backend
+            if (error.response && error.response.status === 409) { // Assuming 409 Conflict for duplicate
+                const errorMessage = error.response.data.error;
+                if (errorMessage.includes("Username already exists")) {
+                    alert("This username is already taken. Please choose a different one.");
+                    setMessage("❌ This username is already taken.");
+                } else if (errorMessage.includes("Email already registered")) {
+                    alert("This email is already registered. Please use a different email or log in.");
+                    setMessage("❌ This email is already registered.");
+                } else {
+                    setMessage("❌ Signup failed: " + errorMessage);
+                }
+            } else {
+                setMessage("❌ Signup failed: " + (error.response?.data.error || "Server error"));
+            }
         }
     };
 
@@ -205,7 +219,7 @@ const SignupForm = () => {
                 </Button>
 
                 {message && (
-                    <p className={`mt-3 text-center signup-form-message ${message.includes("❌") ? 'error' : 'success'}`}>
+                    <p className={`alert-signup ${message.includes("❌") ? 'error' : 'success'}`}>
                         {message}
                     </p>
                 )}

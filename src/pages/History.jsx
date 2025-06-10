@@ -22,13 +22,13 @@ const History = () => {
 
     // Define your sensors and their corresponding API paths/value columns
     const sensorDefinitions = [
-        { name: "Turbidity", tableName: "turbidity_readings", valueColumn: "turbidity_value", apiPath: "/turbidity", component: Turbidity, cssClass: "aqua-turbidity-container" },
+        { name: "Temperature", tableName: "temperature_readings", valueColumn: "temperature_celsius", apiPath: "/temperature", component: Temp, cssClass: "aqua-water-temperature-container" },
         { name: "pH Level", tableName: "phlevel_readings", valueColumn: "ph_value", apiPath: "/phlevel", component: PhLevel, cssClass: "aqua-ph-level-container" },
+        { name: "Turbidity", tableName: "turbidity_readings", valueColumn: "turbidity_value", apiPath: "/turbidity", component: Turbidity, cssClass: "aqua-turbidity-container" },
         { name: "TDS", tableName: "tds_readings", valueColumn: "tds_value", apiPath: "/tds", component: Tds, cssClass: "aqua-tds-container" },
         { name: "Salinity", tableName: "salinity_readings", valueColumn: "salinity_value", apiPath: "/salinity", component: Sal, cssClass: "aqua-salinity-container" },
         { name: "Conductivity", tableName: "ec_readings", valueColumn: "ec_value_mS", apiPath: "/ec", component: Conductivity, cssClass: "aqua-conductivity-container" },
         { name: "Electrical Conductivity", tableName: "ec_compensated_readings", valueColumn: "ec_compensated_mS", apiPath: "/ec-compensated", component: ElectricalConductivity, cssClass: "aqua-electrical-conductivity-container" },
-        { name: "Temperature", tableName: "temperature_readings", valueColumn: "temperature_celsius", apiPath: "/temperature", component: Temp, cssClass: "aqua-water-temperature-container" },
     ];
 
     // Function to open the modal
@@ -64,7 +64,7 @@ const History = () => {
             // Fetch data for each sensor
             for (const sensor of sensorDefinitions) {
                 const endpoint = `http://localhost:5000/data${sensor.apiPath}/${backendFilter}`;
-                console.log(`Workspaceing data for ${sensor.name} from: ${endpoint}`);
+                console.log(`Fetching data for ${sensor.name} from: ${endpoint}`);
                 const response = await fetch(endpoint);
                 if (!response.ok) {
                     throw new Error(`Failed to fetch ${sensor.name} data: ${response.statusText}`);
@@ -133,9 +133,10 @@ const History = () => {
                 <Sidebar theme={theme} toggleTheme={toggleTheme} />
 
                 <div className="aqua-history-content-wrapper">
-                    <h1 className={`aqua-history-title ${theme}-text`}>Sensor History </h1>
-                    <div className="aqua-history-contents-grid">
-
+                    <h1 className={`aqua-history-title ${theme}-text`}>Sensor History</h1>
+                    
+                    {/* Controls Section */}
+                    <div className="aqua-history-controls">
                         <div className="aqua-filter-buttons">
                             <button onClick={() => setFilter("realtime")} className={filter === "realtime" ? "active" : ""}>
                                 Real-time
@@ -151,24 +152,27 @@ const History = () => {
                             </button>
                         </div>
 
-                        {sensorDefinitions.map((sensor) => {
-                            const SensorComponent = sensor.component;
-                            return (
-                                <div
-                                    key={sensor.name}
-                                    className={sensor.cssClass}
-                                    onClick={() => openSensorModal(sensor)} // Pass the whole sensor object
-                                >
-                                    <SensorComponent theme={theme} filter={filter} />
-                                </div>
-                            );
-                        })}
-
                         <div className="aqua-export-buttons">
                             <button onClick={exportToExcel} className="aqua-export-btn" disabled={exporting}>
                                 {exporting ? "Exporting..." : "Export Excel"}
                             </button>
                         </div>
+                    </div>
+
+                    {/* Sensors Grid - Now Full Width */}
+                    <div className="aqua-history-sensors-grid">
+                        {sensorDefinitions.map((sensor) => {
+                            const SensorComponent = sensor.component;
+                            return (
+                                <div
+                                    key={sensor.name}
+                                    className={`aqua-sensor-card ${sensor.cssClass}`}
+                                    onClick={() => openSensorModal(sensor)}
+                                >
+                                    <SensorComponent theme={theme} filter={filter} />
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
             </div>
@@ -177,7 +181,7 @@ const History = () => {
             {selectedSensorForModal && (
                 <div className="aqua-modal-overlay" onClick={closeSensorModal}>
                     <div className="aqua-modal-content" onClick={(e) => e.stopPropagation()}>
-                        <button className="aqua-modal-close-btn" onClick={closeSensorModal}>X</button>
+                        <button className="aqua-modal-close-btn" onClick={closeSensorModal}>×</button>
                         <h2>{selectedSensorForModal.name} History</h2>
                         {/* Render the selected sensor component inside the modal */}
                         <selectedSensorForModal.component theme={theme} filter={filter} isModal={true} />

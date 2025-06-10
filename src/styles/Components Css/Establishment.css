@@ -37,7 +37,8 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   margin-bottom: 1rem;
   width: 100%;
-  position: relative;
+  max-width: 500px;
+  position: absolute;
 }
 
 .estab-info {
@@ -175,4 +176,48 @@ estab-modal-content::-webkit-scrollbar {
 
 .estab-device-id{
   font-family: 'poppins';
+}
+
+.option-sensors{
+  height: fit-content;
+}
+
+/* In your Dashboard.module.css or a global CSS file */
+
+.estab-delete-icon-button {
+  background: none; /* Remove default button background */
+  border: none;      /* Remove default button border */
+  color: #dc3545;    /* Red color for delete action */
+  cursor: pointer;   /* Indicate it's clickable */
+  font-size: 1.2em;  /* Adjust icon size */
+  padding: 5px;      /* Add some padding around the icon */
+  transition: color 0.2s ease-in-out, transform 0.2s ease-in-out; /* Smooth transitions for hover */
+  display: flex;     /* Use flexbox to center the icon if needed */
+  align-items: center; /* Center icon vertically */
+  justify-content: center; /* Center icon horizontally */
+  margin-left: 10px; /* Example: space it out from other elements */
+}
+
+.estab-delete-icon-button:hover {
+  color: #c82333; /* Darker red on hover */
+  transform: scale(1.1); /* Slightly enlarge icon on hover */
+}
+
+.estab-delete-icon-button:active {
+  color: #bd2130; /* Even darker red when clicked */
+  transform: scale(0.95); /* Slightly shrink icon when clicked */
+}
+
+/* Optional: If the button is part of a flex container and you want to align it */
+/* Example for a parent container (e.g., in your EstablishmentSensors component) */
+.establishmentCardActions { /* Assuming a parent div for actions */
+  display: flex;
+  align-items: center;
+  /* ... other flex properties ... */
+}
+
+.estab-actions { /* This corresponds to your <div className="estab-actions"> */
+  display: flex; /* Makes the buttons sit next to each other */
+  align-items: center; /* Vertically centers the buttons */
+  gap: 10px; /* Space between the "Details" button and the "Delete" icon */
 }

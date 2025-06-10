@@ -245,16 +245,14 @@ const Dashboard = () => {
                     value={newEstablishmentName}
                     onChange={handleInputChange}
                   />
-                  {/* MODIFIED: Use allSensors here */}
-                  {allSensors.length > 0 && (
-                    <div className={styles.sensorSelection}>
-                      <h4>Select Sensors:</h4>
-                      {allSensors.map((sensor) => (
-                        <div key={sensor.id} className={styles.sensorCheckboxItem}>
-                          <input
-                            type="checkbox"
-                            id={`sensor-${sensor.id}`}
-                            value={sensor.id}
+                  <div className="option-sensors">
+                    <h4>Select Sensors:</h4>
+                    {allSensors.map((sensor) => (
+                      <div key={sensor.id} className={styles.sensorCheckboxItem}>
+                        <input
+                          type="checkbox"
+                          id={`sensor-${sensor.id}`}
+                          value={sensor.id}
                             checked={selectedSensors.includes(sensor.id)}
                             onChange={() => handleSensorCheckboxChange(sensor.id)}
                           />
@@ -267,7 +265,6 @@ const Dashboard = () => {
                         </div>
                       ))}
                     </div>
-                  )}
                   {/* MODIFIED: Use allSensors here */}
                   {allSensors.length === 0 && (
                     <div className={styles.noSensorsMessage}>No sensors available to add.</div>

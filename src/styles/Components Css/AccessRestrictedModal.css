@@ -81,3 +81,41 @@
 .modal-button.cancel:hover {
   background-color: #da3328;
 }
+
+/* Device ID Input Container */
+.device-id-input-container {
+    margin-bottom: 25px;
+}
+
+.device-id-label {
+    display: block; /* Make label appear above input */
+    text-align: left;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+    color: #b0b0b0; /* Slightly faded label color */
+    font-weight: 500; /* Medium weight for better readability */
+    padding-left: 10px; /* Padding for better alignment */
+    font-family: 'poppins';
+}
+
+.device-id-input {
+    width: calc(100% - 20px); /* Adjust width considering padding */
+    padding: 12px 10px;
+    border: 1px solid #444; /* Darker border for input */
+    border-radius: 5px;
+    background-color: #2b2b2b; /* Even darker background for the input field */
+    color: #f0f0f0; /* Light text for input */
+    font-size: 1rem;
+    box-sizing: border-box; 
+    font-family: 'poppins';/* Include padding and border in the element's total width and height */
+}
+
+.device-id-input::placeholder {
+    color: #888; /* Placeholder text color */
+}
+
+.device-id-input:focus {
+    outline: none;
+    border-color: #007bff; /* Highlight color on focus (e.g., a blue) */
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25); /* Subtle focus shadow */
+}

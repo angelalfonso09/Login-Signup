@@ -1,7 +1,7 @@
 import React, { useContext, useState, useEffect } from "react";
 import Navbar from "../components/Navbar"; // Assuming you have this
 import Sidebar from "../components/Sidebar";
-import "../styles/Pages Css/History.css"; // Still referencing your main CSS file
+import "../styles/Pages Css/AdminHistory.css"; // Still referencing your main CSS file
 import Temp from "../sensors/temp";
 import PhLevel from "../sensors/phlevel";
 import Turbidity from "../sensors/turbudity";
@@ -228,11 +228,13 @@ const AdminHistory = () => {
     if (isLoadingSensors) {
         return (
             <div className={`aqua-history-page ${theme}`}>
-                <Sidebar theme={theme} toggleTheme={toggleTheme} />
-                <div className="aqua-history-content-wrapper">
-                    <h1 className={`aqua-history-title ${theme}-text`}>Sensor History </h1>
-                    <div className="aqua-history-contents-grid">
-                        <p>Loading sensors for establishment...</p>
+                <div className="aqua-history-container">
+                    <Sidebar theme={theme} toggleTheme={toggleTheme} />
+                    <div className="aqua-history-content-wrapper">
+                        <h1 className={`aqua-history-title ${theme}-text`}>Sensor History</h1>
+                        <div className="aqua-history-loading">
+                            <p>Loading sensors for establishment...</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -245,14 +247,16 @@ const AdminHistory = () => {
                 <Sidebar theme={theme} toggleTheme={toggleTheme} />
 
                 <div className="aqua-history-content-wrapper">
-                    <h1 className={`aqua-history-title ${theme}-text`}>Sensor History </h1>
+                    <h1 className={`aqua-history-title ${theme}-text`}>Sensor History</h1>
+                    
                     {message && (
                         <div className={`settings-page-message-box ${messageType === 'success' ? 'settings-page-message-success' : 'settings-page-message-error'}`}>
                             {message}
                         </div>
                     )}
-                    <div className="aqua-history-contents-grid">
 
+                    {/* Filter buttons */}
+                    <div className="aqua-history-controls">
                         <div className="aqua-filter-buttons">
                             <button onClick={() => setFilter("realtime")} className={filter === "realtime" ? "active" : ""}>
                                 Real-time
@@ -268,13 +272,22 @@ const AdminHistory = () => {
                             </button>
                         </div>
 
+                        <div className="aqua-export-buttons">
+                            <button onClick={exportToExcel} className="aqua-export-btn" disabled={exporting}>
+                                {exporting ? "Exporting..." : "Export Excel"}
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Sensors Grid */}
+                    <div className="aqua-history-sensors-grid">
                         {sensorDefinitions.length > 0 ? (
-                            sensorDefinitions.map((sensor) => { // Use the filtered sensorDefinitions here
+                            sensorDefinitions.map((sensor) => {
                                 const SensorComponent = sensor.component;
                                 return (
                                     <div
                                         key={sensor.name}
-                                        className={sensor.cssClass}
+                                        className={`aqua-sensor-card ${sensor.cssClass}`}
                                         onClick={() => openSensorModal(sensor)}
                                     >
                                         {/* Pass establishmentId down to sensor components */}
@@ -284,15 +297,14 @@ const AdminHistory = () => {
                             })
                         ) : (
                             // Only show this message if not loading and no sensors found
-                            !isLoadingSensors && <p>No sensors associated with this establishment found, or an error occurred.</p>
+                            !isLoadingSensors && (
+                                <div className="aqua-no-sensors-message">
+                                    <p>No sensors associated with this establishment found, or an error occurred.</p>
+                                </div>
+                            )
                         )}
-
-                        <div className="aqua-export-buttons">
-                            <button onClick={exportToExcel} className="aqua-export-btn" disabled={exporting}>
-                                {exporting ? "Exporting..." : "Export Excel"}
-                            </button>
-                        </div>
                     </div>
+
                 </div>
             </div>
 

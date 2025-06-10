@@ -21,6 +21,8 @@ const AccessRestrictedModal = ({ isOpen, onClose, onRequestSend, message, showDe
     const handleSendRequestClick = () => {
         // Pass the deviceIdInput to the onRequestSend function
         onRequestSend(deviceIdInput);
+        // Show the browser alert
+        alert("Request successfully sent!");
         // Optionally, close the modal immediately after sending the request,
         // or let the parent component (Userdb) handle it based on response
         // onClose();
@@ -66,12 +68,12 @@ const AccessRestrictedModal = ({ isOpen, onClose, onRequestSend, message, showDe
                         so the message will indicate waiting for approval, and no input is needed.
                         We can still show a button to acknowledge/log out. */}
                     {!showDeviceIdInput && (
-                         <button
-                            className="modal-button send-request" // Reusing style for general action
-                            onClick={onClose} // Just close the modal if no input needed
-                         >
-                            OK / Close
-                         </button>
+                           <button
+                             className="modal-button send-request" // Reusing style for general action
+                             onClick={onClose} // Just close the modal if no input needed
+                           >
+                             OK / Close
+                           </button>
                     )}
                     <button className="modal-button logout" onClick={onClose}>
                         Log Out

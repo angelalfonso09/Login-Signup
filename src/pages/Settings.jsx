@@ -474,7 +474,7 @@ const SettingsPage = () => {
                   </label>
                 </div>
                 {/* Notification Preference Item */}
-                <div className="settings-page-list-item settings-page-toggle-item">
+                {/* <div className="settings-page-list-item settings-page-toggle-item">
                   <div className="settings-page-item-content">
                     <Bell size={20} className="settings-page-item-icon" />
                     <span className="settings-page-item-text">Receive Notifications</span>
@@ -488,7 +488,7 @@ const SettingsPage = () => {
                     />
                     <span className="settings-page-slider settings-page-round"></span>
                   </label>
-                </div>
+                </div> */}
               </div>
             )}
           </section>

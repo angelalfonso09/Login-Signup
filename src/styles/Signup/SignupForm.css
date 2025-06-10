@@ -196,3 +196,59 @@
     transition: all 0.3s ease-in-out;
     font-family: 'poppins' !important;
 }
+
+/* --- Base styles for the alert message --- */
+.alert-signup {
+    padding: 10px 15px;
+    border-radius: 5px;
+    margin-top: 15px;
+    font-size: 0.95rem;
+    text-align: center;
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease; /* Smooth transition for theme change */
+}
+
+/* --- Error message specific styles --- */
+.alert-signup.error {
+    background-color: var(--error-bg);
+    color: var(--error-text);
+    border: 1px solid var(--error-border);
+}
+
+/* --- Success message specific styles --- */
+.alert-signup.success {
+    background-color: var(--success-bg);
+    color: var(--success-text);
+    border: 1px solid var(--success-border);
+}
+
+/* --- Light Mode (Default) --- */
+/* These variables will be used unless a dark mode is active */
+:root {
+    --error-bg: #fdd; /* Light red background */
+    --error-text: #c00; /* Darker red text */
+    --error-border: #f00; /* Red border */
+
+    --success-bg: #dff; /* Light green background */
+    --success-text: #080; /* Darker green text */
+    --success-border: #0c0; /* Green border */
+
+    /* Add other global theme variables here if you have them, e.g.: */
+    /* --background-color-light: #ffffff; */
+    /* --text-color-light: #333333; */
+}
+
+/* --- Dark Mode --- */
+/* Apply these styles when the 'dark-mode' class is present on the body or a parent element */
+body.dark-mode, .dark-mode { /* Adjust the selector based on where your theme class is applied */
+    --error-bg: #5c2020; /* Darker red background */
+    --error-text: #ff9999; /* Lighter red text */
+    --error-border: #e00000; /* Red border */
+
+    --success-bg: #205c20; /* Darker green background */
+    --success-text: #99ff99; /* Lighter green text */
+    --success-border: #00e000; /* Green border */
+
+    /* Add other global dark theme variables here if you have them, e.g.: */
+    /* --background-color-dark: #333333; */
+    /* --text-color-dark: #f0f0f0; */
+}

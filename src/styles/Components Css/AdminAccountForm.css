@@ -18,6 +18,7 @@
   --admin-input-border: rgba(255, 255, 255, 0.2);
   --admin-button-bg: #444;
   --admin-button-hover: #666;
+  --admin-input-bg: transparent;
 }
 
 /* Base styles */
@@ -226,3 +227,8 @@
 
 /* You can add more specific styles or adjust these values as needed */
 /* For example, if you want a specific font, shadow, or different colors */
+
+.admin-username-input{
+  background-color: transparent !important;
+}
+

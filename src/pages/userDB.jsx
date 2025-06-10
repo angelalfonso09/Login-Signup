@@ -26,19 +26,19 @@ const API_BASE_URL = "http://localhost:5000";
 const AlertDialog = ({ isOpen, message, onClose }) => {
     if (!isOpen) return null;
 
-    return (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm mx-auto text-center">
-                <p className="text-lg font-semibold mb-4">{message}</p>
-                <button
-                    onClick={onClose}
-                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
-                >
-                    OK
-                </button>
-            </div>
-        </div>
-    );
+    // return (
+    //     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+    //         <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm mx-auto text-center">
+    //             <p className="text-lg font-semibold mb-4">{message}</p>
+    //             <button
+    //                 onClick={onClose}
+    //                 className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+    //             >
+    //                 OK
+    //             </button>
+    //         </div>
+    //     </div>
+    // );
 };
 
 const Userdb = () => {
@@ -345,7 +345,7 @@ const Userdb = () => {
                         // but the input will always be there if showDeviceIdInput is true below.
                         !currentDeviceId
                             ? "Please enter your Device ID to send an access request and get started."
-                            : "You need Admin approval to view dashboard features. Your access request has been sent. Please wait for approval to continue or log out."
+                            : "You need Admin approval to view dashboard features.  Enter your Device ID to request access. Please wait for approval to continue or log out."
                     }
                     showDeviceIdInput={true} // FORCED TRUE: Always show the input field
                 />
@@ -397,7 +397,7 @@ const Userdb = () => {
                 message={
                     !currentDeviceId
                         ? "Please enter your Device ID to send an access request and get started."
-                        : "You need Admin approval to view dashboard features. Your access request has been sent. Please wait for approval to continue or log out."
+                        : "You need Admin approval to view dashboard features. Enter your Device ID to request access. Please wait for approval to continue or log out."
                 }
                 showDeviceIdInput={true} // FORCED TRUE: Always show the input field
             />
