@@ -47,7 +47,8 @@ const NotificationIcon = ({ type }) => {
 };
 
 // --- NotificationCard component ---
-const NotificationCard = ({ notification, onMarkAsRead, onDelete, onApproveRequest, onDeclineRequest }) => {
+// Removed onApproveRequest, onDeclineRequest from props
+const NotificationCard = ({ notification, onMarkAsRead, onDelete }) => {
     const { theme } = useContext(ThemeContext);
 
     // Function to format the display type for readability
@@ -101,8 +102,8 @@ const NotificationCard = ({ notification, onMarkAsRead, onDelete, onApproveReque
                             </button>
                         )}
 
-                        {/* Approval/Decline buttons for 'request' type and 'pending' status */}
-                        {notification.type === 'request' && notification.status === 'pending' && (
+                        {/* Approval/Decline buttons for 'request' type and 'pending' status - REMOVED */}
+                        {/* {notification.type === 'request' && notification.status === 'pending' && (
                             <>
                                 <button
                                     onClick={() => onApproveRequest(notification.id, notification.fromUserId)}
@@ -119,7 +120,7 @@ const NotificationCard = ({ notification, onMarkAsRead, onDelete, onApproveReque
                                     <X className="decline-request-icon" />
                                 </button>
                             </>
-                        )}
+                        )} */}
 
                         <button
                             onClick={() => onDelete(notification.id)}
@@ -341,159 +342,9 @@ const NotificationsPage = () => {
         }
     };
 
-    // --- handleApproveRequest with backend API call (already good) ---
-    const handleApproveRequest = async (notificationId, userId) => {
-        console.log("Frontend (Super Admin): Approving request for user:", userId);
-
-        try {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                alert("Authentication token not found. Please log in again.");
-                return;
-            }
-
-            const response = await axios.post(
-                `${API_BASE_URL}/api/admin/approve-user-access`,
-                { userId, notificationId },
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
-            );
-
-            if (response.status === 200) {
-                console.log("Backend response for approval:", response.data);
-
-                // Update the Super Admin's local notification status (frontend display)
-                setNotifications(prevNotifications => {
-                    const updatedNotifications = prevNotifications.map(n =>
-                        n.id === notificationId
-                            ? { ...n, status: 'approved', read: true, actionTakenAt: new Date().toISOString() }
-                            : n
-                    );
-                    return updatedNotifications;
-                });
-
-                // (Simulated localStorage update for target user's isVerified status and notification)
-                // In a full system, the user's frontend would fetch their updated status and notifications from the backend upon login/refresh.
-                let targetUserString = localStorage.getItem('user');
-                if (targetUserString) {
-                    try {
-                        let targetUser = JSON.parse(targetUserString);
-                        // This logic needs to be careful: If the user ID in localStorage is for the *current* admin,
-                        // this won't apply to the user whose access is being approved.
-                        // Ideally, this part of the logic would be handled by the user's *own* frontend
-                        // fetching updated data or by a real-time notification system.
-                        if (targetUser.id === userId) {
-                            targetUser.isVerified = true;
-                            localStorage.setItem('user', JSON.stringify(targetUser));
-                            console.log(`Frontend (Super Admin): User ${userId} 'isVerified' status updated in localStorage.`);
-                        }
-                    } catch (e) {
-                        console.error("Frontend (Super Admin): Error parsing user data to verify in localStorage:", e);
-                    }
-                }
-
-                const userNotifications = loadUserNotifications(userId);
-                const newUserNotification = {
-                    id: `approved_${Date.now()}`,
-                    type: 'success',
-                    message: 'Your access request has been approved! You now have full access.',
-                    read: false,
-                    createdAt: new Date().toISOString(),
-                };
-
-                const hasExistingVerifiedNotif = userNotifications.some(
-                    n => n.type === 'success' && n.message.includes('access request has been approved')
-                );
-
-                if (!hasExistingVerifiedNotif) {
-                    const updatedUserNotifications = [newUserNotification, ...userNotifications];
-                    saveUserNotifications(userId, updatedUserNotifications);
-                    console.log(`Frontend (Super Admin): Success notification added to user ${userId}'s localStorage.`);
-                } else {
-                    console.log(`Frontend (Super Admin): User ${userId} already has an "approved" notification in localStorage.`);
-                }
-
-                alert("User access approved successfully!");
-                fetchNotifications(); // Refresh notifications from DB after action
-            } else {
-                alert(`Approval failed: ${response.data.message || 'Unknown error'}`);
-            }
-        } catch (error) {
-            console.error("Frontend (Super Admin): Error during user approval process:", error);
-            if (axios.isAxiosError(error) && error.response) {
-                console.error("Error response data:", error.response.data);
-                alert(`Failed to approve user: ${error.response.data.message || error.response.statusText}`);
-            } else {
-                alert("Failed to approve user due to a network or server error.");
-            }
-        }
-    };
-
-    // --- handleDeclineRequest with backend API call (already good) ---
-    const handleDeclineRequest = async (notificationId, userId) => {
-        console.log("Frontend (Super Admin): Declining request for user:", userId);
-
-        try {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                alert("Authentication token not found. Please log in again.");
-                return;
-            }
-
-            // You'll need a backend endpoint for declining requests too.
-            const response = await axios.post(
-                `${API_BASE_URL}/api/admin/decline-user-access`, // This endpoint needs to be created in your server.js
-                { userId, notificationId },
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
-            );
-
-            if (response.status === 200) {
-                // 1. Update the Super Admin's local notification status
-                setNotifications(prevNotifications => {
-                    const updatedNotifications = prevNotifications.map(n =>
-                        n.id === notificationId
-                            ? { ...n, status: 'declined', read: true, actionTakenAt: new Date().toISOString() }
-                            : n
-                    );
-                    return updatedNotifications;
-                });
-
-                // 2. Add a decline notification to the target user's specific notification list in localStorage
-                const userNotifications = loadUserNotifications(userId);
-                const newUserNotification = {
-                    id: `declined_${Date.now()}`,
-                    type: 'error',
-                    message: 'Your access request has been declined. Please contact support for more information.',
-                    read: false,
-                    createdAt: new Date().toISOString(),
-                };
-
-                const updatedUserNotifications = [newUserNotification, ...userNotifications];
-                saveUserNotifications(userId, updatedUserNotifications);
-                console.log(`Frontend (Super Admin): Decline notification added to user ${userId}'s localStorage.`);
-
-                alert("User access declined and notification sent to user's page!");
-                fetchNotifications(); // Refresh notifications from DB after action
-            } else {
-                alert(`Decline failed: ${response.data.message || 'Unknown error'}`);
-            }
-
-        } catch (error) {
-            console.error("Frontend (Super Admin): Error during user decline process:", error);
-            if (axios.isAxiosError(error) && error.response) {
-                alert(`Failed to decline user: ${error.response.data.message || error.response.statusText}`);
-            } else {
-                alert("Failed to decline user due to a network or server error.");
-            }
-        }
-    };
+    // Removed handleApproveRequest and handleDeclineRequest functions
+    // const handleApproveRequest = async (notificationId, userId) => { ... };
+    // const handleDeclineRequest = async (notificationId, userId) => { ... };
 
 
     const unreadCount = notifications.filter(n => !n.read).length;
@@ -537,8 +388,7 @@ const NotificationsPage = () => {
                                 notification={notification}
                                 onMarkAsRead={markAsRead}
                                 onDelete={deleteNotification}
-                                onApproveRequest={handleApproveRequest}
-                                onDeclineRequest={handleDeclineRequest}
+                                // Removed onApproveRequest and onDeclineRequest props
                             />
                         ))}
                     </AnimatePresence>

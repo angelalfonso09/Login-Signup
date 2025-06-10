@@ -230,5 +230,6 @@
 
 .admin-username-input{
   background-color: transparent !important;
+  color: var(--admin-text-color) !important;
 }
 

@@ -252,68 +252,70 @@ const AdminNotificationsPage = () => {
 
 
     // Handler functions (simplified as mark as read/delete behavior for schedules might be different)
-    const markAsRead = async (id) => {
-        try {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                console.warn("No token found for marking notification as read.");
-                return;
-            }
-            await axios.put(`${API_BASE_URL}/api/admin/notifications/${id}/read`, {}, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
-            console.log(`Notification ${id} marked as read in DB.`);
-            setNotifications(prevNotifications =>
-                prevNotifications.map(n => n.id === id ? { ...n, read: true } : n)
-            );
-        } catch (error) {
-            console.error("Error marking notification as read:", error.response?.data || error.message);
-            alert(`Failed to mark notification as read: ${error.response?.data?.message || 'Server error.'}`);
+const markAsRead = async (id) => {
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.warn("No token found for marking notification as read.");
+            return;
         }
-    };
+        // *** FIX HERE: Change from PUT to POST and send ID in body ***
+        await axios.post(`${API_BASE_URL}/api/admin/notifications/mark-read`, { notificationId: id }, { // Correct URL and method
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+        console.log(`Notification ${id} marked as read in DB.`);
+        setNotifications(prevNotifications =>
+            prevNotifications.map(n => n.id === id ? { ...n, read: true } : n)
+        );
+    } catch (error) {
+        console.error("Error marking notification as read:", error.response?.data || error.message);
+        alert(`Failed to mark notification as read: ${error.response?.data?.message || 'Server error.'}`);
+    }
+};
 
-    const deleteNotification = async (id) => {
-        try {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                alert("Authentication required to delete notifications.");
-                return;
-            }
-            await axios.delete(`${API_BASE_URL}/api/admin/notifications/${id}`, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
-            console.log(`Notification ${id} deleted from DB.`);
-            fetchAllNotifications(); // Re-fetch to ensure the list is up-to-date
-        } catch (error) {
-            console.error(`Error deleting notification ${id}:`, error.response?.data || error.message);
-            alert(`Failed to delete notification: ${error.response?.data?.message || 'Server error.'}`);
+const deleteNotification = async (id) => {
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            alert("Authentication required to delete notifications.");
+            return;
         }
-    };
+        await axios.delete(`${API_BASE_URL}/api/admin/notifications/${id}`, { // Correct URL
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+        console.log(`Notification ${id} deleted from DB.`);
+        fetchAllNotifications(); // Re-fetch to ensure the list is up-to-date
+    } catch (error) {
+        console.error(`Error deleting notification ${id}:`, error.response?.data || error.message);
+        alert(`Failed to delete notification: ${error.response?.data?.message || 'Server error.'}`);
+    }
+};
 
 
-    const markAllAsRead = async () => {
-        try {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                alert("Authentication required to mark all notifications as read.");
-                return;
-            }
-            await axios.put(`${API_BASE_URL}/api/admin/notifications/mark-all-read`, {}, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
-            alert("All notifications marked as read!");
-            fetchAllNotifications(); // Re-fetch to update local state
-        } catch (error) {
-            console.error("Error marking all notifications as read:", error.response?.data || error.message);
-            alert(`Failed to mark all as read: ${error.response?.data?.message || 'Server error.'}`);
+const markAllAsRead = async () => {
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            alert("Authentication required to mark all notifications as read.");
+            return;
         }
-    };
+        // *** FIX HERE: Change from PUT to POST ***
+        await axios.post(`${API_BASE_URL}/api/admin/notifications/mark-all-read`, {}, { // Correct method
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+        alert("All notifications marked as read!");
+        fetchAllNotifications(); // Re-fetch to update local state
+    } catch (error) {
+        console.error("Error marking all notifications as read:", error.response?.data || error.message);
+        alert(`Failed to mark all as read: ${error.response?.data?.message || 'Server error.'}`);
+    }
+};
 
     const deleteAllNotifications = async () => {
         try {

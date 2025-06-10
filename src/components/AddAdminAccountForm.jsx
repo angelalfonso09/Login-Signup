@@ -218,6 +218,7 @@ const AdminCreationForm = ({ onClose, onAddAdmin }) => {
               placeholder="Enter email"
               required
               disabled={isOtpSent}
+              className="admin-username-input"
             />
           </Form.Group>
 
@@ -231,6 +232,7 @@ const AdminCreationForm = ({ onClose, onAddAdmin }) => {
               placeholder="Enter password"
               required
               disabled={isOtpSent}
+              className="admin-username-input"
             />
           </Form.Group>
 
@@ -244,6 +246,7 @@ const AdminCreationForm = ({ onClose, onAddAdmin }) => {
               placeholder="Confirm password"
               required
               disabled={isOtpSent}
+              className="admin-username-input"
             />
           </Form.Group>
 
@@ -257,6 +260,7 @@ const AdminCreationForm = ({ onClose, onAddAdmin }) => {
               onChange={handleChange} // This handleChange will now also handle role change
               required
               disabled={isOtpSent}
+              className="admin-username-input"
             >
               <option value="Admin">Admin</option>
               <option value="Super Admin">Super Admin</option>

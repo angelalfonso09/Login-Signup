@@ -30,6 +30,36 @@ const JWT_SECRET = process.env.JWT_SECRET;
 
 const authenticateUser = require('../backend/middleware/authenticateUser');
 
+const authorizeRoles = (allowedRoles) => {
+    return (req, res, next) => {
+        // 1. Check if user information is available from a previous authentication middleware
+        if (!req.user || !req.user.role) {
+            console.warn('Authorization attempt failed: User not authenticated or role missing.');
+            // This case should ideally be caught by authMiddleware first, but acts as a safeguard.
+            return res.status(401).json({
+                success: false,
+                message: 'Unauthorized: No authentication token or role provided.'
+            });
+        }
+
+        const userRole = req.user.role;
+
+        // 2. Check if the user's role is included in the allowed roles list
+        if (allowedRoles.includes(userRole)) {
+            // If the user's role is allowed, proceed to the next middleware or route handler
+            next();
+        } else {
+            // If the user's role is not allowed, send a 403 Forbidden response
+            console.warn(`Access Denied: User with role '${userRole}' tried to access a restricted resource.`);
+            return res.status(403).json({
+                success: false,
+                message: `Forbidden: You do not have the necessary permissions (required roles: ${allowedRoles.join(', ')}) to access this resource.`
+            });
+        }
+    };
+};
+
+
 const authenticateToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
@@ -61,14 +91,22 @@ const authMiddleware = (req, res, next) => {
 
     try {
         const decoded = jwt.verify(token, JWT_SECRET);
-        req.userId = decoded.id; // Set req.userId from the JWT payload
-        req.userRole = decoded.role; // Also set user role if needed for other checks
-        req.isVerified = decoded.isVerified; // Set isVerified from JWT
-        req.emailVerified = decoded.emailVerified; // Set emailVerified from JWT
+
+        // --- THE CRUCIAL CHANGE IS HERE ---
+        // Create a 'req.user' object and attach all decoded properties to it.
+        // This makes 'req.user.role' accessible for authorizeRoles.
+        req.user = { // Attach the decoded payload to req.user
+            id: decoded.id,
+            role: decoded.role,
+            isVerified: decoded.isVerified,
+            emailVerified: decoded.emailVerified,
+            // ... any other properties you might have in your JWT payload
+        };
+
+        console.log('JWT verification successful. User role set to:', req.user.role); // Add for debugging
         next(); // Proceed to the next middleware/route handler
     } catch (error) {
         console.error('JWT verification error:', error);
-        // Log the error for debugging, but be generic to the client
         return res.status(403).json({ message: 'Invalid or expired token.' });
     }
 };
@@ -2024,6 +2062,168 @@ app.get('/api/user/notifications', authenticateUser, async (req, res) => {
  * Marks one or more user notifications as read in the database.
  * Requires authentication via Bearer token.
  */
+
+
+app.delete('/api/admin/notifications/:id', authMiddleware, authorizeRoles(['Admin', 'Super Admin']), async (req, res) => {
+    try {
+        const notificationId = req.params.id; // Get the notification ID from the URL parameters
+
+        console.log(`Admin user (ID: ${req.user.id}, Role: ${req.user.role}) is attempting to delete notification ID: ${notificationId}`);
+
+        // --- THE FIX IS HERE: Use MySQL query to delete ---
+        // Assuming your notifications table is named 'notifications' and the ID column is 'id' or 'notification_id'
+        const query = 'DELETE FROM notif WHERE id = ?'; // Use '?' as placeholder for parameter
+        // If your ID column is named something else, e.g., 'notification_id', change 'id' above.
+
+        pool.query(query, [notificationId], (error, results) => {
+            if (error) {
+                console.error('MySQL Error: Failed to delete individual notification:', error);
+                return res.status(500).json({
+                    success: false,
+                    message: 'An error occurred while trying to delete the notification from the database.',
+                    error: error.message,
+                });
+            }
+
+            // Check if any rows were affected (i.e., if a notification was found and deleted)
+            if (results.affectedRows === 0) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Notification not found.'
+                });
+            }
+
+            res.status(200).json({
+                success: true,
+                message: `Notification with ID ${notificationId} deleted successfully.`,
+            });
+        });
+
+    } catch (error) {
+        // This catch block handles errors *before* the pool.query callback, e.g., if req.params.id is missing.
+        console.error('Server Error (outer catch): Failed to delete individual notification:', error);
+        res.status(500).json({
+            success: false,
+            message: 'An unexpected error occurred on the server.',
+            error: error.message,
+        });
+    }
+});
+
+// --- NEW ROUTE FOR DELETING ALL NOTIFICATIONS ---
+// This route requires authentication and specifically allows only 'admin' or 'super-admin' roles
+app.delete('/api/admin/notifications/all', authMiddleware, authorizeRoles(['Admin', 'Super Admin']), async (req, res) => {
+    try {
+        console.log(`Admin user (ID: ${req.user.id}, Role: ${req.user.role}) is attempting to delete all notifications.`);
+
+        const result = await Notification.deleteMany({}); // Delete all documents
+
+        res.status(200).json({
+            success: true,
+            message: `Successfully deleted all (${result.deletedCount}) notifications.`,
+        });
+    } catch (error) {
+        console.error('Server Error: Failed to delete all notifications:', error);
+        res.status(500).json({
+            success: false,
+            message: 'An error occurred while trying to delete all notifications. Please try again later.',
+            error: error.message,
+        });
+    }
+});
+
+
+app.post('/api/admin/notifications/mark-all-read', authMiddleware, authorizeRoles(['Admin', 'Super Admin']), async (req, res) => {
+    try {
+        // Log who is attempting to mark all notifications as read (for auditing)
+        console.log(`Admin user (ID: ${req.user.id}, Role: ${req.user.role}) is attempting to mark ALL notifications as read.`);
+
+        // --- THE FIX IS HERE: Use MySQL query to update all unread records ---
+        // We'll mark all notifications as read where 'read' is currently false (or 0)
+        // If your 'read' column stores boolean as TINYINT(1), use 0 for false and 1 for true.
+        const query = 'UPDATE notif SET is_read = ? WHERE is_read = ?'; // Update 'read' to 1 where it's 0
+
+        pool.query(query, [1, 0], (error, results) => {
+            if (error) {
+                console.error('MySQL Error: Failed to mark all notifications as read:', error);
+                return res.status(500).json({
+                    success: false,
+                    message: 'An error occurred while trying to mark all notifications as read in the database.',
+                    error: error.message,
+                });
+            }
+
+            // results.affectedRows will indicate how many rows were updated
+            res.status(200).json({
+                success: true,
+                message: `Successfully marked all (${results.affectedRows}) unread notifications as read.`,
+            });
+        });
+
+    } catch (error) {
+        // This outer catch block handles errors that occur *before* the pool.query callback,
+        // such as issues with authentication or authorization middleware.
+        console.error('Server Error (outer catch): Failed to mark all notifications as read:', error);
+        res.status(500).json({
+            success: false,
+            message: 'An unexpected error occurred on the server while attempting to mark all notifications as read.',
+            error: error.message,
+        });
+    }
+});
+
+app.post('/api/admin/notifications/mark-read', authMiddleware, authorizeRoles(['Admin', 'Super Admin']), async (req, res) => {
+    try {
+        const { notificationId } = req.body; // Expecting the ID in the request body
+
+        if (!notificationId) {
+            return res.status(400).json({ success: false, message: 'Notification ID is required.' });
+        }
+
+        console.log(`Admin user (ID: ${req.user.id}, Role: ${req.user.role}) is attempting to mark notification ID: ${notificationId} as read.`);
+
+        // --- THE FIX IS HERE: Use MySQL query to update a specific record ---
+        // Update the 'read' column to true (1) for the specific notification ID
+        // Assuming your 'read' column is TINYINT(1) and your ID column is 'id'
+        const query = 'UPDATE notif SET is_read = ? WHERE id = ?';
+
+        // Use 1 for 'true' and the notificationId for the WHERE clause
+        pool.query(query, [1, notificationId], (error, results) => {
+            if (error) {
+                console.error('MySQL Error: Failed to mark notification as read:', error);
+                return res.status(500).json({
+                    success: false,
+                    message: 'An error occurred while trying to mark the notification as read in the database.',
+                    error: error.message,
+                });
+            }
+
+            // Check if any rows were affected (i.e., if a notification was found and updated)
+            if (results.affectedRows === 0) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Notification not found or already marked as read.'
+                });
+            }
+
+            res.status(200).json({
+                success: true,
+                message: `Notification with ID ${notificationId} marked as read successfully.`,
+            });
+        });
+
+    } catch (error) {
+        // This outer catch block handles errors that occur *before* the pool.query callback,
+        // such as issues with authentication or authorization middleware, or req.body parsing.
+        console.error('Server Error (outer catch): Failed to mark individual notification as read:', error);
+        res.status(500).json({
+            success: false,
+            message: 'An unexpected error occurred on the server.',
+            error: error.message,
+        });
+    }
+});
+
 app.post('/api/user/notifications/mark-read', authenticateUser, async (req, res) => {
     const userId = req.user.id;
     const { notificationIds } = req.body; // Can be a single ID or an array of IDs
@@ -2057,7 +2257,6 @@ app.post('/api/user/notifications/mark-read', authenticateUser, async (req, res)
         res.status(500).json({ success: false, message: 'Server error while marking notifications as read.' });
     }
 });
-
 /**
  * API Endpoint: DELETE /api/user/notifications/:id
  * Deletes a single user notification from the database.
@@ -2835,19 +3034,6 @@ app.get('/data/:sensorType/:filterType', async (req, res) => {
 //       return res.status(500).json({ error: "Failed to fetch notifications" });
 //     }
 //     res.json(results || []); // Send the unread notifications back to the client
-//   });
-// });
-
-// // Mark notifications as read (optional for a feature where the backend updates read status)
-// app.post("/api/notifications/mark-read", authenticateToken, (req, res) => {
-//   const query = "UPDATE notifications SET status = 'Read' WHERE status = 'Unread'";
-
-//   db.query(query, (err, results) => {
-//     if (err) {
-//       console.error("❌ Error updating notifications:", err);
-//       return res.status(500).json({ error: "Failed to update notifications" });
-//     }
-//     res.json({ message: "Notifications marked as read" });
 //   });
 // });
 

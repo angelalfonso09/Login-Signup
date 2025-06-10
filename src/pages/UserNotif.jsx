@@ -58,7 +58,7 @@ const NotificationIcon = ({ type }) => {
 };
 
 // --- NotificationCard component ---
-const NotificationCard = ({ notification, onMarkAsRead, onDelete }) => {
+const NotificationCard = ({ notification, onMarkAsRead }) => {
     const { theme } = useContext(ThemeContext);
 
     // Function to format the display type for readability
@@ -110,13 +110,7 @@ const NotificationCard = ({ notification, onMarkAsRead, onDelete }) => {
                                 <CheckCircle className="mark-read-icon" />
                             </button>
                         )}
-                        <button
-                            onClick={() => onDelete(notification.id)}
-                            className={`notification-action-button delete-button`}
-                            title="Delete"
-                        >
-                            <Trash2 className="delete-icon" />
-                        </button>
+
                     </div>
                 </div>
                 <p className="notification-timestamp">
@@ -170,8 +164,14 @@ const UserNotificationsPage = () => {
                 return;
             }
 
+            // DEBUGGING LOGS FOR FETCH NOTIFICATIONS
+            const fetchUrl = `${API_BASE_URL}/api/user/notifications`;
+            console.log(`[FETCH] API_BASE_URL:`, API_BASE_URL);
+            console.log(`[FETCH] Full URL:`, fetchUrl);
+            console.log(`[FETCH] Token present:`, !!token);
+
             // Fetch notifications specific to this user ID and all schedules
-            const response = await axios.get(`${API_BASE_URL}/api/user/notifications`, {
+            const response = await axios.get(fetchUrl, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -186,7 +186,7 @@ const UserNotificationsPage = () => {
                 setNotifications(loadUserNotifications(userId)); // Fallback on backend error
             }
         } catch (error) {
-            console.error("Error fetching user notifications and schedules from backend:", error);
+            console.error("Error fetching user notifications and schedules from backend:", error.response?.data || error.message);
             setNotifications(loadUserNotifications(userId)); // Fallback on network error
         } finally {
             setLoading(false);
@@ -219,7 +219,14 @@ const UserNotificationsPage = () => {
 
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.post(`${API_BASE_URL}/api/user/notifications/mark-read`,
+            // DEBUGGING LOGS FOR MARK AS READ
+            const markReadUrl = `${API_BASE_URL}/api/user/notifications/mark-read`;
+            console.log(`[MARK READ] API_BASE_URL:`, API_BASE_URL);
+            console.log(`[MARK READ] Notification ID:`, id);
+            console.log(`[MARK READ] Full URL:`, markReadUrl);
+            console.log(`[MARK READ] Token present:`, !!token);
+
+            const response = await axios.post(markReadUrl,
                 { notificationIds: id },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -238,45 +245,6 @@ const UserNotificationsPage = () => {
         }
     };
 
-    const deleteNotification = async (id) => {
-        try {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                console.warn("No authentication token. Cannot delete notification.");
-                return;
-            }
-
-            if (id.startsWith('event_')) {
-                // If it's a scheduled event, call the admin/events delete endpoint
-                const eventId = id.replace('event_', '');
-                const response = await axios.delete(`${API_BASE_URL}/api/admin/events/${eventId}`, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-
-                if (response.data.success) {
-                    setNotifications(prevNotifications => prevNotifications.filter(n => n.id !== id));
-                    console.log(`Frontend (UserNotif): Deleted scheduled event ${eventId} from DB.`);
-                } else {
-                    console.error("Failed to delete scheduled event:", response.data.message);
-                }
-            } else {
-                // If it's a regular user notification, call the user/notifications delete endpoint
-                const response = await axios.delete(`${API_BASE_URL}/api/user/notifications/${id}`, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-
-                if (response.data.success) {
-                    setNotifications(prevNotifications => prevNotifications.filter(n => n.id !== id));
-                    console.log(`Frontend (UserNotif): Deleted notification ${id} from DB.`);
-                } else {
-                    console.error("Failed to delete notification:", response.data.message);
-                }
-            }
-        } catch (error) {
-            console.error("Error deleting notification:", error.response?.data || error.message);
-        }
-    };
-
     const markAllAsRead = async () => {
         const unreadNotificationIds = notifications.filter(n => !n.read && !n.id.startsWith('event_')).map(n => n.id);
         if (unreadNotificationIds.length === 0) {
@@ -287,7 +255,14 @@ const UserNotificationsPage = () => {
 
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.post(`${API_BASE_URL}/api/user/notifications/mark-read`,
+            // DEBUGGING LOGS FOR MARK ALL AS READ
+            const markAllReadUrl = `${API_BASE_URL}/api/user/notifications/mark-read`;
+            console.log(`[MARK ALL READ] API_BASE_URL:`, API_BASE_URL);
+            console.log(`[MARK ALL READ] IDs to send:`, unreadNotificationIds);
+            console.log(`[MARK ALL READ] Full URL:`, markAllReadUrl);
+            console.log(`[MARK ALL READ] Token present:`, !!token);
+
+            const response = await axios.post(markAllReadUrl,
                 { notificationIds: unreadNotificationIds },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -300,68 +275,6 @@ const UserNotificationsPage = () => {
             }
         } catch (error) {
             console.error("Error marking all notifications as read:", error.response?.data || error.message);
-        }
-    };
-
-    const deleteAllNotifications = async () => {
-        try {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                console.warn("No authentication token. Cannot delete all notifications.");
-                return;
-            }
-
-            // Separate deletion for events and user-specific notifications
-            const eventIdsToDelete = notifications.filter(n => n.type === 'schedule' && n.id.startsWith('event_')).map(n => n.related_id);
-            const userNotificationIdsToDelete = notifications.filter(n => !n.id.startsWith('event_')).map(n => n.id);
-
-            let eventsDeleted = false;
-            let userNotifsDeleted = false;
-
-            if (eventIdsToDelete.length > 0) {
-                try {
-                    const response = await axios.post(`${API_BASE_URL}/api/admin/events/delete-multiple`, { eventIds: eventIdsToDelete }, {
-                        headers: { Authorization: `Bearer ${token}` },
-                    });
-                    if (response.data.success) {
-                        console.log(`${response.data.message} events deleted from DB.`);
-                        eventsDeleted = true;
-                    } else {
-                        console.error("Failed to delete multiple events:", response.data.message);
-                    }
-                } catch (error) {
-                    console.error("Error deleting multiple events:", error.response?.data || error.message);
-                }
-            }
-
-            if (userNotificationIdsToDelete.length > 0) {
-                 try {
-                    const response = await axios.post(`${API_BASE_URL}/api/user/notifications/delete-all`, {}, {
-                        headers: { Authorization: `Bearer ${token}` },
-                    });
-                    if (response.data.success) {
-                        console.log(`${response.data.message} user notifications deleted from DB.`);
-                        userNotifsDeleted = true;
-                    } else {
-                        console.error("Failed to delete all user notifications:", response.data.message);
-                    }
-                } catch (error) {
-                    console.error("Error deleting all user notifications:", error.response?.data || error.message);
-                }
-            }
-
-            if (eventsDeleted || userNotifsDeleted) {
-                setNotifications([]); // Clear locally if any deletion was successful
-                console.log("Frontend (UserNotif): All displayed notifications cleared.");
-            } else if (notifications.length > 0) {
-                alert("Failed to delete any notifications. Please check console for errors.");
-            } else {
-                setNotifications([]); // If no notifications, just clear locally
-            }
-
-        } catch (error) {
-            console.error("Error in deleteAllNotifications:", error);
-            alert(`Failed to delete all notifications: ${error.message}`);
         }
     };
 
@@ -383,14 +296,6 @@ const UserNotificationsPage = () => {
                             <CheckCircle className="action-icon" />
                             Mark all as read
                         </button>
-                        <button
-                            onClick={deleteAllNotifications}
-                            disabled={notifications.length === 0}
-                            className="notifications-button delete-all-button"
-                        >
-                            <Trash2 className="action-icon" />
-                            Delete all
-                        </button>
                     </div>
                 </div>
 
@@ -405,7 +310,6 @@ const UserNotificationsPage = () => {
                                 key={notification.id}
                                 notification={notification}
                                 onMarkAsRead={markAsRead}
-                                onDelete={deleteNotification}
                             />
                         ))}
                     </AnimatePresence>
