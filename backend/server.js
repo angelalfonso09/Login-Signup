@@ -2650,73 +2650,73 @@ const sensorTableMap = {
     // "conductivity": { tableName: "conductivity_readings", valueColumn: "conductivity_value_mS" },
 };
 
-// --- Generic route to fetch historical data for any sensor type ---
-app.get('/data/:sensorType/:filterType', async (req, res) => {
-    const { sensorType, filterType } = req.params;
-    const establishmentId = req.query.establishmentId;
+// // --- Generic route to fetch historical data for any sensor type ---
+// app.get('/data/:sensorType/:filterType', async (req, res) => {
+//     const { sensorType, filterType } = req.params;
+//     const establishmentId = req.query.establishmentId;
 
-    if (!establishmentId) {
-        return res.status(400).json({ error: 'Establishment ID is required to fetch sensor data.' });
-    }
+//     if (!establishmentId) {
+//         return res.status(400).json({ error: 'Establishment ID is required to fetch sensor data.' });
+//     }
 
-    const sensorDefinition = sensorTableMap[sensorType];
-    if (!sensorDefinition) {
-        console.error(`Backend Error: Sensor type '${sensorType}' not found in sensorTableMap. Frontend apiPath mismatch?`);
-        return res.status(404).json({ error: `Sensor type '${sensorType}' not found or not configured.` });
-    }
-    const { tableName, valueColumn } = sensorDefinition;
+//     const sensorDefinition = sensorTableMap[sensorType];
+//     if (!sensorDefinition) {
+//         console.error(`Backend Error: Sensor type '${sensorType}' not found in sensorTableMap. Frontend apiPath mismatch?`);
+//         return res.status(404).json({ error: `Sensor type '${sensorType}' not found or not configured.` });
+//     }
+//     const { tableName, valueColumn } = sensorDefinition;
 
-    let timeCondition = '';
-    let groupByClause = '';
-    let selectValueColumn = valueColumn;
+//     let timeCondition = '';
+//     let groupByClause = '';
+//     let selectValueColumn = valueColumn;
 
-    switch (filterType) {
-        case 'realtime':
-            timeCondition = `AND timestamp >= DATE_SUB(NOW(), INTERVAL 1 HOUR)`;
-            break;
-        case '24h':
-            timeCondition = `AND timestamp >= DATE_SUB(NOW(), INTERVAL 24 HOUR)`;
-            break;
-        case '7d-avg':
-            timeCondition = `AND timestamp >= DATE_SUB(NOW(), INTERVAL 7 DAY)`;
-            groupByClause = `GROUP BY DATE(timestamp) ORDER BY DATE(timestamp) ASC`;
-            selectValueColumn = `AVG(${valueColumn}) AS value`;
-            break;
-        case '30d-avg':
-            timeCondition = `AND timestamp >= DATE_SUB(NOW(), INTERVAL 30 DAY)`;
-            groupByClause = `GROUP BY DATE(timestamp) ORDER BY DATE(timestamp) ASC`;
-            selectValueColumn = `AVG(${valueColumn}) AS value`;
-            break;
-        default:
-            return res.status(400).json({ error: 'Invalid filter type.' });
-    }
+//     switch (filterType) {
+//         case 'realtime':
+//             timeCondition = `AND timestamp >= DATE_SUB(NOW(), INTERVAL 1 HOUR)`;
+//             break;
+//         case '24h':
+//             timeCondition = `AND timestamp >= DATE_SUB(NOW(), INTERVAL 24 HOUR)`;
+//             break;
+//         case '7d-avg':
+//             timeCondition = `AND timestamp >= DATE_SUB(NOW(), INTERVAL 7 DAY)`;
+//             groupByClause = `GROUP BY DATE(timestamp) ORDER BY DATE(timestamp) ASC`;
+//             selectValueColumn = `AVG(${valueColumn}) AS value`;
+//             break;
+//         case '30d-avg':
+//             timeCondition = `AND timestamp >= DATE_SUB(NOW(), INTERVAL 30 DAY)`;
+//             groupByClause = `GROUP BY DATE(timestamp) ORDER BY DATE(timestamp) ASC`;
+//             selectValueColumn = `AVG(${valueColumn}) AS value`;
+//             break;
+//         default:
+//             return res.status(400).json({ error: 'Invalid filter type.' });
+//     }
 
-    try {
-        const query = `
-            SELECT
-                ${selectValueColumn},
-                ${groupByClause ? 'DATE(timestamp) AS timestamp' : 'timestamp'}
-            FROM
-                ${tableName}
-            WHERE
-                establishment_id = ?
-                ${timeCondition}
-            ${groupByClause};
-        `;
-        console.log(`Executing query for ${tableName} (estab: ${establishmentId}, filter: ${filterType}):\n${query}`);
+//     try {
+//         const query = `
+//             SELECT
+//                 ${selectValueColumn},
+//                 ${groupByClause ? 'DATE(timestamp) AS timestamp' : 'timestamp'}
+//             FROM
+//                 ${tableName}
+//             WHERE
+//                 establishment_id = ?
+//                 ${timeCondition}
+//             ${groupByClause};
+//         `;
+//         console.log(`Executing query for ${tableName} (estab: ${establishmentId}, filter: ${filterType}):\n${query}`);
 
-        const [rows] = await db.execute(query, [establishmentId]);
+//         const [rows] = await db.execute(query, [establishmentId]);
 
-        res.json(rows.map(row => ({
-            value: row.value !== undefined ? row.value : row[valueColumn],
-            timestamp: row.timestamp
-        })));
+//         res.json(rows.map(row => ({
+//             value: row.value !== undefined ? row.value : row[valueColumn],
+//             timestamp: row.timestamp
+//         })));
 
-    } catch (error) {
-        console.error(`Error fetching data for ${sensorType} (estab: ${establishmentId}, filter: ${filterType}):`, error);
-        res.status(500).json({ error: `Failed to fetch ${sensorType} sensor data. Details: ${error.message}` });
-    }
-});
+//     } catch (error) {
+//         console.error(`Error fetching data for ${sensorType} (estab: ${establishmentId}, filter: ${filterType}):`, error);
+//         res.status(500).json({ error: `Failed to fetch ${sensorType} sensor data. Details: ${error.message}` });
+//     }
+// });
 
 // // --- NEW API ENDPOINT FOR DECLINING USER ACCESS ---
 // app.post("/api/admin/decline-user-access", verifyToken, authorizeSuperAdmin, (req, res) => {
@@ -3220,25 +3220,28 @@ app.get('/data/:sensorType/:filterType', async (req, res) => {
 //       break;
 //     case "7d-avg":
 //       query = `
-//                 SELECT
-//                     DATE(timestamp) AS timestamp,
-//                     AVG(${valueColumn}) AS value
-//                 FROM ${tableName}
-//                 WHERE timestamp >= NOW() - INTERVAL 7 DAY
-//                 GROUP BY DATE(timestamp)
-//                 ORDER BY timestamp ASC
-//             `;
+//         SELECT
+//             DATE(timestamp) AS timestamp,
+//             AVG(${valueColumn}) AS value
+//         FROM ${tableName}
+//         WHERE timestamp >= NOW() - INTERVAL 7 DAY
+//         GROUP BY DATE(timestamp)
+//         ORDER BY timestamp ASC
+//       `;
 //       break;
 //     case "30d-avg":
+//       // Modified query for 3-day averages
 //       query = `
-//                 SELECT
-//                     DATE(timestamp) AS timestamp,
-//                     AVG(${valueColumn}) AS value
-//                 FROM ${tableName}
-//                 WHERE timestamp >= NOW() - INTERVAL 30 DAY
-//                 GROUP BY DATE(timestamp)
-//                 ORDER BY timestamp ASC
-//             `;
+//         SELECT
+//             DATE(MIN(timestamp)) AS timestamp, -- Use the start date of the 3-day period
+//             AVG(${valueColumn}) AS value
+//         FROM ${tableName}
+//         WHERE timestamp >= NOW() - INTERVAL 30 DAY
+//         GROUP BY
+//             FLOOR(DATEDIFF(timestamp, '2000-01-01') / 3) -- Group by 3-day blocks
+//         ORDER BY
+//             timestamp ASC
+//       `;
 //       break;
 //     default:
 //       return res.status(400).json({ error: "Invalid time period specified." });
@@ -3295,7 +3298,7 @@ app.get('/data/:sensorType/:filterType', async (req, res) => {
 // app.get("/data/temperature/7d-avg", (req, res) => getHistoricalData('temperature_readings', 'temperature_celsius', '7d-avg', res));
 // app.get("/data/temperature/30d-avg", (req, res) => getHistoricalData('temperature_readings', 'temperature_celsius', '30d-avg', res));
 
-    // Notification for Sensors
+//     //Notification for Sensors
 // async function insertNotification(
 //   sensorType,
 //   currentValue,
@@ -3316,11 +3319,11 @@ app.get('/data/:sensorType/:filterType', async (req, res) => {
 //       // Assuming 'threshold' here refers to the critical threshold (e.g., 30)
 //       if (condition === "lessThan" && currentValue < threshold) {
 //         // Critical Water Quality: below 31%
-//         message = `⚠️ Critical Water Quality Alert: ${sensorType} safety score is ${currentValue}${unit}. Check Water Tank or Check for damaged sensor. Not Recommended for Drinking and Usage!!`;
+//         message = `🛑 Critical Water Quality Alert: ${sensorType} Safety Score is ${currentValue}${unit}. This is below safe limits. Please check the water tank or inspect the sensor for possible damage. Water is not recommended for drinking or use until resolved.`;
 //         priority = "Critical"; // Set priority to Critical for this range
 //       } else if (currentValue >= 31 && currentValue <= 70) {
 //         // Warning Water Quality: 31% to 70%
-//         message = `⚠️ Warning: ${sensorType} safety score is ${currentValue}${unit}. The safety score is below the standard of the Philippine National Standard for Drinking Water of 2017. It is not recommendable for drinking.`;
+//         message = `⚠️ Warning: ${sensorType} Safety Score is ${currentValue}${unit}, which is below the Philippine National Standard for Drinking Water (2017). This Water is not Safe for Drinking. Avoid using this water for drinking or cooking. Please report this issue to the proper authorities for further testing and immediate action.`;
 //         priority = "High"; // Maintain High priority for this range
 //       }
 //       break;
@@ -3328,7 +3331,7 @@ app.get('/data/:sensorType/:filterType', async (req, res) => {
 //       if (condition === "outsideRange") {
 //         const [lowerBound, upperBound] = threshold;
 //         if (currentValue < lowerBound || currentValue > upperBound) {
-//           message = `⚠️ Alert: pH level is outside optimal range (${lowerBound}-${upperBound}${unit}). Current value: ${currentValue}${unit}.`;
+//           message = `⚠️ Alert: The pH level is currently ${currentValue}${unit}, which is outside the safe range (${lowerBound}-${upperBound}${unit}). This water may be unsafe to drink. Please avoid use and report the issue to the appropriate authority.`;
 //           priority = "High";
 //         }
 //       }
@@ -3337,7 +3340,7 @@ app.get('/data/:sensorType/:filterType', async (req, res) => {
 //       if (condition === "outsideRange") {
 //         const [lowerBound, upperBound] = threshold;
 //         if (currentValue < lowerBound || currentValue > upperBound) {
-//           message = `⚠️ Alert: Temperature is outside optimal range (${lowerBound}-${upperBound}${unit}). Current value: ${currentValue}${unit}.`;
+//           message = `⚠️ Alert: Temperature is outside the optimal range (${lowerBound}-${upperBound}${unit}). Current reading: ${currentValue}${unit}. Inspect the water system or environment for potential issues affecting temperature stability.`;
 //           priority = "High";
 //         }
 //       }
@@ -3444,11 +3447,11 @@ app.get('/data/:sensorType/:filterType', async (req, res) => {
 //         sensorType: "turbidity",
 //         threshold: 30, // Alert if turbidity safety score is below 30
 //         condition: "lessThan",
-//         unit: "/100 Safety Score",
+//         unit: "Percent",
 //       },
 //       ph: {
 //         sensorType: "ph",
-//         threshold: [6.5, 8.5], // Optimal pH range
+//         threshold: [0.5, 8.5], // Optimal pH range
 //         condition: "outsideRange",
 //         unit: "pH",
 //       },
@@ -3456,19 +3459,19 @@ app.get('/data/:sensorType/:filterType', async (req, res) => {
 //         sensorType: "tds",
 //         threshold: 30, // Alert if TDS safety score is below 30
 //         condition: "lessThan",
-//         unit: "/100 Safety Score",
+//         unit: "Percent",
 //       },
 //       salinity: {
 //         sensorType: "salinity",
 //         threshold: 30, // Alert if Salinity safety score is below 30
 //         condition: "lessThan",
-//         unit: "/100 Safety Score",
+//         unit: "Percent",
 //       },
 //       ec: {
 //         sensorType: "ec",
 //         threshold: 30, // Alert if EC safety score is below 30
 //         condition: "lessThan",
-//         unit: "/100 Safety Score",
+//         unit: "Percent",
 //       },
 //       temperature: {
 //         sensorType: "temperature",

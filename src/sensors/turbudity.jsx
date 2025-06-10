@@ -3,14 +3,12 @@ import { io } from "socket.io-client";
 import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from "recharts";
 import "./sensorsCSS/turb.css";
 
-const TurbidityMonitor = ({ theme, filter }) => { // Ensure 'filter' is destructured from props
+const TurbidityMonitor = ({ theme, filter }) => {
   const [turbidityData, setTurbidityData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [socket, setSocket] = useState(null); // State to hold the socket instance
 
-  // useCallback memoizes the function, preventing unnecessary re-creations
-  // This is crucial because it's a dependency in useEffect
   const fetchData = useCallback(async (currentFilter) => {
     setLoading(true);
     setError(null);
@@ -27,10 +25,10 @@ const TurbidityMonitor = ({ theme, filter }) => { // Ensure 'filter' is destruct
       case "24h":
         endpoint = "http://localhost:5000/data/turbidity/24h";
         break;
-      case "7d": // Corresponds to '7d-avg' on backend
+      case "7d-avg": // Frontend requests "7d", Backend expects "7d-avg" endpoint
         endpoint = "http://localhost:5000/data/turbidity/7d-avg";
         break;
-      case "30d": // Corresponds to '30d-avg' on backend
+      case "30d": // Frontend requests "30d", Backend expects "30d-avg" endpoint
         endpoint = "http://localhost:5000/data/turbidity/30d-avg";
         break;
       default:
@@ -128,7 +126,6 @@ const TurbidityMonitor = ({ theme, filter }) => { // Ensure 'filter' is destruct
   if (loading) return <div className="loading-message">Loading turbidity data...</div>;
   if (error) return <div className="error-message">Error: {error}</div>;
 
-  // ... (rest of your component: textColor, gridColor, lineColor, tooltipBg, minY, maxY)
   const textColor = theme === "dark" ? "#ffffff" : "#333333";
   const gridColor = theme === "dark" ? "#555555" : "#cccccc";
   const lineColor = theme === "dark" ? "#00c3ff" : "#ff7300";
