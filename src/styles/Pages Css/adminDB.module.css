@@ -184,14 +184,18 @@
 }
 
 .establishmentSection {
-  background-color: var(--card-bg);
-  border-radius: 12px;
-  padding: 25px;
-  box-shadow: 0px 4px 15px var(--shadow-color);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden; /* Hide overflow of content within this section */
-  min-height: 400px; /* Ensure a minimum height */
+    background: var(--card-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 16px 32px var(--shadow-color);
+    display: flex;
+    flex-direction: column;
+    min-height: 500px;
+    position: relative;
+    overflow: hidden;
 }
 
 /* Responsive adjustments */
@@ -244,4 +248,28 @@
   .addEstablishmentForm .formButtons button {
     width: 100%;
   }
+}
+
+/* For the container of your establishment cards */
+.establishmentCards {
+  display: grid; /* Use CSS Grid for layout */
+  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); /* 2 columns, each taking equal space, min width of 450px*/
+  gap: 20px; /* Space between your cards */
+  justify-content: start; /* Align cards to the start of the grid container */
+  align-items: start; /* Align items to the start of their grid area */
+  padding: 10px; /* Add some padding around the cards */
+}
+
+/* Optional: Adjustments for smaller screens if needed */
+@media (max-width: 900px) {
+  .establishmentCards {
+    grid-template-columns: 1fr; /* On smaller screens, stack them in a single column */
+  }
+}
+
+/* Adjust the width of individual establishment sensor cards if necessary */
+/* This ensures they don't grow too wide on larger screens if there's only one or two */
+.establishmentCards > * {
+  max-width: 100%; /* Ensure individual cards don't overflow their grid area */
+  box-sizing: border-box; /* Include padding and border in the element's total width and height */
 }

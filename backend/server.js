@@ -1348,11 +1348,15 @@ app.get('/api/admin/establishments-for-creation', async (req, res) => { // Updat
 
 // --- NEW API Endpoint: Get Establishments assigned to a specific User (Admin) ---
 // This endpoint requires authentication to ensure only authorized users access their data.
+// Assuming 'app' is your Express app instance and 'pool' is your MySQL connection pool
+// and 'authenticateAdminRoute' is your middleware.
+
 app.get('/api/admin/assigned-establishments', authenticateAdminRoute, async (req, res) => {
     const userId = req.userId; // Get user ID from JWT (set by authenticateAdminRoute middleware)
 
     try {
         // SQL query to get establishments assigned to the user, and all their associated sensors
+        // The crucial change is adding WHERE ae.admin_id = ?
         const [rows] = await pool.execute(`
             SELECT
                 e.id AS establishmentId,
@@ -1365,13 +1369,14 @@ app.get('/api/admin/assigned-establishments', authenticateAdminRoute, async (req
             JOIN
                 admin_establishments ae ON e.id = ae.establishment_id
             LEFT JOIN
-                estab_sensors es ON e.id = es.estab_id -- This is the new, correct join to the junction table
+                estab_sensors es ON e.id = es.estab_id
             LEFT JOIN
-                sensors s ON es.sensor_id = s.id     -- This is the new, correct join to the sensors table
-        `, [userId]);
+                sensors s ON es.sensor_id = s.id
+            WHERE
+                ae.user_id = ?  -- <--- THIS IS THE KEY CHANGE
+        `, [userId]); // Pass userId as a parameter for the WHERE clause
 
         // Process the flat rows from the SQL query into a hierarchical structure
-        // This is similar to the main /api/establishments endpoint but filtered by user_id
         const establishmentsMap = new Map();
 
         rows.forEach(row => {
@@ -1386,6 +1391,7 @@ app.get('/api/admin/assigned-establishments', authenticateAdminRoute, async (req
                 });
             }
 
+            // Only add sensor if it exists (left join might return null for sensorId/sensorName)
             if (sensorId !== null) {
                 establishmentsMap.get(establishmentId).sensors.push({
                     id: sensorId,
