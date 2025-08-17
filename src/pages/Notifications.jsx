@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 import '../styles/Pages Css/Notifications.css';
 import Sidebar from '../components/Sidebar';
+import PageTitle from "../components/PageTitle";
 import { ThemeContext } from '../context/ThemeContext';
 
 // --- Helper Functions for User Notifications (kept outside as they might be used elsewhere) ---
@@ -353,9 +354,7 @@ const NotificationsPage = () => {
         <div className={`notifications-container bg-${theme}-background text-${theme}-text`}>
             <div className="notifications-wrapper">
                 <div className="notifications-header">
-                    <h1 className={`notifications-title ${theme}-text`}>
-                        Notifications
-                    </h1>
+                    <PageTitle title="NOTIFICATIONS" />
                     <div className="notifications-actions">
                         <button
                             onClick={markAllAsRead}

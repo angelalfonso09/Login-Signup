@@ -169,12 +169,26 @@
     flex-direction: column;
     min-height: 500px;
     position: relative;
-    overflow: hidden;
+    overflow-y: auto; /* Enable vertical scrolling */
 }
 
 
 .establishmentSection::-webkit-scrollbar {
-    display: none;
+    width: 6px; /* Width of the scrollbar */
+}
+
+.establishmentSection::-webkit-scrollbar-track {
+    background: var(--card-bg); /* Track color */
+    border-radius: 10px;
+}
+
+.establishmentSection::-webkit-scrollbar-thumb {
+    background: #888; /* Scrollbar handle color */
+    border-radius: 10px;
+}
+
+.establishmentSection::-webkit-scrollbar-thumb:hover {
+    background: #555; /* Scrollbar handle color on hover */
 }
 
 .addEstablishmentButton {
@@ -266,10 +280,11 @@
     grid-template-columns: repeat(2, 1fr);
     gap: 15px;
     flex-grow: 1;
-    overflow-y: auto;
     padding-right: 5px;
     /* Added for better alignment if cards aren't perfectly equal height */
     align-items: start;
+    max-height: 450px; /* Allow space for the header and search bar */
+    overflow-y: auto; /* This will be scrollable within the parent */
 }
 
 /* Optional: Add media query for smaller screens if 2 columns become too cramped */

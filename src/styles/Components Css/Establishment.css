@@ -22,8 +22,8 @@
 
 .estab-sensors-wrapper{
   display: flex;
-  flex-direction: row;
-  padding: 1rem;
+  flex-direction: column;
+  padding: 0.5rem;
   width: 100%;
 }
 
@@ -37,8 +37,8 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   margin-bottom: 1rem;
   width: 100%;
-  max-width: 500px;
-  position: absolute;
+  max-width: 100%;
+  position: relative;
 }
 
 .estab-info {

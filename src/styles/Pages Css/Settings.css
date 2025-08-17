@@ -4,7 +4,7 @@
 .settings-page-container {
     display: flex;
     height: 100vh; /* Fixed height for the container to enable inner scrolling */
-    background-color: #f3f4f6; /* Light theme background */
+    background-color: #DDDDDD; /* Light theme background */
     color: #1f2937; /* Light theme text color */
     transition: background-color 0.3s ease, color 0.3s ease;
     font-family: 'montserrat'; /* Assuming Inter or similar is used */
@@ -25,7 +25,7 @@
 }
 
 .settings-page-card-wrapper {
-    max-width:70rem; /* Keeps the max-width */
+
     width: 100%;
     margin: auto; /* Center the card horizontally and vertically within the flex container */
     background-color: #ffffff; /* Light theme card background */

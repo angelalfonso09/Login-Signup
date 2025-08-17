@@ -38,15 +38,19 @@
 }
 
 .notifications-wrapper {
-  max-width: 768px;
-  margin: 2rem 0 0 2rem;
+  max-width: 100%;
+  margin: 1rem 0;
+  padding: 0 24px;
 }
 
 .notifications-header {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 24px;
+  width: 100%;
+  padding: 0 16px;
 }
 
 .notifications-title {
@@ -77,6 +81,8 @@
   flex-wrap: wrap;
   gap: 8px;
   font-family: 'montserrat', sans-serif;
+  width: 100%;
+  justify-content: end;
 }
 
 .notifications-button {
@@ -259,6 +265,7 @@
   transition: all 0.15s ease-in-out;
   background-color: var(--notif-card-bg);
   /* Uses the theme variable */
+  width: 100%;
 }
 
 /* Light mode for notification cards */
@@ -300,12 +307,14 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  width: 100%;
 }
 
 .notification-info {
   display: flex;
   align-items: center;
   gap: 12px;
+  flex: 1;
 }
 
 .notification-icon-wrapper {
@@ -451,6 +460,7 @@
 .Notifpage-content {
   width: 100%;
   overflow: auto;
+  padding: 0;
 }
 
 .Notifpage-content::-webkit-scrollbar {

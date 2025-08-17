@@ -1,6 +1,7 @@
 import React, { useContext, useState, useEffect } from "react";
 import Navbar from "../components/Navbar"; // Assuming Navbar exists and is used elsewhere
 import Sidebar from "../components/Sidebar";
+import PageTitle from "../components/PageTitle";
 import styles from "../styles/Pages Css/Dashboard.module.css";
 import { ThemeContext } from "../context/ThemeContext";
 import DashboardPage from "../components/DashboardPage"; // This component holds the total stats

@@ -1,6 +1,6 @@
 import React, { useContext, useState } from "react";
-import Navbar from "../components/Navbar"; // Adjusted path
 import Sidebar from "../components/Sidebar"; // Adjusted path
+import PageTitle from "../components/PageTitle";
 import "../styles/Pages Css/History.css"; // Adjusted path
 import Temp from "../sensors/temp"; // Adjusted path
 import PhLevel from "../sensors/phlevel"; // Adjusted path
@@ -136,7 +136,7 @@ const History = () => {
                 <Sidebar theme={theme} toggleTheme={toggleTheme} />
 
                 <div className="aqua-history-content-wrapper">
-                    <h1 className={`aqua-history-title ${theme}-text`}>Sensor History</h1>
+                    <PageTitle title="SENSOR HISTORY" />
 
                     <div className="aqua-history-controls">
                         <div className="aqua-filter-buttons">

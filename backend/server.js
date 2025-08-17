@@ -3063,7 +3063,7 @@ const sensorTableMap = {
  // CLEAN VERSION NG BACKEND FOR GAUGE METER AND HISTORICAL DATA RAWR RAWR RAWR RAWR RAWR
  // CLEAN VERSION NG BACKEND FOR GAUGE METER AND HISTORICAL DATA RAWR RAWR RAWR RAWR RAWR
 
-// const serialPort = new SerialPort({ path: "COM7", baudRate: 9600 });
+// const serialPort = new SerialPort({ path: "COM3", baudRate: 9600 });
 // const parser = serialPort.pipe(new ReadlineParser({ delimiter: "\n" }));
 
 // let sensorConnected = false;
@@ -3079,7 +3079,7 @@ const sensorTableMap = {
 // serialPort.on("close", () => {
 //   if (sensorConnected) {
 //     sensorConnected = false;
-//     console.log("Sensor is disconnected from COM5.");
+//     console.log("Sensor is disconnected from COM3.");
 //     io.emit("sensorStatus", { connected: false, message: "Sensor disconnected" });
 //   }
 // });

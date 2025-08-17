@@ -3,6 +3,7 @@ import { ThemeContext } from '../context/ThemeContext';
 import Sidebar from '../components/Sidebar';
 import { ChevronRight, ChevronDown, User, Lock, Bell, Sun, Moon, History, Save, Edit, KeyRound, LogIn, LogOut } from 'lucide-react';
 import axios from 'axios';
+import PageTitle from "../components/PageTitle";
 
 // Import the new CSS file
 import '../styles/Pages Css/Settings.css';
@@ -320,8 +321,8 @@ const SettingsPage = () => {
     <div className={`settings-page-container ${theme}-theme`}>
       <Sidebar />
       <div className="settings-page-content-wrapper">
+                  <PageTitle title="SETTINGS" />
         <div className="settings-page-card-wrapper">
-          <h1 className="settings-page-main-title">Settings</h1>
 
           {message && (
             <div className={`settings-page-message-box ${messageType === 'success' ? 'settings-page-message-success' : 'settings-page-message-error'}`}>

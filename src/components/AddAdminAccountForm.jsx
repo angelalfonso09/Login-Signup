@@ -2,8 +2,10 @@ import React, { useState, useEffect, useContext } from "react";
 import { Form, Button, Container, Card, Alert } from "react-bootstrap";
 import axios from "axios";
 import "../styles/Components Css/AdminAccountForm.css";
+import { ThemeContext } from "../context/ThemeContext";
 
 const AdminCreationForm = ({ onClose, onAddAdmin }) => {
+  const { theme } = useContext(ThemeContext);
   const [adminData, setAdminData] = useState({
     username: "",
     email: "",
@@ -56,16 +58,11 @@ const AdminCreationForm = ({ onClose, onAddAdmin }) => {
   };
 
   const handleEstablishmentChange = (e) => {
-    const { value, checked } = e.target;
-    setAdminData((prevData) => {
-      const newEstablishmentIds = checked
-        ? [...prevData.establishmentIds, parseInt(value)]
-        : prevData.establishmentIds.filter((id) => id !== parseInt(value));
-      return {
-        ...prevData,
-        establishmentIds: newEstablishmentIds,
-      };
-    });
+    const establishmentId = parseInt(e.target.value);
+    setAdminData((prevData) => ({
+      ...prevData,
+      establishmentIds: establishmentId ? [establishmentId] : []
+    }));
   };
 
   const handleOtpChange = (e) => {
@@ -144,7 +141,7 @@ const AdminCreationForm = ({ onClose, onAddAdmin }) => {
     }
 
     if (adminData.role === "Admin" && adminData.establishmentIds.length === 0) {
-      setErrorMessage("Please assign at least one establishment for an 'Admin' role.");
+      setErrorMessage("Please select an establishment for an 'Admin' role.");
       return;
     }
 
@@ -190,7 +187,7 @@ const AdminCreationForm = ({ onClose, onAddAdmin }) => {
   };
 
   return (
-    <Container>
+    <Container className={`admin-form-container ${theme}`}>
       <Card.Body>
         <Form onSubmit={handleSubmit}>
           {/* Admin Username, Email, Password, Confirm Password - remain unchanged */}
@@ -276,20 +273,24 @@ const AdminCreationForm = ({ onClose, onAddAdmin }) => {
               ) : establishmentError ? (
                 <Alert variant="danger">{establishmentError}</Alert>
               ) : establishments.length > 0 ? (
-                <div>
+                <Form.Control
+                  as="select"
+                  name="establishmentId"
+                  value={adminData.establishmentIds[0] || ""}
+                  onChange={handleEstablishmentChange}
+                  disabled={isOtpSent}
+                  className="admin-username-input"
+                >
+                  <option value="" disabled>Select an establishment</option>
                   {establishments.map((establishment) => (
-                    <Form.Check
-                      key={establishment.id}
-                      type="checkbox"
-                      id={`establishment-${establishment.id}`}
-                      label={establishment.estab_name}
+                    <option 
+                      key={establishment.id} 
                       value={establishment.id}
-                      checked={adminData.establishmentIds.includes(establishment.id)}
-                      onChange={handleEstablishmentChange}
-                      disabled={isOtpSent}
-                    />
+                    >
+                      {establishment.estab_name}
+                    </option>
                   ))}
-                </div>
+                </Form.Control>
               ) : (
                 <Alert variant="info" className="mt-2">
                   No establishments found. Please add establishments first.
