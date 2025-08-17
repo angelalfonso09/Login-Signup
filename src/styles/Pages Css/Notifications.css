@@ -28,7 +28,7 @@
 
 .notifications-container {
   min-height: 100vh;
-  padding: 24px;
+  padding: 0.5px;
   background: var(--bg-color);
   transition: background-color 0.3s ease;
 }

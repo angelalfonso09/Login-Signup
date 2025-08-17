@@ -18,7 +18,7 @@
 
 .settings-page-content-wrapper {
     flex: 1; /* Take remaining space after sidebar */
-    padding: 2rem;
+    padding: 1rem;
     display: flex; /* Added flex to center the card vertically */
     flex-direction: column; /* Arrange items in a column */
     overflow: hidden; /* Hide overflow on this wrapper to prevent page scroll */

@@ -5,7 +5,7 @@ import styles from "../styles/Pages Css/adminDB.module.css";
 import { ThemeContext } from "../context/ThemeContext";
 import { AuthContext } from "../context/AuthContext";
 import AdminDashboardPage from "../components/AdminDashboardPage";
-import EstablishmentSensors from "../components/DashboardEstablishment";
+import EstablishmentSensors from "../components/DashboardEstablishment-UI";
 import Calendar from "../components/CalendarComponent";
 // Import socket.io-client and your socket instance
 import io from 'socket.io-client';

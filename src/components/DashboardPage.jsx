@@ -138,7 +138,7 @@ const DashboardPage = () => {
   }, []);
 
   return (
-    <div className="dashboard-page">
+    <div className="dashboard-page" style={{ width: '100%' }}>
       <PageTitle title="DASHBOARD" />
       <DashboardSearch />
       <DashboardSummary

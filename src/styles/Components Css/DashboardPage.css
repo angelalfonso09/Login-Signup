@@ -84,13 +84,15 @@
 
 
 .dashboard-summary-container {
-  display: grid; /* Use grid for better responsiveness and control */
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Responsive columns */
+  display: flex; /* Change from grid to flex */
+  flex-wrap: wrap;
   gap: 25px; /* Increased gap between cards */
   width: 100%;
+  justify-content: center;
 }
 
 .dashboard-summary-card {
+  flex: 1 1 280px; /* Flex grow, shrink, and base width */
   background-color: var(--card-bg);
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1); /* Stronger, softer shadow */
   border-radius: 12px; /* More rounded corners */

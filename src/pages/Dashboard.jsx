@@ -5,7 +5,7 @@ import PageTitle from "../components/PageTitle";
 import styles from "../styles/Pages Css/Dashboard.module.css";
 import { ThemeContext } from "../context/ThemeContext";
 import DashboardPage from "../components/DashboardPage"; // This component holds the total stats
-import EstablishmentSensors from "../components/DashboardEstablishment"; // This component displays individual establishment cards
+import EstablishmentSensors from "../components/DashboardEstablishment-UI"; // Improved UI version
 import CalendarComponent from "../components/CalendarComponent"; // Import Calendar Component
 import io from 'socket.io-client'; // Import socket.io-client
 

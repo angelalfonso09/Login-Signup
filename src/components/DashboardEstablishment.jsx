@@ -1,7 +1,8 @@
-// EstablishmentSensors.js (updated to include more sensor mappings and display Device ID)
+// EstablishmentSensors.js (updated with improved modal UI)
 
-import React, { useState, useEffect } from 'react';
-import '../styles/Components Css/Establishment.css';
+import React, { useState, useContext } from 'react';
+import '../styles/Components Css/Establishment-enhanced.css';
+import { ThemeContext } from '../context/ThemeContext';
 
 // Import all your sensor components
 import Turbidity from "../Dashboard Meters/Turbidity";
@@ -47,14 +48,14 @@ const sensorComponentMap = {
 
 // Now accepts 'establishment' object prop and 'onDelete' function prop
 const EstablishmentSensors = ({ establishment, onDelete }) => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const { theme } = useContext(ThemeContext);
 
-  // Destructure name, sensors, and device_id from the establishment object
-  const { name: establishmentName, sensors, device_id } = establishment;
-  // Ensure sensors is an array, even if empty or undefined
-  const safeSensors = Array.isArray(sensors) ? sensors : [];
-
-  return (
+  // Destructure data from the establishment object
+  const { name: establishmentName, sensors, device_id } = establishment;
+  
+  // Ensure sensors is always an array
+  const safeSensors = Array.isArray(sensors) ? sensors : [];  return (
     <div className="estab-sensors-wrapper">
       <div className="estab-sensors-container">
         <div className="estab-info">
