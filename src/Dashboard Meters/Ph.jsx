@@ -2,12 +2,15 @@ import React, { useState, useEffect, useContext } from "react";
 import { CircularProgressbarWithChildren, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import { ThemeContext } from "../context/ThemeContext";
+import InfoButton from "../components/InfoButton";
+import WaterQualityInfoModal from "../components/WaterQualityInfoModal";
 import socket from "./socket";
 
 const Ph = () => {
   const { theme } = useContext(ThemeContext);
   const [isConnected, setIsConnected] = useState(socket.connected);
   const [phValue, setPhValue] = useState(0); // Default neutral pH
+  const [showInfoModal, setShowInfoModal] = useState(false);
 
   useEffect(() => {
     const handleConnect = () => setIsConnected(true);
@@ -83,6 +86,21 @@ const Ph = () => {
           {getWaterQuality()}
         </span>
       </p>
+      
+      <div className="info-button-container">
+        <InfoButton 
+          onClick={() => setShowInfoModal(true)} 
+          text="Learn more" 
+          icon="info-circle"
+        />
+      </div>
+      
+      {/* Water Quality Info Modal with pH parameter active */}
+      <WaterQualityInfoModal 
+        isOpen={showInfoModal} 
+        onClose={() => setShowInfoModal(false)}
+        activeParameter="ph"
+      />
     </div>
   );
 };
