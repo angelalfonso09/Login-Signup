@@ -410,6 +410,163 @@
 }
 
 
+/* Establishment Details Section */
+.establishmentDetailsSection {
+  background-color: var(--card-bg);
+  border-radius: 10px;
+  padding: 15px;
+  box-shadow: 0px 3px 10px var(--shadow-color);
+  display: flex;
+  flex-direction: column;
+  height: fit-content;
+  width: 100%;
+  overflow-y: auto;
+  max-height: 600px;
+}
+
+.establishmentDetailsSection::-webkit-scrollbar {
+  width: 6px;
+}
+
+.establishmentDetailsSection::-webkit-scrollbar-track {
+  background: var(--card-bg);
+  border-radius: 10px;
+}
+
+.establishmentDetailsSection::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+.establishmentDetailsSection::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.establishmentMeta {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+  background-color: rgba(50, 50, 50, 0.1);
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(100, 100, 100, 0.2);
+}
+
+.detailBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 50px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  background-color: rgba(76, 175, 80, 0.25);
+  color: var(--success-green);
+  border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.detailBadge i {
+  margin-right: 8px;
+}
+
+.closeDetailsButton {
+  background-color: var(--danger-red);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background-color 0.2s ease;
+}
+
+.closeDetailsButton:hover {
+  background-color: var(--danger-red-hover);
+}
+
+.sensorsDetailGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.sensorDetailCard {
+  background-color: var(--background-main, #2f2f31);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--card-border, #363636);
+}
+
+.sensorDetailHeader {
+  padding: 10px 15px;
+  border-bottom: 1px solid var(--card-border, #363636);
+}
+
+.sensorDetailHeader h4 {
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin: 0;
+  color: var(--text-primary, #ffffff);
+}
+
+.sensorDetailBody {
+  padding: 10px;
+}
+
+.missingSensorPlaceholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 30px;
+  color: var(--danger-red);
+  background-color: rgba(220, 53, 69, 0.1);
+  border-radius: 8px;
+}
+
+.missingSensorPlaceholder i {
+  font-size: 2rem;
+  margin-bottom: 15px;
+}
+
+.missingSensorPlaceholder p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.noSensorsContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 50px;
+  grid-column: 1 / -1;
+  text-align: center;
+  color: var(--text-secondary, #cccccc);
+}
+
+.noSensorsContainer i {
+  font-size: 3rem;
+  margin-bottom: 15px;
+  opacity: 0.6;
+}
+
+.noSensorsContainer p {
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.establishmentDetailContent {
+  padding: 10px;
+}
+
 /* Responsive adjustments */
 @media (max-width: 1200px) {
   .mainContentGrid {
@@ -418,7 +575,8 @@
   
   /* Reset flex values for stacked layout */
   .mainContentGrid .establishmentSection,
-  .mainContentGrid .calendarSection {
+  .mainContentGrid .calendarSection,
+  .mainContentGrid .establishmentDetailsSection {
     flex: none;
     width: 100%;
   }

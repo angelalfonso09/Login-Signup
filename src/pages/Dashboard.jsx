@@ -5,7 +5,7 @@ import PageTitle from "../components/PageTitle";
 import styles from "../styles/Pages Css/Dashboard.module.css";
 import { ThemeContext } from "../context/ThemeContext";
 import DashboardPage from "../components/DashboardPage"; // This component holds the total stats
-import EstablishmentSensors from "../components/DashboardEstablishment-UI"; // Improved UI version
+import EstablishmentSensors, { sensorComponentMap } from "../components/DashboardEstablishment-UI"; // Improved UI version
 import CalendarComponent from "../components/CalendarComponent"; // Import Calendar Component
 import WaterQualityInfoModal from "../components/WaterQualityInfoModal"; // Import the new Water Quality Info Modal
 import InfoButton from "../components/InfoButton"; // Import the Info Button component
@@ -23,6 +23,7 @@ const Dashboard = () => {
   const [searchQuery, setSearchQuery] = useState(""); // New state for search query
   const [allSensors, setAllSensors] = useState([]); // Renamed from availableSensors
   const [selectedSensors, setSelectedSensors] = useState([]); // New state for selected sensors
+  const [selectedEstablishmentModal, setSelectedEstablishmentModal] = useState(null); // State for the full-screen modal
 
   // --- States for the Global Warning Pop-up ---
   const [showWarningPopup, setShowWarningPopup] = useState(false);
@@ -209,6 +210,16 @@ const Dashboard = () => {
     setSearchQuery(event.target.value);
   };
 
+  // Handler for showing establishment details in full screen modal
+  const handleShowEstablishmentModal = (establishment) => {
+    setSelectedEstablishmentModal(establishment);
+  };
+
+  // Handler for closing the full screen modal
+  const handleCloseEstablishmentModal = () => {
+    setSelectedEstablishmentModal(null);
+  };
+
   // --- Filtered Establishments ---
   const filteredEstablishments = establishments.filter((establishment) => {
     if (!establishment || typeof establishment.name !== 'string') {
@@ -306,6 +317,7 @@ const Dashboard = () => {
                       key={establishment.id}
                       establishment={establishment}
                       onDelete={handleDeleteEstablishment}
+                      onShowModal={handleShowEstablishmentModal}
                     />
                   ))
                 )}
@@ -339,6 +351,79 @@ const Dashboard = () => {
         onClose={() => setShowWaterQualityInfo(false)}
         activeParameter={activeParameter}
       />
+
+      {/* Full Screen Establishment Modal */}
+      {selectedEstablishmentModal && (
+        <div className="estab-modal">
+          <div className="estab-modal-content">
+            <div className="estab-modal-header">
+              <button onClick={handleCloseEstablishmentModal} className="estab-modal-close-button">
+                <i className="fas fa-times"></i>
+              </button>
+              <h2 className="estab-modal-title">{selectedEstablishmentModal.name}</h2>
+              <div className="estab-modal-meta">
+                <span className="badge sensor-count-badge">
+                  <i className="fas fa-microchip"></i> {
+                    Array.isArray(selectedEstablishmentModal.sensors) 
+                      ? selectedEstablishmentModal.sensors.length 
+                      : 0
+                  } Sensors
+                </span>
+                {selectedEstablishmentModal.device_id && (
+                  <span className="badge device-id-badge">
+                    <i className="fas fa-tablet-alt"></i> Device ID: {selectedEstablishmentModal.device_id}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <div className="estab-sensor-list">
+              {Array.isArray(selectedEstablishmentModal.sensors) && selectedEstablishmentModal.sensors.length > 0 ? (
+                selectedEstablishmentModal.sensors.map((sensor) => {
+                  const SensorComponent = sensorComponentMap[sensor.name];
+                  if (SensorComponent) {
+                    return (
+                      <div key={sensor.id} className="estab-sensor-card">
+                        <div className="estab-sensor-header">
+                          <h3 className="estab-sensor-name">{sensor.name}</h3>
+                        </div>
+                        <div className="estab-sensor-body">
+                          <SensorComponent />
+                        </div>
+                      </div>
+                    );
+                  } else {
+                    return (
+                      <div key={sensor.id} className="estab-sensor-card missing-component">
+                        <div className="estab-sensor-header">
+                          <h3 className="estab-sensor-name">{sensor.name}</h3>
+                        </div>
+                        <div className="estab-sensor-body">
+                          <div className="missing-sensor-placeholder">
+                            <i className="fas fa-exclamation-triangle"></i>
+                            <p>No dedicated display component available</p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
+                })
+              ) : (
+                <div className="no-sensors-container">
+                  <i className="fas fa-exclamation-circle no-sensors-icon"></i>
+                  <p className="no-sensors-message">No sensors currently assigned to this establishment</p>
+                </div>
+              )}
+            </div>
+
+            <div className="estab-modal-footer">
+              <button onClick={handleCloseEstablishmentModal} className="estab-modal-close-button-bottom">
+                <i className="fas fa-times-circle"></i> Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -17,7 +17,7 @@ import ElectricalCon from "../Dashboard Meters/ElectricalCon";
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
 // IMPORTANT: Map sensor names to their corresponding React components
-const sensorComponentMap = {
+export const sensorComponentMap = {
   // Main mappings
   "Turbidity": Turbidity,
   "ph Level": Ph,
@@ -44,7 +44,7 @@ const sensorComponentMap = {
 };
 
 // Component for displaying establishment sensors
-const EstablishmentSensors = ({ establishment, onDelete }) => {
+const EstablishmentSensors = ({ establishment, onDelete, onShowModal }) => {
   const [isOpen, setIsOpen] = useState(false);
   const { theme } = useContext(ThemeContext);
 
@@ -72,7 +72,10 @@ const EstablishmentSensors = ({ establishment, onDelete }) => {
         </div>
         
         <div className="estab-actions">
-          <button onClick={() => setIsOpen(true)} className="estab-details-button">
+          <button 
+            onClick={() => onShowModal ? onShowModal(establishment) : setIsOpen(true)} 
+            className="estab-details-button"
+          >
             <i className="fas fa-info-circle"></i> Details
           </button>
           <button

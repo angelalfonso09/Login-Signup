@@ -91,8 +91,8 @@ const Temperature = () => {
     },
     header: {
       display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
+      flexDirection: 'column',
+      alignItems: 'flex-start',
       marginBottom: '1rem',
     },
     title: {
@@ -102,6 +102,7 @@ const Temperature = () => {
       fontSize: '1.1rem',
       fontWeight: '600',
       color: theme === 'dark' ? '#ffffff' : '#333333',
+      marginBottom: '0.5rem',
     },
     statusIndicator: {
       display: 'flex',
@@ -116,6 +117,7 @@ const Temperature = () => {
         : (theme === 'dark' ? 'rgba(217, 83, 79, 0.2)' : 'rgba(217, 83, 79, 0.1)'),
       color: isConnected ? '#20a44c' : '#d9534f',
       transition: 'all 0.3s ease',
+      alignSelf: 'flex-start',
     },
     meter: {
       width: '90%',
