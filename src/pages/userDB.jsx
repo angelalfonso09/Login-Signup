@@ -5,19 +5,19 @@ import Sidebar from "../components/Sidebar";
 import styles from "../styles/Pages Css/Userdb.module.css";
 import { ThemeContext } from "../context/ThemeContext";
 import { AuthContext } from "../context/AuthContext"; // Import AuthContext
-import Ph from "../Dashboard Meters/Ph";
-import Tds from "../Dashboard Meters/Tds";
-import Conductivity from "../Dashboard Meters/Conductivity";
-import Salinity from "../Dashboard Meters/Salinity";
-import Temperature from "../Dashboard Meters/Temperature";
-import Turbidity from "../Dashboard Meters/Turbidity";
-import ElectricalCon from "../Dashboard Meters/ElectricalCon";
+import Ph from "../DashboardMeters/Ph";
+import Tds from "../DashboardMeters/Tds";
+import Conductivity from "../DashboardMeters/Conductivity";
+import Salinity from "../DashboardMeters/Salinity";
+import Temperature from "../DashboardMeters/Temperature";
+import Turbidity from "../DashboardMeters/Turbidity";
+import ElectricalCon from "../DashboardMeters/ElectricalCon";
 import AccessRestrictedModal from "../components/AccessRestrictedModal";
 import { useNavigate, Link } from "react-router-dom";
 import axios from 'axios'; // Import axios for API calls
 // Import socket.io-client and your socket instance
 import io from 'socket.io-client';
-import socket from '../Dashboard Meters/socket'; // Make sure this path is correct
+import socket from '../DashboardMeters/socket'; // Make sure this path is correct
 
 // API base URL - make sure this matches your backend
 const API_BASE_URL = "https://login-signup-3470.onrender.com";

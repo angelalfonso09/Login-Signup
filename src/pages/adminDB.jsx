@@ -9,7 +9,7 @@ import EstablishmentSensors from "../components/DashboardEstablishment-UI";
 import Calendar from "../components/CalendarComponent";
 // Import socket.io-client and your socket instance
 import io from 'socket.io-client';
-import socket from '../Dashboard Meters/socket'; // Assuming 'socket.js' is in '../Dashboard Meters'
+import socket from '../DashboardMeters/socket'; // Assuming 'socket.js' is in '../Dashboard Meters'
 
 const AdminDb = () => {
   const { theme, toggleTheme } = useContext(ThemeContext);

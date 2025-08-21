@@ -12,7 +12,7 @@ import InfoButton from "../components/InfoButton"; // Import the Info Button com
 import io from 'socket.io-client'; // Import socket.io-client
 
 // Initialize Socket.IO connection here, or import from a dedicated socket.js file
-import socket from '../Dashboard Meters/socket'; // Assuming 'socket.js' is in '../components'
+import socket from '../DashboardMeters/socket'; // Assuming 'socket.js' is in '../components'
 
 const Dashboard = () => {
   const { theme, toggleTheme } = useContext(ThemeContext);

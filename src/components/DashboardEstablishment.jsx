@@ -5,13 +5,13 @@ import '../styles/Components Css/Establishment-enhanced.css';
 import { ThemeContext } from '../context/ThemeContext';
 
 // Import all your sensor components
-import Turbidity from "../Dashboard Meters/Turbidity";
-import Ph from "../Dashboard Meters/Ph";
-import Tds from "../Dashboard Meters/Tds";
-import Conductivity from "../Dashboard Meters/Conductivity";
-import Salinity from "../Dashboard Meters/Salinity";
-import Temperature from "../Dashboard Meters/Temperature";
-import ElectricalCon from "../Dashboard Meters/ElectricalCon"; // Import the ElectricalCon component
+import Turbidity from "../DashboardMeters/Turbidity";
+import Ph from "../DashboardMeters/Ph";
+import Tds from "../DashboardMeters/Tds";
+import Conductivity from "../DashboardMeters/Conductivity";
+import Salinity from "../DashboardMeters/Salinity";
+import Temperature from "../DashboardMeters/Temperature";
+import ElectricalCon from "../DashboardMeters/ElectricalCon"; // Import the ElectricalCon component
 
 // Import Font Awesome for icons
 import '@fortawesome/fontawesome-free/css/all.min.css'; // Ensure Font Awesome CSS is imported
