@@ -3213,27 +3213,6 @@ async function insertNotification(
   }
 }
 
-// -----------------------------------------------------------------
-// === CONFIGURE DATABASE CONNECTION ===
-// -----------------------------------------------------------------
-// !! IMPORTANT !! Replace these with your actual database credentials.
-const dbConfig = {
-  host: process.env.DB_HOST || "localhost",
-  user: process.env.DB_USER || "your_user",
-  password: process.env.DB_PASSWORD || "your_password",
-  database: process.env.DB_DATABASE || "your_database",
-};
-
-let db;
-(async () => {
-  try {
-    db = await mysql.createConnection(dbConfig);
-    console.log("✅ Database connection established.");
-  } catch (err) {
-    console.error("❌ Database connection failed:", err.message);
-  }
-})();
-
 // --- API Endpoint for Latest Sensor Data (for initial frontend load) ---
 app.get("/api/sensors/latest", async (req, res) => {
   const query = `
