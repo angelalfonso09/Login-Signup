@@ -19,9 +19,9 @@ import UserSettingsPage from "./pages/UserSettings";
 import AdminHistory from "./pages/AdminHsitory"; // Corrected import based on new component name
 import UserHistory from "./pages/UserHistory";
 
-import { ThemeProvider } from "./context/ThemeContext.jsx";
+import { ThemeProvider, ThemeContext } from "./context/ThemeContext";
 // NEW: Import AuthProvider and AuthContext
-import { AuthProvider } from "./context/AuthContext.jsx";
+import { AuthProvider, AuthContext } from "./context/AuthContext";
 
 import "./styles/common/App.css";
 import "./styles/theme.css";
