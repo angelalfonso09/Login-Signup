@@ -122,7 +122,7 @@ const AdminNotificationsPage = () => {
     const [loading, setLoading] = useState(true);
     const { theme } = useContext(ThemeContext);
 
-    const API_BASE_URL = "http://localhost:5000";
+    const API_BASE_URL = "https://login-signup-3470.onrender.com";
 
     // --- CHANGE 1: Use a more general localStorage key for all admin notifications ---
     const loadAdminNotifications = useCallback(() => {

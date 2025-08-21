@@ -23,7 +23,7 @@ const AccountManagement = () => {
   useEffect(() => {
     const fetchUserStats = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/users");
+        const response = await axios.get("https://login-signup-3470.onrender.com/api/users");
         const accounts = response.data;
         
         // Calculate statistics
