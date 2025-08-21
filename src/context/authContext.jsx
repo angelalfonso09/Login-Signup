@@ -31,7 +31,7 @@ export const AuthProvider = ({ children }) => {
     }
   });
 
-  // NEW: Add deviceId to state if it exists in currentUser
+  /// NEW: Add deviceId to state if it exists in currentUser
   const [deviceId, setDeviceId] = useState(() => {
     try {
       const storedUser = localStorage.getItem('user');
