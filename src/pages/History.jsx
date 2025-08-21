@@ -13,6 +13,7 @@ import "../styles/theme.css"; // Adjusted path
 import { ThemeContext } from "../context/ThemeContext"; // Adjusted path
 import { saveAs } from "file-saver";
 import * as XLSX from "xlsx";
+import { exportToPdf, savePdf } from "../utils/pdfExport";
 import { AuthContext } from '../context/AuthContext'; // Adjusted path
 
 const History = () => {
@@ -22,6 +23,7 @@ const History = () => {
 
     const [filter, setFilter] = useState("24h");
     const [exporting, setExporting] = useState(false);
+    const [exportingPdf, setExportingPdf] = useState(false);
     const [selectedSensorForModal, setSelectedSensorForModal] = useState(null);
 
     const sensorDefinitions = [
@@ -42,52 +44,63 @@ const History = () => {
         setSelectedSensorForModal(null);
     };
 
-    const exportToExcel = async () => {
-        setExporting(true);
+    // Fetch data from the backend based on the filter
+    const fetchSensorData = async () => {
         let dataToExport = {};
 
+        const filterToEndpoint = {
+            "realtime": "realtime",
+            "24h": "24h",
+            "7d": "7d-avg",
+            "30d": "30d-avg",
+        };
+
+        const backendFilter = filterToEndpoint[filter];
+        if (!backendFilter) {
+            alert("Invalid filter selected for export. This should not happen if buttons are correctly configured.");
+            return null;
+        }
+
+        // Fetch data for each sensor
+        for (const sensor of sensorDefinitions) {
+            // Append establishmentId as a query parameter only if it exists
+            let endpoint = `http://localhost:5000/data${sensor.apiPath}/${backendFilter}`;
+            if (establishmentId) {
+                endpoint += `?establishmentId=${establishmentId}`;
+            }
+            console.log(`Fetching data for ${sensor.name} from: ${endpoint}`);
+
+            const response = await fetch(endpoint);
+            if (!response.ok) {
+                const errorText = await response.text(); // Get raw error response
+                throw new Error(`Failed to fetch ${sensor.name} data: ${response.statusText} (${response.status}). Details: ${errorText}`);
+            }
+            const data = await response.json();
+
+            const formattedSensorData = data.map(item => ({
+                Timestamp: new Date(item.timestamp).toLocaleString(),
+                Value: parseFloat(item.value),
+                Unit: getSensorUnit(sensor.name)
+            }));
+            dataToExport[sensor.name] = formattedSensorData;
+        }
+
+        const hasData = Object.values(dataToExport).some(arr => arr.length > 0);
+        if (!hasData) {
+            alert("No data available for export based on the selected filter. Check your database or filter criteria.");
+            return null;
+        }
+
+        return dataToExport;
+    };
+
+    // Export to Excel function
+    const exportToExcel = async () => {
+        setExporting(true);
+        
         try {
-            const filterToEndpoint = {
-                "realtime": "realtime",
-                "24h": "24h",
-                "7d": "7d-avg",
-                "30d": "30d-avg",
-            };
-
-            const backendFilter = filterToEndpoint[filter];
-            if (!backendFilter) {
-                alert("Invalid filter selected for export. This should not happen if buttons are correctly configured.");
-                setExporting(false);
-                return;
-            }
-
-            // Fetch data for each sensor
-            for (const sensor of sensorDefinitions) {
-                // CONDITIONAL MODIFICATION HERE: Append establishmentId as a query parameter ONLY IF IT EXISTS
-                let endpoint = `http://localhost:5000/data${sensor.apiPath}/${backendFilter}`;
-                if (establishmentId) {
-                    endpoint += `?establishmentId=${establishmentId}`;
-                }
-                console.log(`Fetching data for ${sensor.name} from: ${endpoint}`);
-
-                const response = await fetch(endpoint);
-                if (!response.ok) {
-                    const errorText = await response.text(); // Get raw error response
-                    throw new Error(`Failed to fetch ${sensor.name} data: ${response.statusText} (${response.status}). Details: ${errorText}`);
-                }
-                const data = await response.json();
-
-                const formattedSensorData = data.map(item => ({
-                    Timestamp: new Date(item.timestamp).toLocaleString(),
-                    Value: parseFloat(item.value),
-                    Unit: getSensorUnit(sensor.name)
-                }));
-                dataToExport[sensor.name] = formattedSensorData;
-            }
-
-            const hasData = Object.values(dataToExport).some(arr => arr.length > 0);
-            if (!hasData) {
-                alert("No data available for export based on the selected filter. Check your database or filter criteria.");
+            const dataToExport = await fetchSensorData();
+            if (!dataToExport) {
                 setExporting(false);
                 return;
             }
@@ -114,6 +127,33 @@ const History = () => {
             alert(`Error exporting data: ${error.message}. Check browser console for details.`);
         } finally {
             setExporting(false);
+        }
+    };
+
+    // Export to PDF function
+    const exportToPDF = async () => {
+        setExportingPdf(true);
+        
+        try {
+            const dataToExport = await fetchSensorData();
+            if (!dataToExport) {
+                setExportingPdf(false);
+                return;
+            }
+
+            // Generate PDF using our utility function
+            const establishmentName = user?.establishmentName || "All Establishments";
+            const pdfBlob = exportToPdf(dataToExport, filter, establishmentName);
+            
+            // Save the PDF
+            savePdf(pdfBlob, filter, establishmentName);
+            console.log("PDF file exported successfully.");
+
+        } catch (error) {
+            console.error("Error exporting PDF:", error);
+            alert(`Error exporting PDF: ${error.message}. Check browser console for details.`);
+        } finally {
+            setExportingPdf(false);
         }
     };
 
@@ -155,8 +195,11 @@ const History = () => {
                         </div>
 
                         <div className="aqua-export-buttons">
-                            <button onClick={exportToExcel} className="aqua-export-btn" disabled={exporting}>
+                            <button onClick={exportToExcel} className="aqua-export-btn excel-btn" disabled={exporting || exportingPdf}>
                                 {exporting ? "Exporting..." : "Export Excel"}
+                            </button>
+                            <button onClick={exportToPDF} className="aqua-export-btn pdf-btn" disabled={exporting || exportingPdf}>
+                                {exportingPdf ? "Exporting..." : "Export PDF"}
                             </button>
                         </div>
                     </div>

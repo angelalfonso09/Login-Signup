@@ -5,6 +5,7 @@ import Signup from "./pages/Signup";
 import Login from "./pages/Login";
 import ForgotPassword from "./pages/ForgotPassword";
 import Landing from "./pages/Landing";
+import LandingImproved from "./pages/LandingImproved"; 
 import Dashboard from "./pages/Dashboard";
 import AccountManagement from "./pages/AccountManagement";
 import History from "./pages/History";
@@ -87,7 +88,7 @@ const ThemedApp = () => {
         <div className={`app-container ${theme}`}>
             <Router>
                 <Routes>
-                    <Route path="/" element={<Landing />} />
+                    <Route path="/" element={<LandingImproved />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/signup" element={<Signup />} />
                     <Route path="/forgotpassword" element={<ForgotPassword />} />

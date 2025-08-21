@@ -5,6 +5,8 @@ import App from "./App";
 // Import Bootstrap styles
 import "bootstrap/dist/css/bootstrap.min.css";
 
+// Import Font Awesome
+import "./styles/font-awesome.css";
 
 import "./styles/ForgotPassword/ForgotPasswordForm.css";
 import "./styles/Components Css/AdminAccountForm.css";

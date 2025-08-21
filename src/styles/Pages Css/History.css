@@ -123,13 +123,13 @@
 .aqua-export-buttons {
   display: flex;
   font-family: 'montserrat', sans-serif;
+  gap: 12px;
 }
 
 .aqua-export-btn {
   padding: 12px 24px;
   font-size: 14px;
   font-weight: 500;
-  background-color: #28a745;
   color: white;
   border: none;
   border-radius: 8px;
@@ -138,10 +138,24 @@
   font-family: 'montserrat', sans-serif;
 }
 
-.aqua-export-btn:hover:not(:disabled) {
+.aqua-export-btn.excel-btn {
+  background-color: #28a745;
+}
+
+.aqua-export-btn.pdf-btn {
+  background-color: #dc3545;
+}
+
+.aqua-export-btn.excel-btn:hover:not(:disabled) {
   background-color: #218838;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+.aqua-export-btn.pdf-btn:hover:not(:disabled) {
+  background-color: #c82333;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
 }
 
 .aqua-export-btn:disabled {
@@ -151,13 +165,22 @@
 }
 
 /* Light mode export button */
-.aqua-history-page.light .aqua-export-btn {
+.aqua-history-page.light .aqua-export-btn.excel-btn {
   background-color: #28a745;
   color: white;
 }
 
-.aqua-history-page.light .aqua-export-btn:hover:not(:disabled) {
+.aqua-history-page.light .aqua-export-btn.excel-btn:hover:not(:disabled) {
   background-color: #218838;
+}
+
+.aqua-history-page.light .aqua-export-btn.pdf-btn {
+  background-color: #dc3545;
+  color: white;
+}
+
+.aqua-history-page.light .aqua-export-btn.pdf-btn:hover:not(:disabled) {
+  background-color: #c82333;
 }
 
 /* Sensors Grid - Full Width Vertical Layout */
