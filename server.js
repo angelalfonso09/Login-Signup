@@ -162,20 +162,37 @@ const authenticateAdminRoute = (req, res, next) => {
     }
 };
 
+// Create the single HTTP server that will handle both Express and Socket.IO
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "*", // Allow all origins for the frontend and bridge app
+    methods: ["GET", "POST"]
+  }
+});
+
 // Middleware
 app.use(cors({
-  origin: ["*"], 
+  origin: "*",
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true
 }));
 
 app.use(bodyParser.json());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.options('*', cors()); // This handles the preflight OPTIONS requests
+// --- Debugging Middleware ---
+// This will log every incoming request to the server, which can help diagnose routing issues.
+app.use((req, res, next) => {
+    console.log(`[${new Date().toISOString()}] Incoming request: ${req.method} ${req.originalUrl}`);
+    next();
+});
 
+// --- Test Root Endpoint ---
+app.get("/", (req, res) => {
+  res.status(200).send("Backend is running!");
+});
 // Example middleware to verify the token
 const verifyToken = (req, res, next) => {
   const token = req.headers['authorization']?.split(' ')[1]; // Get the token from the 'Authorization' header
@@ -217,40 +234,6 @@ const authorizeAdmin = (req, res, next) => { // <--- CONSIDER RENAMING THIS FUNC
         return res.status(403).json({ message: "Access Denied: Requires Admin or Super Admin role" });
     }
 };
-
-
-// Create HTTP server for Socket.IO
-const server = http.createServer(app);
-const io = new Server(server, {
-  cors: { origin: "*" },
-});
-
-app.use(cookieParser());
-
-const query = (sql, values) =>
-  new Promise((resolve, reject) => {
-    db.query(sql, values, (err, results) => {
-      if (err) reject(err);
-      else resolve(results);
-    });
-  });
-
-module.exports = { query };
-
-
-console.log(process.env.PORT);
-
-app.get("/", (req, res) => {
-  res.send("Backend is running!");
-});
-
-// Start Express & Socket.IO Server
-server.listen(port, () => {
-  console.log(`Backend running on http://localhost:${port}`);
-});
-io.listen(3001, () => {
-  console.log("WebSocket server running on port 3001");
-});
 
 // mailer function
 app.post("/send-email", async (req, res) => {
@@ -3066,8 +3049,6 @@ const sensorTableMap = {
 app.post("/api/sensor-data", async (req, res) => {
   try {
     const jsonData = req.body;
-    const currentTime = new Date();
-
     console.log("📡 Received data from local bridge:", jsonData);
 
     // Define notification configurations for each sensor
@@ -3232,6 +3213,27 @@ async function insertNotification(
   }
 }
 
+// -----------------------------------------------------------------
+// === CONFIGURE DATABASE CONNECTION ===
+// -----------------------------------------------------------------
+// !! IMPORTANT !! Replace these with your actual database credentials.
+const dbConfig = {
+  host: process.env.DB_HOST || "localhost",
+  user: process.env.DB_USER || "your_user",
+  password: process.env.DB_PASSWORD || "your_password",
+  database: process.env.DB_DATABASE || "your_database",
+};
+
+let db;
+(async () => {
+  try {
+    db = await mysql.createConnection(dbConfig);
+    console.log("✅ Database connection established.");
+  } catch (err) {
+    console.error("❌ Database connection failed:", err.message);
+  }
+})();
+
 // --- API Endpoint for Latest Sensor Data (for initial frontend load) ---
 app.get("/api/sensors/latest", async (req, res) => {
   const query = `
@@ -3344,3 +3346,10 @@ app.get("/data/temperature/24h", (req, res) => getHistoricalData('temperature_re
 app.get("/data/temperature/7d-avg", (req, res) => getHistoricalData('temperature_readings', 'temperature_celsius', '7d-avg', res));
 app.get("/data/temperature/30d-avg", (req, res) => getHistoricalData('temperature_readings', 'temperature_celsius', '30d-avg', res));
 
+// -----------------------------------------------------------------
+// === START THE SERVER ===
+// -----------------------------------------------------------------
+const PORT = process.env.PORT || 10000;
+server.listen(PORT, () => {
+  console.log(`Backend running on http://localhost:${PORT}`);
+});
