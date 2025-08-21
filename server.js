@@ -3071,44 +3071,13 @@ app.post("/api/sensor-data", async (req, res) => {
     console.log("📡 Received data from local bridge:", jsonData);
 
     // Define notification configurations for each sensor
-    // Threshold set to 30 for most sensors (out of 100 safety score)
     const notifications = {
-      turbidity: {
-        sensorType: "turbidity",
-        threshold: 30, // Alert if turbidity safety score is below 30
-        condition: "lessThan",
-        unit: "Percent",
-      },
-      ph: {
-        sensorType: "ph",
-        threshold: [0.5, 8.5], // Optimal pH range
-        condition: "outsideRange",
-        unit: "pH",
-      },
-      tds: {
-        sensorType: "tds",
-        threshold: 30, // Alert if TDS safety score is below 30
-        condition: "lessThan",
-        unit: "Percent",
-      },
-      salinity: {
-        sensorType: "salinity",
-        threshold: 30, // Alert if Salinity safety score is below 30
-        condition: "lessThan",
-        unit: "Percent",
-      },
-      ec: {
-        sensorType: "ec",
-        threshold: 30, // Alert if EC safety score is below 30
-        condition: "lessThan",
-        unit: "Percent",
-      },
-      temperature: {
-        sensorType: "temperature",
-        threshold: [1, 50], // Optimal temperature range (e.g., for aquatic life)
-        condition: "outsideRange",
-        unit: "°C",
-      },
+      turbidity: { sensorType: "turbidity", threshold: 30, condition: "lessThan", unit: "Percent" },
+      ph: { sensorType: "ph", threshold: [0.5, 8.5], condition: "outsideRange", unit: "pH" },
+      tds: { sensorType: "tds", threshold: 30, condition: "lessThan", unit: "Percent" },
+      salinity: { sensorType: "salinity", threshold: 30, condition: "lessThan", unit: "Percent" },
+      ec: { sensorType: "ec", threshold: 30, condition: "lessThan", unit: "Percent" },
+      temperature: { sensorType: "temperature", threshold: [1, 50], condition: "outsideRange", unit: "°C" },
     };
     
     // Call the function to handle data insertion and Socket.IO emissions
@@ -3124,55 +3093,13 @@ app.post("/api/sensor-data", async (req, res) => {
 
     // Use Promise.all to run all database insertions in parallel
     await Promise.all([
-      insertAndEmit(
-        "turbidity_readings",
-        "turbidity_value",
-        turbidity_value,
-        "updateTurbidityData",
-        notifications.turbidity
-      ),
-      insertAndEmit(
-        "phlevel_readings",
-        "ph_value",
-        ph_value,
-        "updatePHData",
-        notifications.ph
-      ),
-      insertAndEmit(
-        "tds_readings",
-        "tds_value",
-        tds_value,
-        "updateTDSData",
-        notifications.tds
-      ),
-      insertAndEmit(
-        "salinity_readings",
-        "salinity_value",
-        salinity_value,
-        "updateSalinityData",
-        notifications.salinity
-      ),
-      insertAndEmit(
-        "ec_readings",
-        "ec_value_mS", // Assuming ec_value_mS is what maps to the safety score
-        ec_value_mS,
-        "updateECData",
-        notifications.ec
-      ),
-      insertAndEmit(
-        "ec_compensated_readings",
-        "ec_compensated_mS", // Assuming ec_compensated_mS also maps to safety score
-        ec_compensated_mS,
-        "updateECCompensatedData",
-        notifications.ec // Use the same EC notification config
-      ),
-      insertAndEmit(
-        "temperature_readings",
-        "temperature_celsius",
-        temperature_celsius,
-        "updateTemperatureData",
-        notifications.temperature
-      ),
+      insertAndEmit("turbidity_readings", "turbidity_value", turbidity_value, "updateTurbidityData", notifications.turbidity),
+      insertAndEmit("phlevel_readings", "ph_value", ph_value, "updatePHData", notifications.ph),
+      insertAndEmit("tds_readings", "tds_value", tds_value, "updateTDSData", notifications.tds),
+      insertAndEmit("salinity_readings", "salinity_value", salinity_value, "updateSalinityData", notifications.salinity),
+      insertAndEmit("ec_readings", "ec_value_mS", ec_value_mS, "updateECData", notifications.ec),
+      insertAndEmit("ec_compensated_readings", "ec_compensated_mS", ec_compensated_mS, "updateECCompensatedData", notifications.ec),
+      insertAndEmit("temperature_readings", "temperature_celsius", temperature_celsius, "updateTemperatureData", notifications.temperature),
     ]);
 
     res.status(200).send("Data received and processed successfully.");
@@ -3185,14 +3112,14 @@ app.post("/api/sensor-data", async (req, res) => {
 
 
 // -----------------------------------------------------------------
-// === HELPER FUNCTIONS (REUSED FROM YOUR ORIGINAL CODE) ===
+// === HELPER FUNCTIONS ===
 // -----------------------------------------------------------------
 const insertAndEmit = async (
   tableName,
   valueColumn,
   value,
   socketEventName,
-  notificationConfig = null // New parameter for notification configuration
+  notificationConfig = null
 ) => {
   if (value !== undefined && value !== null) {
     console.log(`📡 Processing ${valueColumn} Data:`, value);
@@ -3201,21 +3128,18 @@ const insertAndEmit = async (
       const [result] = await db.query(query, [value, new Date()]);
       console.log(`✅ ${tableName} Data Inserted Successfully: ID`, result.insertId);
 
-      // Emit data via Socket.IO to the connected frontend
       io.emit(socketEventName, {
         value: value,
         timestamp: new Date().toISOString(),
       });
 
-      // Handle notifications based on the notificationConfig
       if (notificationConfig) {
-        const { sensorType, threshold, condition, unit } = notificationConfig;
         await insertNotification(
-          sensorType,
-          value, // Pass currentValue directly
-          threshold,
-          condition,
-          unit
+          notificationConfig.sensorType,
+          value,
+          notificationConfig.threshold,
+          notificationConfig.condition,
+          notificationConfig.unit
         );
       }
     } catch (err) {
@@ -3230,29 +3154,26 @@ const insertAndEmit = async (
 async function insertNotification(
   sensorType,
   currentValue,
-  threshold, // For safety score sensors, this will be the lower bound for "critical" (e.g., 30)
-  condition, // e.g., 'lessThan', 'greaterThan', 'outsideRange'
-  unit = "" // Unit for the sensor value (e.g., "NTU", "pH", "ppm")
+  threshold,
+  condition,
+  unit = ""
 ) {
-  const type = "Sensor Alert"; // A general type for these notifications
-  let title = `${sensorType.charAt(0).toUpperCase() + sensorType.slice(1)} Alert`; // Capitalize first letter for title
+  const type = "Sensor Alert";
+  let title = `${sensorType.charAt(0).toUpperCase() + sensorType.slice(1)} Alert`;
   let message = "";
-  let priority = "High"; // Default priority
+  let priority = "High";
 
   switch (sensorType) {
     case "turbidity":
     case "tds":
     case "salinity":
     case "ec":
-      // Assuming 'threshold' here refers to the critical threshold (e.g., 30)
       if (condition === "lessThan" && currentValue < threshold) {
-        // Critical Water Quality: below 31%
         message = `🛑 Critical Water Quality Alert: ${sensorType} Safety Score is ${currentValue}${unit}. This is below safe limits. Please check the water tank or inspect the sensor for possible damage. Water is not recommended for drinking or use until resolved.`;
-        priority = "Critical"; // Set priority to Critical for this range
+        priority = "Critical";
       } else if (currentValue >= 31 && currentValue <= 70) {
-        // Warning Water Quality: 31% to 70%
         message = `⚠️ Warning: ${sensorType} Safety Score is ${currentValue}${unit}, which is below the Philippine National Standard for Drinking Water (2017). This Water is not Safe for Drinking. Avoid using this water for drinking or cooking. Please report this issue to the proper authorities for further testing and immediate action.`;
-        priority = "High"; // Maintain High priority for this range
+        priority = "High";
       }
       break;
     case "ph":
@@ -3275,11 +3196,11 @@ async function insertNotification(
       break;
     default:
       console.warn(`Unknown sensor type for notification: ${sensorType}`);
-      return; // Exit if sensor type is not recognized
+      return;
   }
 
   if (!message) {
-    return; // No notification message generated, so no need to insert
+    return;
   }
 
   const notifQuery = `
@@ -3296,11 +3217,11 @@ async function insertNotification(
     ]);
     console.log("⚠️ Notification Inserted Successfully: ID", notifResult.insertId);
     io.emit("newNotification", {
-      id: notifResult.insertId, // The new 'id' from the auto-increment
+      id: notifResult.insertId,
       type: type,
       title: title,
       message: message,
-      timestamp: new Date().toISOString(), // Use current time for consistency
+      timestamp: new Date().toISOString(),
       priority: priority,
     });
   } catch (notifErr) {
@@ -3312,7 +3233,7 @@ async function insertNotification(
 }
 
 // --- API Endpoint for Latest Sensor Data (for initial frontend load) ---
-app.get("/api/sensors/latest", async (req, res) => { // Made the callback 'async'
+app.get("/api/sensors/latest", async (req, res) => {
   const query = `
         SELECT
             (SELECT turbidity_value FROM turbidity_readings ORDER BY timestamp DESC LIMIT 1) AS turbidity_value,
@@ -3327,9 +3248,9 @@ app.get("/api/sensors/latest", async (req, res) => { // Made the callback 'async
     `;
 
   try {
-    const [results] = await db.query(query); // Await db.query
+    const [results] = await db.query(query);
     if (results && results.length > 0 && results[0].turbidity_value !== null) {
-      res.json(results[0]); // Send the first (and only) row
+      res.json(results[0]);
     } else {
       res.status(404).json({ error: "No latest sensor data found in the database." });
     }
@@ -3340,13 +3261,12 @@ app.get("/api/sensors/latest", async (req, res) => { // Made the callback 'async
 });
 
 // --- Historical Data Endpoints (as provided in your previous snippet) ---
-// Helper function to fetch data for a given sensor table and value column
-const getHistoricalData = async (tableName, valueColumn, timePeriod, res) => { // Made the function 'async'
+const getHistoricalData = async (tableName, valueColumn, timePeriod, res) => {
   let query;
   let params = [];
 
   switch (timePeriod) {
-    case "realtime": // For initial real-time load (e.g., last 20 minutes)
+    case "realtime":
       query = `SELECT ${valueColumn} AS value, timestamp FROM ${tableName} WHERE timestamp >= NOW() - INTERVAL 20 MINUTE ORDER BY timestamp ASC`;
       break;
     case "24h":
@@ -3364,15 +3284,14 @@ const getHistoricalData = async (tableName, valueColumn, timePeriod, res) => { /
       `;
       break;
     case "30d-avg":
-      // Modified query for 3-day averages
       query = `
         SELECT
-            DATE(MIN(timestamp)) AS timestamp, // Use the start date of the 3-day period
+            DATE(MIN(timestamp)) AS timestamp,
             AVG(${valueColumn}) AS value
         FROM ${tableName}
         WHERE timestamp >= NOW() - INTERVAL 30 DAY
         GROUP BY
-            FLOOR(DATEDIFF(timestamp, '2000-01-01') / 3) // Group by 3-day blocks
+            FLOOR(DATEDIFF(timestamp, '2000-01-01') / 3)
         ORDER BY
             timestamp ASC
       `;
@@ -3382,7 +3301,7 @@ const getHistoricalData = async (tableName, valueColumn, timePeriod, res) => { /
   }
 
   try {
-    const [results] = await db.query(query, params); // Await db.query
+    const [results] = await db.query(query, params);
     res.json(results);
   } catch (err) {
     console.error(`Database Query Error for ${tableName} (${timePeriod}):`, err);
@@ -3390,43 +3309,36 @@ const getHistoricalData = async (tableName, valueColumn, timePeriod, res) => { /
   }
 };
 
-// --- Turbidity Endpoints ---
 app.get("/data/turbidity/realtime", (req, res) => getHistoricalData('turbidity_readings', 'turbidity_value', 'realtime', res));
 app.get("/data/turbidity/24h", (req, res) => getHistoricalData('turbidity_readings', 'turbidity_value', '24h', res));
 app.get("/data/turbidity/7d-avg", (req, res) => getHistoricalData('turbidity_readings', 'turbidity_value', '7d-avg', res));
 app.get("/data/turbidity/30d-avg", (req, res) => getHistoricalData('turbidity_readings', 'turbidity_value', '30d-avg', res));
 
-// --- pH Level Endpoints ---
 app.get("/data/phlevel/realtime", (req, res) => getHistoricalData('phlevel_readings', 'ph_value', 'realtime', res));
 app.get("/data/phlevel/24h", (req, res) => getHistoricalData('phlevel_readings', 'ph_value', '24h', res));
 app.get("/data/phlevel/7d-avg", (req, res) => getHistoricalData('phlevel_readings', 'ph_value', '7d-avg', res));
 app.get("/data/phlevel/30d-avg", (req, res) => getHistoricalData('phlevel_readings', 'ph_value', '30d-avg', res));
 
-// --- TDS Endpoints ---
 app.get("/data/tds/realtime", (req, res) => getHistoricalData('tds_readings', 'tds_value', 'realtime', res));
 app.get("/data/tds/24h", (req, res) => getHistoricalData('tds_readings', 'tds_value', '24h', res));
 app.get("/data/tds/7d-avg", (req, res) => getHistoricalData('tds_readings', 'tds_value', '7d-avg', res));
 app.get("/data/tds/30d-avg", (req, res) => getHistoricalData('tds_readings', 'tds_value', '30d-avg', res));
 
-// --- Salinity Endpoints ---
 app.get("/data/salinity/realtime", (req, res) => getHistoricalData('salinity_readings', 'salinity_value', 'realtime', res));
 app.get("/data/salinity/24h", (req, res) => getHistoricalData('salinity_readings', 'salinity_value', '24h', res));
 app.get("/data/salinity/7d-avg", (req, res) => getHistoricalData('salinity_readings', 'salinity_value', '7d-avg', res));
 app.get("/data/salinity/30d-avg", (req, res) => getHistoricalData('salinity_readings', 'salinity_value', '30d-avg', res));
 
-// --- EC Endpoints ---
 app.get("/data/ec/realtime", (req, res) => getHistoricalData('ec_readings', 'ec_value_mS', 'realtime', res));
 app.get("/data/ec/24h", (req, res) => getHistoricalData('ec_readings', 'ec_value_mS', '24h', res));
 app.get("/data/ec/7d-avg", (req, res) => getHistoricalData('ec_readings', 'ec_value_mS', '7d-avg', res));
 app.get("/data/ec/30d-avg", (req, res) => getHistoricalData('ec_readings', 'ec_value_mS', '30d-avg', res));
 
-// --- Compensated EC Endpoints ---
 app.get("/data/ec-compensated/realtime", (req, res) => getHistoricalData('ec_compensated_readings', 'ec_compensated_mS', 'realtime', res));
 app.get("/data/ec-compensated/24h", (req, res) => getHistoricalData('ec_compensated_readings', 'ec_compensated_mS', '24h', res));
 app.get("/data/ec-compensated/7d-avg", (req, res) => getHistoricalData('ec_compensated_readings', 'ec_compensated_mS', '7d-avg', res));
 app.get("/data/ec-compensated/30d-avg", (req, res) => getHistoricalData('ec_compensated_readings', 'ec_compensated_mS', '30d-avg', res));
 
-// --- Temperature Endpoints ---
 app.get("/data/temperature/realtime", (req, res) => getHistoricalData('temperature_readings', 'temperature_celsius', 'realtime', res));
 app.get("/data/temperature/24h", (req, res) => getHistoricalData('temperature_readings', 'temperature_celsius', '24h', res));
 app.get("/data/temperature/7d-avg", (req, res) => getHistoricalData('temperature_readings', 'temperature_celsius', '7d-avg', res));
