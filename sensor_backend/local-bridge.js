@@ -13,7 +13,7 @@ let sensorConnected = false;
 
 // The URL of your hosted backend's API endpoint.
 // !! IMPORTANT !! Replace this with your actual Render URL and port.
-const API_ENDPOINT = "https://your-render-backend.onrender.com/api/sensor-data";
+const API_ENDPOINT = "https://login-signup-3470.onrender.com";
 
 serialPort.on("open", () => {
   if (!sensorConnected) {
