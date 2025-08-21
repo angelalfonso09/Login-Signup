@@ -121,7 +121,7 @@ const Dashboard = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:5000/api/establishments/${establishmentId}`, {
+      const response = await fetch(`https://login-signup-3470.onrender.com/api/establishments/${establishmentId}`, {
         method: "DELETE",
       });
 

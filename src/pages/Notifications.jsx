@@ -146,7 +146,7 @@ const NotificationsPage = () => {
     const [loading, setLoading] = useState(true);
     const { theme } = useContext(ThemeContext);
 
-    const API_BASE_URL = "http://localhost:5000"; // Ensure this matches your backend URL
+    const API_BASE_URL = "https://login-signup-3470.onrender.com"; // Ensure this matches your backend URL
 
     // --- Helper Functions for Super Admin Notifications (MOVED INSIDE COMPONENT) ---
     // Wrapped with useCallback to ensure stable function references for dependency arrays.

@@ -81,7 +81,7 @@ const AdminHistory = () => {
 
             try {
                 // Fetch list of sensors for the establishment using the determined ID
-                const response = await fetch(`http://localhost:5000/api/establishment/${id}/sensors`);
+                const response = await fetch(`https://login-signup-3470.onrender.com/api/establishment/${id}/sensors`);
                 if (!response.ok) {
                     throw new Error(`Failed to fetch establishment sensors: ${response.statusText}`);
                 }

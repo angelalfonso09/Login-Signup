@@ -58,7 +58,7 @@ const AdminDashboardPage = () => {
     const fetchTotalUsers = async () => {
       setDashboardSummaryData(prevData => ({ ...prevData, userError: false }));
       try {
-        const response = await fetch('http://localhost:5000/api/total-users');
+        const response = await fetch('https://login-signup-3470.onrender.com/api/total-users');
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
           throw new Error(`HTTP error! Status: ${response.status}. Message: ${errorData.error || 'Failed to fetch'}`);
@@ -82,7 +82,7 @@ const AdminDashboardPage = () => {
     const fetchOtherData = async () => {
       // Fetch total establishments
       try {
-        const estResponse = await fetch('http://localhost:5000/api/total-establishments');
+        const estResponse = await fetch('https://login-signup-3470.onrender.com/api/total-establishments');
         if (!estResponse.ok) {
           const errorData = await estResponse.json().catch(() => ({ message: 'Unknown error' }));
           throw new Error(`HTTP error! Status: ${estResponse.status}. Message: ${errorData.error || 'Failed to fetch'}`);
@@ -102,7 +102,7 @@ const AdminDashboardPage = () => {
 
       // Fetch total sensors
       try {
-        const sensorResponse = await fetch('http://localhost:5000/api/total-sensors');
+        const sensorResponse = await fetch('https://login-signup-3470.onrender.com/api/total-sensors');
         if (!sensorResponse.ok) {
           const errorData = await sensorResponse.json().catch(() => ({ message: 'Unknown error' }));
           throw new Error(`HTTP error! Status: ${sensorResponse.status}. Message: ${errorData.error || 'Failed to fetch'}`);
