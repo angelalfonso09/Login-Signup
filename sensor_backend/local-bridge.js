@@ -1,65 +1,52 @@
-const { SerialPort } = require("serialport");
-const { ReadlineParser } = require("@serialport/parser-readline");
+const { SerialPort, ReadlineParser } = require("serialport");
 const axios = require("axios");
 
-// -----------------------------------------------------------------
-// === CONFIGURE AND OPEN THE SERIAL PORT ===
-// -----------------------------------------------------------------
-// !! IMPORTANT !! Change 'COM5' to the correct port for your sensor.
-const serialPort = new SerialPort({ path: "COM5", baudRate: 9600 });
-const parser = serialPort.pipe(new ReadlineParser({ delimiter: "\n" }));
-
-let sensorConnected = false;
-
-// The URL of your hosted backend's API endpoint.
-// !! IMPORTANT !! Replace this with your actual Render URL and port.
-const API_ENDPOINT = "https://login-signup-3470.onrender.com/api/sensor-data";
-
-serialPort.on("open", () => {
-  if (!sensorConnected) {
-    sensorConnected = true;
-    console.log("Sensor is connected on COM5.");
-  }
-});
-
-serialPort.on("close", () => {
-  if (sensorConnected) {
-    sensorConnected = false;
-    console.log("Sensor is disconnected from COM5.");
-  }
-});
-
-serialPort.on("error", (err) => {
-  console.error("Serial Port Error:", err.message);
-});
+// !!! IMPORTANT: Replace this URL with your live backend service's URL on Render !!!
+const BACKEND_URL = "https://login-signup-3470.onrender.com";
 
 // -----------------------------------------------------------------
-// === LISTEN FOR DATA AND FORWARD IT TO THE BACKEND ===
+// === CONFIGURE SERIAL PORT ===
+// -----------------------------------------------------------------
+// !! IMPORTANT !! Replace 'COM5' with your Arduino's actual serial port.
+const arduinoPort = new SerialPort({
+  path: "COM5",
+  baudRate: 9600,
+});
+
+const parser = arduinoPort.pipe(new ReadlineParser({ delimiter: "\n" }));
+
+console.log(`Sensor is connected on ${arduinoPort.path}.`);
+
+// -----------------------------------------------------------------
+// === READ DATA FROM ARDUINO AND SEND TO BACKEND ===
 // -----------------------------------------------------------------
 parser.on("data", async (data) => {
   try {
-    const trimmedData = data.trim();
-    // Check if the data is a valid JSON string
-    if (trimmedData.startsWith('{') && trimmedData.endsWith('}')) {
-        const jsonData = JSON.parse(trimmedData);
-        console.log("Received sensor data from Arduino:", jsonData);
+    const rawData = data.trim();
 
-        // Validate the parsed data to ensure it's an object before sending
-        if (typeof jsonData === 'object' && jsonData !== null) {
-          await axios.post(API_ENDPOINT, jsonData)
-            .then(response => {
-              console.log("✅ Data successfully sent to remote backend:", response.status);
-            })
-            .catch(error => {
-              console.error("❌ Failed to send data to backend:", error.message);
-            });
-        } else {
-          console.error("❌ Invalid data received from Arduino. Not a valid JSON object.");
-        }
+    // Check if the data is valid JSON
+    if (rawData.startsWith("{") && rawData.endsWith("}")) {
+      const jsonData = JSON.parse(rawData);
+      console.log("Received sensor data from Arduino:", jsonData);
+
+      // Send the sensor data to the remote backend
+      const response = await axios.post(
+        `${BACKEND_URL}/api/sensor-data`,
+        jsonData
+      );
+
+      if (response.status === 200) {
+        console.log("✅ Data successfully sent to remote backend.");
+      } else {
+        console.log(
+          "❌ Failed to send data to backend: Response status",
+          response.status
+        );
+      }
     } else {
-        console.warn("⚠️ Received non-JSON data from Arduino, skipping:", trimmedData);
+      console.warn("⚠️ Received non-JSON data from Arduino, skipping:", rawData);
     }
-  } catch (err) {
-    console.error("JSON Parse Error:", err.message);
+  } catch (error) {
+    console.error("❌ Failed to send data to backend:", error.message);
   }
 });
