@@ -16,7 +16,7 @@ const nodemailer = require("nodemailer");
 const sendOtpEmail = require('./otpMailer');
 const crypto = require("crypto");
 const sendEmail = require("./mailer");
-const { User } = require("../backend/models/user");
+const { User } = require("./models/user");
 const { SerialPort } = require("serialport");
 const { ReadlineParser } = require("@serialport/parser-readline");
 const cookieParser = require("cookie-parser");
@@ -28,7 +28,7 @@ const otpGenerator = require('otp-generator');
 const JWT_SECRET = process.env.JWT_SECRET;
 // const users = [];
 
-const authenticateUser = require('../backend/middleware/authenticateUser');
+const authenticateUser = require('./middleware/authenticateUser');
 
 const authorizeRoles = (allowedRoles) => {
     return (req, res, next) => {
