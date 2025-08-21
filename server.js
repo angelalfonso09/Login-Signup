@@ -3367,12 +3367,12 @@ const getHistoricalData = async (tableName, valueColumn, timePeriod, res) => { /
       // Modified query for 3-day averages
       query = `
         SELECT
-            DATE(MIN(timestamp)) AS timestamp, -- Use the start date of the 3-day period
+            DATE(MIN(timestamp)) AS timestamp, // Use the start date of the 3-day period
             AVG(${valueColumn}) AS value
         FROM ${tableName}
         WHERE timestamp >= NOW() - INTERVAL 30 DAY
         GROUP BY
-            FLOOR(DATEDIFF(timestamp, '2000-01-01') / 3) -- Group by 3-day blocks
+            FLOOR(DATEDIFF(timestamp, '2000-01-01') / 3) // Group by 3-day blocks
         ORDER BY
             timestamp ASC
       `;
