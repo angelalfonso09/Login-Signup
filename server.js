@@ -3431,12 +3431,3 @@ app.get("/data/temperature/realtime", (req, res) => getHistoricalData('temperatu
 app.get("/data/temperature/24h", (req, res) => getHistoricalData('temperature_readings', 'temperature_celsius', '24h', res));
 app.get("/data/temperature/7d-avg", (req, res) => getHistoricalData('temperature_readings', 'temperature_celsius', '7d-avg', res));
 app.get("/data/temperature/30d-avg", (req, res) => getHistoricalData('temperature_readings', 'temperature_celsius', '30d-avg', res));
-
-
-// -----------------------------------------------------------------
-// === START THE SERVER ===
-// -----------------------------------------------------------------
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-  console.log(`🚀 Server listening on port ${PORT}`);
-});
