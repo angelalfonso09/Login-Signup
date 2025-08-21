@@ -18,7 +18,7 @@ const ElectricalConductivity = ({ theme, filter }) => {
 
     switch (currentFilter) {
       case "realtime":
-        endpoint = "http://localhost:5000/data/ec/realtime";
+        endpoint = "https://login-signup-3470.onrender.com/data/ec/realtime";
         isRealtime = true;
         break;
       case "24h":

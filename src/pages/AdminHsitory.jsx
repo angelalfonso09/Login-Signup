@@ -161,7 +161,7 @@ const AdminHistory = () => {
 
             // Fetch data ONLY for the filtered sensors that are associated with the establishment
             for (const sensor of sensorDefinitions) { // Use the filtered sensorDefinitions here
-                const endpoint = `http://localhost:5000/data${sensor.apiPath}/${backendFilter}?establishmentId=${establishmentId}`;
+                const endpoint = `https://login-signup-3470.onrender.com/data${sensor.apiPath}/${backendFilter}?establishmentId=${establishmentId}`;
                 console.log(`Fetching data for ${sensor.name} from: ${endpoint}`);
                 const response = await fetch(endpoint);
                 if (!response.ok) {
