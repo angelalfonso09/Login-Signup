@@ -38,22 +38,27 @@ serialPort.on("error", (err) => {
 // -----------------------------------------------------------------
 parser.on("data", async (data) => {
   try {
-    const jsonData = JSON.parse(data.trim());
-    console.log("Received sensor data from Arduino:", jsonData);
+    const trimmedData = data.trim();
+    // Check if the data is a valid JSON string
+    if (trimmedData.startsWith('{') && trimmedData.endsWith('}')) {
+        const jsonData = JSON.parse(trimmedData);
+        console.log("Received sensor data from Arduino:", jsonData);
 
-    // Validate the parsed data to ensure it's an object before sending
-    if (typeof jsonData === 'object' && jsonData !== null) {
-      await axios.post(API_ENDPOINT, jsonData)
-        .then(response => {
-          console.log("✅ Data successfully sent to remote backend:", response.status);
-        })
-        .catch(error => {
-          console.error("❌ Failed to send data to backend:", error.message);
-        });
+        // Validate the parsed data to ensure it's an object before sending
+        if (typeof jsonData === 'object' && jsonData !== null) {
+          await axios.post(API_ENDPOINT, jsonData)
+            .then(response => {
+              console.log("✅ Data successfully sent to remote backend:", response.status);
+            })
+            .catch(error => {
+              console.error("❌ Failed to send data to backend:", error.message);
+            });
+        } else {
+          console.error("❌ Invalid data received from Arduino. Not a valid JSON object.");
+        }
     } else {
-      console.error("❌ Invalid data received from Arduino. Not a valid JSON object.");
+        console.warn("⚠️ Received non-JSON data from Arduino, skipping:", trimmedData);
     }
-
   } catch (err) {
     console.error("JSON Parse Error:", err.message);
   }
