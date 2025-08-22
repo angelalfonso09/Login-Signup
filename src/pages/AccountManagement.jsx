@@ -10,6 +10,11 @@ import "../styles/theme.css";
 import { ThemeContext } from "../context/ThemeContext";
 import axios from "axios";
 
+// Determine API base URL based on environment
+const API_BASE_URL = import.meta.env.PROD 
+  ? "https://login-signup-3470.onrender.com" 
+  : "http://localhost:5000";
+
 const AccountManagement = () => {
   const { theme, toggleTheme } = useContext(ThemeContext);
   const [userStats, setUserStats] = useState({
@@ -23,12 +28,16 @@ const AccountManagement = () => {
   useEffect(() => {
     const fetchUserStats = async () => {
       try {
-        const response = await axios.get("https://login-signup-3470.onrender.com/api/users");
-        const accounts = response.data;
+        // Fetch all users for basic stats
+        const usersResponse = await axios.get(`${API_BASE_URL}/api/users`);
+        const accounts = usersResponse.data;
         
-        // Calculate statistics
+        // Fetch total Super Admins from our new endpoint
+        const superAdminsResponse = await axios.get(`${API_BASE_URL}/api/total-super-admins`);
+        const superAdminCount = superAdminsResponse.data.totalSuperAdmins;
+        
+        // Calculate other statistics
         const admins = accounts.filter(account => account.role === "Admin").length;
-        const superAdmins = accounts.filter(account => account.role === "SuperAdmin").length;
         const regularUsers = accounts.filter(account => account.role === "User").length;
         
         // Get users added in the last 30 days
@@ -45,7 +54,7 @@ const AccountManagement = () => {
         setUserStats({
           totalUsers: regularUsers,
           totalAdmins: admins,
-          totalSuperAdmins: superAdmins,
+          totalSuperAdmins: superAdminCount,
           recentlyAdded: recentUsers || accounts.length // Fallback if no dates available
         });
       } catch (error) {

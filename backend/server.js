@@ -1437,6 +1437,46 @@ app.get('/api/total-users', async (req, res) => { // Added 'async'
   }
 });
 
+// Fetch total number of Super Admin accounts
+app.get('/api/total-super-admins', async (req, res) => {
+  const querySql = "SELECT COUNT(*) AS totalSuperAdmins FROM users WHERE role = 'Super Admin'";
+
+  console.log('Attempting to fetch total Super Admin accounts from the database...');
+
+  try {
+    const [results] = await db.query(querySql);
+
+    if (results && results.length > 0 && results[0].hasOwnProperty('totalSuperAdmins')) {
+      const totalSuperAdmins = results[0].totalSuperAdmins;
+      console.log(`Successfully fetched total Super Admin accounts: ${totalSuperAdmins}`);
+      res.json({ totalSuperAdmins: totalSuperAdmins });
+    } else {
+      console.warn('Query for total Super Admin accounts returned an unexpected or empty result set:', results);
+      return res.status(500).json({
+        error: 'Failed to retrieve total Super Admin accounts count; unexpected database response format.',
+        details: 'The database query returned an invalid or empty result for total Super Admin accounts.'
+      });
+    }
+  } catch (error) {
+    console.error('Database query error when fetching total Super Admin accounts:', error.message);
+
+    if (error.code) {
+      console.error(`MySQL Error Code: ${error.code}`);
+    }
+    if (error.sqlMessage) {
+      console.error(`MySQL Error Message: ${error.sqlMessage}`);
+    }
+    if (error.sql) {
+      console.error(`Faulty SQL Query: ${error.sql}`);
+    }
+
+    return res.status(500).json({
+      error: 'Failed to fetch total Super Admin accounts due to a server-side database error.',
+      details: error.message
+    });
+  }
+});
+
 // fetch estab 
 app.get('/api/total-establishments', async (req, res) => { // Added 'async'
   const querySql = 'SELECT COUNT(*) AS totalEstablishments FROM estab'; // Changed 'query' to 'querySql' for clarity
