@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { ThemeContext } from '../context/ThemeContext';
 import Sidebar from '../components/Sidebar';
-import { ChevronRight, ChevronDown, User, Lock, Bell, Sun, Moon, History, Save, Edit, KeyRound, LogIn, LogOut } from 'lucide-react';
+import { ChevronRight, ChevronDown, User, Lock, Bell, Sun, Moon, History, Save, Edit, KeyRound, LogIn, LogOut, AlertCircle, Loader as LoaderIcon, Lock as LockIcon } from 'lucide-react';
 import axios from 'axios';
 import PageTitle from "../components/PageTitle";
 
@@ -31,6 +31,9 @@ const SettingsPage = () => {
   // States to manage the visibility of nested forms within Profile Management
   const [showEditProfileForm, setShowEditProfileForm] = useState(false);
   const [showChangePasswordForm, setShowChangePasswordForm] = useState(false);
+  
+  // Loading state
+  const [isLoading, setIsLoading] = useState(false);
 
   // Load user data and session history from localStorage on component mount
   useEffect(() => {
@@ -50,16 +53,47 @@ const SettingsPage = () => {
       }
     }
 
-    // Load session history
-    const storedSessionHistory = localStorage.getItem('sessionHistory');
-    if (storedSessionHistory) {
-      try {
-        setSessionHistory(JSON.parse(storedSessionHistory));
-      } catch (e) {
-        console.error("Error parsing session history from localStorage:", e);
-      }
-    }
+    // Fetch session history from API
+    fetchSessionHistory();
   }, []);
+
+  // Function to fetch session history from API
+  const fetchSessionHistory = async () => {
+    try {
+      setIsLoading(true);
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.error('No authentication token found');
+        return;
+      }
+
+      const response = await axios.get(`${API_BASE_URL}/super-admin/session-history`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      if (response.data.success) {
+        setSessionHistory(response.data.data);
+      } else {
+        console.error('Failed to fetch session history:', response.data.message);
+      }
+    } catch (error) {
+      console.error('Error fetching session history:', error);
+      
+      // Fallback to localStorage if API fails
+      const storedSessionHistory = localStorage.getItem('sessionHistory');
+      if (storedSessionHistory) {
+        try {
+          setSessionHistory(JSON.parse(storedSessionHistory));
+        } catch (e) {
+          console.error("Error parsing session history from localStorage:", e);
+        }
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Function to save session history to localStorage
   const saveSessionHistory = (history) => {
@@ -67,32 +101,319 @@ const SettingsPage = () => {
     setSessionHistory(history);
   };
 
-  // Function to log a session event (login/logout)
-  const logSessionEvent = (type, username) => {
+  // Function to log a session event (login/logout) to the server
+  const logSessionEventToServer = async (type, username) => {
+    try {
+      // Get device information from navigator
+      const userAgent = navigator.userAgent;
+      const browserInfo = getBrowserInfo(userAgent);
+      const osInfo = getOSInfo(userAgent);
+      const deviceType = getDeviceType();
+      
+      // Additional hardware information when available
+      let additionalInfo = '';
+      try {
+        // Get screen resolution
+        const screenWidth = window.screen.width;
+        const screenHeight = window.screen.height;
+        const colorDepth = window.screen.colorDepth;
+        additionalInfo = `${screenWidth}x${screenHeight}@${colorDepth}bit`;
+        
+        // Try to get memory info when available
+        if (navigator.deviceMemory) {
+          additionalInfo += `, ${navigator.deviceMemory}GB RAM`;
+        }
+        
+        // Try to get processor info
+        if (navigator.hardwareConcurrency) {
+          additionalInfo += `, ${navigator.hardwareConcurrency} cores`;
+        }
+      } catch (error) {
+        console.error('Error getting additional device info:', error);
+      }
+      
+      // Combine all device information
+      const deviceInfo = additionalInfo 
+        ? `${deviceType} (${additionalInfo}): ${browserInfo} on ${osInfo}`
+        : `${deviceType}: ${browserInfo} on ${osInfo}`;
+      
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.error('No authentication token found');
+        return;
+      }
+      
+      const response = await axios.post(
+        `${API_BASE_URL}/${type === 'login' ? 'login' : 'logout'}`,
+        { username, deviceInfo },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+      
+      if (response.data.success) {
+        console.log(`${type} session recorded successfully`);
+        // Update local session history
+        fetchSessionHistory();
+      }
+    } catch (error) {
+      console.error(`Error recording ${type} session:`, error);
+      // Fallback to local storage
+      logSessionEventLocally(type, username);
+    }
+  };
+  
+  // Fallback function to log a session event locally
+  const logSessionEventLocally = (type, username) => {
+    // Get device information from navigator
+    const userAgent = navigator.userAgent;
+    const browserInfo = getBrowserInfo(userAgent);
+    const osInfo = getOSInfo(userAgent);
+    const deviceType = getDeviceType();
+    
+    // Additional hardware information when available
+    let additionalInfo = '';
+    try {
+      // Get screen resolution
+      const screenWidth = window.screen.width;
+      const screenHeight = window.screen.height;
+      const colorDepth = window.screen.colorDepth;
+      additionalInfo = `${screenWidth}x${screenHeight}@${colorDepth}bit`;
+      
+      // Try to get memory info when available
+      if (navigator.deviceMemory) {
+        additionalInfo += `, ${navigator.deviceMemory}GB RAM`;
+      }
+      
+      // Try to get processor info
+      if (navigator.hardwareConcurrency) {
+        additionalInfo += `, ${navigator.hardwareConcurrency} cores`;
+      }
+    } catch (error) {
+      console.error('Error getting additional device info:', error);
+    }
+    
+    // Combine all device information
+    const deviceInfo = additionalInfo 
+      ? `${deviceType} (${additionalInfo}): ${browserInfo} on ${osInfo}`
+      : `${deviceType}: ${browserInfo} on ${osInfo}`;
+    
     const newEntry = {
       id: Date.now(), // Unique ID for the entry
       username: username,
       type: type, // 'login' or 'logout'
       timestamp: new Date().toLocaleString(),
-      device: "Mock Device (e.g., Desktop Chrome)", // You can try to get actual device info
-      ipAddress: "Mock IP (e.g., 192.168.1.1)" // You can try to get actual IP (requires backend)
+      device: deviceInfo, // Detailed device info
+      ipAddress: "IP will be captured on server" // IP is better captured on server side
     };
     const updatedHistory = [...sessionHistory, newEntry];
     saveSessionHistory(updatedHistory);
   };
+  
+  // Helper function to detect browser type with version
+  const getBrowserInfo = (userAgent) => {
+    let browserName = '';
+    let version = '';
+    
+    // Edge (Chromium-based) detection
+    if (/Edg/.test(userAgent)) {
+      browserName = 'Microsoft Edge';
+      version = userAgent.match(/Edg\/([\d.]+)/)?.[1] || '';
+    }
+    // Edge (Legacy) detection
+    else if (/Edge/.test(userAgent)) {
+      browserName = 'Microsoft Edge Legacy';
+      version = userAgent.match(/Edge\/([\d.]+)/)?.[1] || '';
+    }
+    // Chrome detection
+    else if (/Chrome/.test(userAgent) && !/Chromium/.test(userAgent)) {
+      browserName = 'Chrome';
+      version = userAgent.match(/Chrome\/([\d.]+)/)?.[1] || '';
+    }
+    // Firefox detection
+    else if (/Firefox/.test(userAgent) && !/Seamonkey/.test(userAgent)) {
+      browserName = 'Firefox';
+      version = userAgent.match(/Firefox\/([\d.]+)/)?.[1] || '';
+    }
+    // Safari detection
+    else if (/Safari/.test(userAgent) && !/Chrome/.test(userAgent) && !/Chromium/.test(userAgent)) {
+      browserName = 'Safari';
+      version = userAgent.match(/Version\/([\d.]+)/)?.[1] || '';
+    }
+    // Opera detection
+    else if (/OPR|Opera/.test(userAgent)) {
+      browserName = 'Opera';
+      if (/OPR/.test(userAgent)) {
+        version = userAgent.match(/OPR\/([\d.]+)/)?.[1] || '';
+      } else {
+        version = userAgent.match(/Opera\/([\d.]+)/)?.[1] || '';
+      }
+    }
+    // IE detection
+    else if (/Trident|MSIE/.test(userAgent)) {
+      browserName = 'Internet Explorer';
+      if (/Trident\/7\.0/.test(userAgent)) {
+        version = '11.0';
+      } else if (/MSIE\s*(\d+\.\d+)/.test(userAgent)) {
+        version = userAgent.match(/MSIE\s*([\d.]+)/)?.[1] || '';
+      }
+    }
+    // Brave detection (difficult as it identifies as Chrome)
+    else if (/Chrome/.test(userAgent) && navigator.brave?.isBrave) {
+      browserName = 'Brave';
+      version = userAgent.match(/Chrome\/([\d.]+)/)?.[1] || '';
+    }
+    // Chromium detection
+    else if (/Chromium/.test(userAgent)) {
+      browserName = 'Chromium';
+      version = userAgent.match(/Chromium\/([\d.]+)/)?.[1] || '';
+    }
+    // Default case if none of the above
+    else {
+      browserName = 'Unknown Browser';
+    }
+    
+    return version ? `${browserName} ${version}` : browserName;
+  };
+  
+  // Helper function to detect OS with more details
+  const getOSInfo = (userAgent) => {
+    // Windows detection with version
+    if (/Windows NT 10.0/i.test(userAgent)) return 'Windows 10/11';
+    if (/Windows NT 6.3/i.test(userAgent)) return 'Windows 8.1';
+    if (/Windows NT 6.2/i.test(userAgent)) return 'Windows 8';
+    if (/Windows NT 6.1/i.test(userAgent)) return 'Windows 7';
+    if (/Windows NT 6.0/i.test(userAgent)) return 'Windows Vista';
+    if (/Windows NT 5.1/i.test(userAgent)) return 'Windows XP';
+    if (/Windows NT/i.test(userAgent)) return 'Windows';
+    
+    // macOS detection with version when possible
+    if (/Mac OS X/i.test(userAgent)) {
+      const macOSVersion = userAgent.match(/Mac OS X ([0-9_]+)/i);
+      if (macOSVersion && macOSVersion[1]) {
+        // Convert version format from 10_15_7 to 10.15.7
+        const version = macOSVersion[1].replace(/_/g, '.');
+        return `macOS ${version}`;
+      }
+      return 'macOS';
+    }
+    
+    // iOS detection with version when possible
+    if (/iPhone|iPad|iPod/.test(userAgent)) {
+      const iOSVersion = userAgent.match(/OS ([0-9_]+)/i);
+      if (iOSVersion && iOSVersion[1]) {
+        const version = iOSVersion[1].replace(/_/g, '.');
+        return `iOS ${version}`;
+      }
+      return 'iOS';
+    }
+    
+    // Android detection with version
+    if (/Android/.test(userAgent)) {
+      const androidVersion = userAgent.match(/Android ([0-9.]+)/i);
+      if (androidVersion && androidVersion[1]) {
+        return `Android ${androidVersion[1]}`;
+      }
+      return 'Android';
+    }
+    
+    // Linux detection (challenging to get specific distro from browser)
+    if (/Linux/.test(userAgent)) {
+      if (/Ubuntu/.test(userAgent)) return 'Ubuntu Linux';
+      if (/Fedora/.test(userAgent)) return 'Fedora Linux';
+      if (/Debian/.test(userAgent)) return 'Debian Linux';
+      return 'Linux';
+    }
+    
+    // Other OS detection
+    if (/CrOS/.test(userAgent)) return 'Chrome OS';
+    if (/FreeBSD/.test(userAgent)) return 'FreeBSD';
+    if (/OpenBSD/.test(userAgent)) return 'OpenBSD';
+    if (/SunOS/.test(userAgent)) return 'Solaris';
+    
+    return 'Unknown OS';
+  };
+  
+  // Helper function to detect device type with more specificity
+  const getDeviceType = () => {
+    // First detect basic categories
+    const userAgent = navigator.userAgent;
+    const isMobile = /Android|webOS|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
+    const isTablet = /iPad|tablet|Tablet/i.test(userAgent) || (userAgent.includes('Macintosh') && 'ontouchend' in document);
+    
+    // For basic categories
+    if (isTablet) return 'Tablet';
+    if (isMobile) return 'Mobile';
+    
+    // Try to detect if it's a laptop or desktop PC
+    try {
+      // Battery API can help identify laptops (though not perfectly reliable)
+      if (navigator.getBattery) {
+        navigator.getBattery().then(battery => {
+          if (battery.charging === false) {
+            // If currently running on battery, very likely a laptop
+            return 'Laptop';
+          }
+        });
+      }
+      
+      // Check screen properties that might suggest laptop vs desktop
+      const screenWidth = window.screen.width;
+      const screenHeight = window.screen.height;
+      
+      // Common laptop resolutions (not exhaustive)
+      const laptopResolutions = [
+        [1366, 768],  // Common laptop
+        [1440, 900],  // MacBook Air, some PC laptops
+        [1280, 800],  // Older laptops
+        [2560, 1600], // MacBook Pro 13"
+        [2880, 1800], // MacBook Pro 15"
+        [3072, 1920]  // MacBook Pro 16"
+      ];
+      
+      // Check if current resolution matches common laptop resolutions
+      for (const [width, height] of laptopResolutions) {
+        if ((screenWidth === width && screenHeight === height) || 
+            (screenHeight === width && screenWidth === height)) {
+          return 'Laptop';
+        }
+      }
+      
+      // Touchpad detection (experimental)
+      if ('ontouchstart' in window && !isTablet && !isMobile) {
+        // If touch events are supported on a non-tablet device, might be a laptop with touchscreen
+        if (/Touch/i.test(userAgent)) {
+          return 'Touch Laptop';
+        }
+      }
+      
+      // If screen is very large, likely a desktop
+      if (screenWidth > 2560 || screenHeight > 1600) {
+        return 'Desktop PC';
+      }
+    } catch (error) {
+      console.error('Error in device detection:', error);
+    }
+    
+    // Default fallback
+    return 'Desktop/Laptop';
+  };
 
-  // Example: Call logSessionEvent on initial load for a "mock login" if a user is present
+  // Example: Call logSessionEventToServer on initial load for a "mock login" if a user is present
   useEffect(() => {
     const userString = localStorage.getItem('user');
     if (userString && username) { // Only log if user data is loaded and username is set
-      logSessionEvent('login', username);
+      logSessionEventToServer('login', username);
     }
   }, [username]); // Depend on username to ensure it's loaded
 
-  // Function to simulate user logout
+  // Function to handle user logout
   const handleLogout = () => {
     if (username) {
-      logSessionEvent('logout', username);
+      logSessionEventToServer('logout', username);
       // In a real app, you'd clear user session, redirect to login, etc.
       localStorage.removeItem('user');
       setUsername('');
@@ -504,7 +825,15 @@ const SettingsPage = () => {
             <p className="settings-page-category-description">View your login and logout sessions.</p>
             {openSection === 'session' && (
               <div className="settings-page-form-wrapper">
-                {sessionHistory.length > 0 ? (
+                {!localStorage.getItem('token') ? (
+                  <div className="settings-page-login-required">
+                    <Lock size={48} className="settings-page-no-data-icon" />
+                    <p>You need to log in first to view your session history.</p>
+                    <button className="settings-page-button settings-page-button-primary" onClick={() => window.location.href = '/login'}>
+                      Go to Login
+                    </button>
+                  </div>
+                ) : sessionHistory.length > 0 ? (
                   sessionHistory.map((session) => (
                     <div key={session.id} className="settings-page-list-item">
                       <div className="settings-page-item-content">
@@ -513,9 +842,15 @@ const SettingsPage = () => {
                         ) : (
                           <LogOut size={20} className="settings-page-item-icon settings-page-logout-icon" />
                         )}
-                        <span className="settings-page-item-text">
-                          **{session.username}** {session.type === 'login' ? 'logged in' : 'logged out'} on {session.timestamp} from {session.device} (IP: {session.ipAddress})
-                        </span>
+                        <div className="settings-page-session-details">
+                          <span className="settings-page-session-primary">
+                            <strong>{session.username}</strong> {session.type === 'login' ? 'logged in' : 'logged out'} on {session.timestamp}
+                          </span>
+                          <span className="settings-page-session-secondary">
+                            <span className="settings-page-device-info">{session.device}</span>
+                            {session.ipAddress && <span className="settings-page-ip-info">IP: {session.ipAddress}</span>}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   ))

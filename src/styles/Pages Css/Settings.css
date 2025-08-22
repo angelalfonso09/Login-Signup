@@ -25,10 +25,155 @@
 }
 
 .settings-page-card-wrapper {
-
     width: 100%;
     margin: auto; /* Center the card horizontally and vertically within the flex container */
     background-color: #ffffff; /* Light theme card background */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow for light theme */
+    border-radius: 0.5rem; /* Rounded corners */
+    padding: 2rem;
+    flex: 1; /* Allow the card to grow and shrink */
+    max-height: calc(100vh - 4rem); /* Calculate max-height based on viewport height minus total padding */
+    overflow-y: scroll; /* Make ONLY the card content scrollable */
+    display: flex; /* Added flex for internal layout of card content */
+    flex-direction: column; /* Stack sections vertically */
+    gap: 1.5rem; /* Space between major sections */
+
+    /* --- Scrollbar Hiding --- */
+    /* For WebKit browsers (Chrome, Safari, Edge) */
+    &::-webkit-scrollbar {
+        display: none;
+    }
+    /* For Firefox */
+    scrollbar-width: none; /* Firefox specific property */
+    /* For IE and Edge (legacy) */
+    -ms-overflow-style: none;
+}
+
+/* Login Required Message */
+.settings-page-login-required {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background-color: #f9fafb;
+    border-radius: 0.5rem;
+    text-align: center;
+    border: 1px solid #e5e7eb;
+    margin: 1rem 0;
+}
+
+.dark-theme .settings-page-login-required {
+    background-color: #333333;
+    border-color: #444444;
+}
+
+.settings-page-login-required p {
+    margin: 1rem 0;
+    font-size: 1rem;
+    color: #6b7280;
+}
+
+.dark-theme .settings-page-login-required p {
+    color: #a0a0a0;
+}
+
+.settings-page-no-data-icon {
+    color: #6b7280;
+    margin-bottom: 1rem;
+}
+
+.dark-theme .settings-page-no-data-icon {
+    color: #9ca3af;
+}
+
+/* Session History Styles */
+.settings-page-session-details {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.settings-page-session-primary {
+    font-size: 1rem;
+    margin-bottom: 0.25rem;
+    color: #1f2937;
+}
+
+.dark-theme .settings-page-session-primary {
+    color: #e0e0e0;
+}
+
+.settings-page-session-secondary {
+    font-size: 0.85rem;
+    color: #6b7280;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.dark-theme .settings-page-session-secondary {
+    color: #9ca3af;
+}
+
+.settings-page-device-info, .settings-page-ip-info {
+    display: inline-flex;
+    align-items: center;
+}
+
+.settings-page-device-info::before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #10b981;
+    margin-right: 0.5rem;
+}
+
+.settings-page-ip-info::before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #3b82f6;
+    margin-right: 0.5rem;
+}
+
+.settings-page-login-icon {
+    color: #10b981 !important;
+}
+
+.settings-page-logout-icon {
+    color: #ef4444 !important;
+}
+
+.settings-page-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.settings-page-loading-icon {
+    color: #3b82f6;
+    margin-bottom: 1rem;
+}
+
+.dark-theme .settings-page-loading-icon {
+    color: #60a5fa;
+}
+
+.spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow for light theme */
     border-radius: 0.5rem; /* Rounded corners */
     padding: 2rem;
